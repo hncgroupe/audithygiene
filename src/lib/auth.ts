@@ -31,3 +31,21 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+/**
+ * Récupère le record Prisma User (id, role, nom) de l'auditeur connecté,
+ * via le lien authId ↔ Supabase Auth. Retourne null si non connecté.
+ */
+export async function getCurrentDbUser() {
+  const authUser = await getCurrentUser();
+  if (!authUser) return null;
+  try {
+    const { prisma } = await import('./prisma');
+    return prisma.user.findFirst({
+      where: { OR: [{ authId: authUser.id }, { email: authUser.email ?? '' }] },
+    });
+  } catch (e) {
+    console.warn('[auth] getCurrentDbUser indisponible', e);
+    return null;
+  }
+}

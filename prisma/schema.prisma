@@ -186,6 +186,9 @@ model Audit {
   statut          AuditStatus   @default(PLANIFIE)
   dateAudit       DateTime?
 
+  // Destinataires du rapport PDF (plusieurs possibles)
+  emailsRapport   String[]      @default([])
+
   // Notation
   scoreGlobal     Float?        // /100
   nbCasCritiques  Int           @default(0)

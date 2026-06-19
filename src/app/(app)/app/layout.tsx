@@ -25,7 +25,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Link href="/app/etablissements" className="hover:text-vert-700">Établissements</Link>
             </nav>
           </div>
-          <span className="text-sm text-gris">{user.email}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gris">{user.email}</span>
+            <form action="/api/auth/logout" method="post">
+              <button type="submit" className="text-sm font-medium text-ink/60 hover:text-vert-700">
+                Déconnexion
+              </button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="container-ah py-10">{children}</main>

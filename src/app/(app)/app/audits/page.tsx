@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { GRILLE_AUDIT, GRILLE_VERSION } from '@/lib/grille-audit';
 import { env } from '@/lib/env';
 
@@ -17,18 +18,70 @@ async function getAudits() {
   }
 }
 
+const STATUT_LABEL: Record<string, string> = {
+  PLANIFIE: 'Planifié',
+  EN_COURS: 'En cours',
+  TERMINE: 'Terminé',
+  RAPPORT_ENVOYE: 'Rapport envoyé',
+};
+
 export default async function AuditsPage() {
   const audits = await getAudits();
   const nbItems = GRILLE_AUDIT.reduce((n, t) => n + t.items.length, 0);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-ink">Audits</h1>
-      <p className="mt-1 text-ink/60">Audits réalisés et grille de référence.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Audits</h1>
+          <p className="mt-1 text-ink/60">Conduisez un audit terrain, suivez la notation en direct.</p>
+        </div>
+        <Link href="/app/audits/nouveau" className="btn-primary">
+          Démarrer un audit
+        </Link>
+      </div>
 
-      <section className="mt-6 rounded-2xl border border-ink/10 bg-white p-6">
+      <section className="mt-8">
+        <h2 className="font-semibold text-ink">Audits</h2>
+        {!audits ? (
+          <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">Base non connectée.</p>
+        ) : audits.length === 0 ? (
+          <p className="mt-3 text-ink/60">Aucun audit. Démarrez le premier ci-dessus.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-ink/10 overflow-hidden rounded-2xl border border-ink/10 bg-white">
+            {audits.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href={`/app/audits/${a.id}`}
+                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-vert-50/40"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-ink">{a.establishment.nom}</div>
+                    <div className="text-sm text-gris">
+                      {a.dateAudit?.toLocaleDateString('fr-FR') ?? '-'} · {STATUT_LABEL[a.statut] ?? a.statut}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold tabular-nums text-ink">
+                      {a.scoreGlobal ?? '-'}
+                      <span className="text-sm text-gris">/100</span>
+                    </div>
+                    {a.nbCasCritiques > 0 && (
+                      <div className="text-xs font-semibold text-red-700">
+                        {a.nbCasCritiques} cas critique{a.nbCasCritiques > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-10 rounded-2xl border border-ink/10 bg-white p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-ink">Grille d'audit</h2>
+          <h2 className="font-semibold text-ink">Grille de référence</h2>
           <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
             {GRILLE_VERSION} · à valider
           </span>
@@ -45,30 +98,6 @@ export default async function AuditsPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      <section className="mt-6">
-        <h2 className="font-semibold text-ink">Audits réalisés</h2>
-        {!audits ? (
-          <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">Base non connectée.</p>
-        ) : audits.length === 0 ? (
-          <p className="mt-3 text-ink/60">Aucun audit réalisé. L'outil de saisie terrain est à finaliser (TODO).</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-ink/10 rounded-2xl border border-ink/10 bg-white">
-            {audits.map((a) => (
-              <li key={a.id} className="flex items-center justify-between px-5 py-4">
-                <div>
-                  <div className="font-medium text-ink">{a.establishment.nom}</div>
-                  <div className="text-sm text-gris">{a.dateAudit?.toLocaleDateString('fr-FR') ?? '-'} · {a.statut}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-ink">{a.scoreGlobal ?? '-'}<span className="text-sm text-gris">/100</span></div>
-                  {a.nbCasCritiques > 0 && <div className="text-xs font-medium text-amber-700">{a.nbCasCritiques} cas critique(s)</div>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
     </div>
   );
