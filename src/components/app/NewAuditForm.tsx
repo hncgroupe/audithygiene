@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const TYPES = [
   ['RESTAURANT', 'Restaurant'],
@@ -109,11 +110,23 @@ export function NewAuditForm() {
   };
 
   return (
-    <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-bold tracking-tight text-ink">Démarrer un audit</h1>
-      <p className="mt-1 text-ink/60">Renseignez l’établissement, puis lancez le contrôle.</p>
+    <form onSubmit={submit} className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
+      {/* En-tête épinglé */}
+      <div className="shrink-0 border-b border-ink/10 bg-white">
+        <div className="container-ah flex items-center gap-3 py-2.5">
+          <Link href="/app/audits" className="text-sm text-gris hover:text-ink" aria-label="Retour">
+            ←
+          </Link>
+          <div>
+            <h1 className="text-base font-bold tracking-tight text-ink">Démarrer un audit</h1>
+            <p className="text-xs text-gris">Renseignez l’établissement, puis lancez le contrôle.</p>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={submit} className="mt-7 space-y-4 rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+      {/* Champs (page fixe, bouton toujours visible en bas) */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="container-ah mx-auto max-w-lg space-y-3 py-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink/80">Nom du restaurant</label>
           <input
@@ -244,11 +257,17 @@ export function NewAuditForm() {
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+        </div>
+      </div>
 
-        <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
-          {busy ? 'Démarrage…' : 'Suivant : commencer l’audit'}
-        </button>
-      </form>
-    </div>
+      {/* Barre d'action épinglée */}
+      <div className="shrink-0 border-t border-ink/10 bg-white">
+        <div className="container-ah mx-auto max-w-lg py-3">
+          <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
+            {busy ? 'Démarrage…' : 'Commencer l’audit'}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 }
