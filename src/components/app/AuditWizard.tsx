@@ -337,10 +337,10 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       : null;
 
   return (
-    <div className="-mx-5 -my-10 sm:-mx-8">
-      {/* En-tête de pilotage sticky */}
-      <div className="sticky top-0 z-20 border-b border-ink/10 bg-white/90 backdrop-blur">
-        <div className="container-ah flex items-center gap-4 py-3">
+    <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
+      {/* En-tête de pilotage (épinglé) */}
+      <div className="shrink-0 border-b border-ink/10 bg-white/95 backdrop-blur">
+        <div className="container-ah flex items-center gap-3 py-2.5">
           <Link href="/app/audits" className="text-sm text-gris hover:text-ink" aria-label="Retour">
             ←
           </Link>
@@ -380,7 +380,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         </div>
       </div>
 
-      <div className="container-ah py-6">
+      {/* Contenu : page fixe, action toujours visible en bas */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="container-ah py-4">
         {!isRecap && current && (
           <div className="mx-auto max-w-2xl">
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wide text-vert-700 sm:justify-start">
@@ -399,7 +401,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             </p>
 
             {/* Encart à lire au client présent */}
-            <div className="mt-4 rounded-xl border border-vert-200 bg-vert-50/70 p-4 text-center sm:text-left">
+            <div className="mt-3 rounded-xl border border-vert-200 bg-vert-50/70 p-3 text-center sm:text-left">
               <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-vert-800 sm:justify-start">
                 À expliquer au client
               </div>
@@ -465,7 +467,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             </div>
 
             {/* Constats pré-remplis */}
-            <div className="mt-6">
+            <div className="mt-4">
               <span className="block text-center text-sm font-semibold text-ink sm:text-left">Constat</span>
               <div className="mt-2 space-y-2">
                 {current.constats.map((c) => {
@@ -524,25 +526,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               <textarea
                 value={current.commentaire ?? ''}
                 onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
-                rows={3}
+                rows={2}
                 placeholder="Précisez le constat (ou choisissez un bouton ci-dessus)…"
                 className="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
               />
             </div>
 
-            {/* Navigation */}
-            <div className="mt-7 flex items-center justify-between gap-3">
-              <button
-                onClick={() => goto(step - 1)}
-                disabled={step === 0}
-                className="btn-ghost flex-1 disabled:opacity-40 sm:flex-none"
-              >
-                Précédent
-              </button>
-              <button onClick={() => goto(step + 1)} className="btn-primary flex-1 sm:flex-none">
-                {step === total - 1 ? 'Voir le récap' : 'Suivant'}
-              </button>
-            </div>
           </div>
         )}
 
@@ -604,22 +593,44 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </ul>
             )}
 
-            <div className="mt-8 flex items-center justify-between gap-3">
-              <button onClick={() => goto(total - 1)} className="btn-ghost">
-                Revenir aux points
+          </div>
+        )}
+        </div>
+      </div>
+
+      {/* Barre d'action épinglée en bas : jamais besoin de scroller pour avancer */}
+      <div className="shrink-0 border-t border-ink/10 bg-white">
+        <div className="container-ah flex items-center gap-3 py-3">
+          {!isRecap ? (
+            <>
+              <button
+                onClick={() => goto(step - 1)}
+                disabled={step === 0}
+                className="btn-ghost flex-1 disabled:opacity-40"
+              >
+                Précédent
+              </button>
+              <button onClick={() => goto(step + 1)} className="btn-primary flex-1">
+                {step === total - 1 ? 'Voir le récap' : 'Suivant'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => goto(total - 1)} className="btn-ghost flex-1">
+                Revenir
               </button>
               {done ? (
-                <span className="rounded-full bg-vert-50 px-4 py-2 text-sm font-semibold text-vert-700">
+                <span className="flex-1 rounded-full bg-vert-50 px-4 py-3 text-center text-sm font-semibold text-vert-700">
                   ✓ Audit terminé
                 </span>
               ) : (
-                <button onClick={finir} disabled={finishing} className="btn-primary disabled:opacity-60">
-                  {finishing ? 'Finalisation…' : 'Terminer l’audit'}
+                <button onClick={finir} disabled={finishing} className="btn-primary flex-1 disabled:opacity-60">
+                  {finishing ? 'Finalisation…' : 'Terminer'}
                 </button>
               )}
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
