@@ -365,18 +365,19 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Avancer normalement : un constat choisi + au moins une photo (le clic remplit la note)
+  // Suivant cliquable uniquement si photo + constat + note (le constat remplit la note).
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
   const hasPhoto = !!current && current.photos.length > 0;
-  const canAdvance = !current || (hasConstat && hasPhoto);
+  const hasNote = !!current?.commentaire?.trim();
+  const canAdvance = !current || (hasConstat && hasPhoto && hasNote);
 
-  // Appui long sur « Suivant » : force le passage même si incomplet (~4 s)
-  const HOLD_MS = 4000;
+  // Tap = avancer si complet. Sinon, maintenir 3 s pour passer la question.
+  const HOLD_MS = 3000;
   const onNext = () => {
     if (canAdvance) goto(step + 1);
   };
   const startHold = () => {
-    if (canAdvance) return;
+    if (canAdvance) return; // déjà complet : le tap suffit
     setHoldingNext(true);
     holdTimer.current = setTimeout(() => {
       setHoldingNext(false);
@@ -654,8 +655,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   onPointerUp={cancelHold}
                   onPointerLeave={cancelHold}
                   onPointerCancel={cancelHold}
-                  className={`relative flex-1 select-none overflow-hidden rounded-full bg-ink px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] ${
-                    canAdvance ? '' : 'opacity-80'
+                  className={`relative flex-1 select-none overflow-hidden rounded-full px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] ${
+                    canAdvance ? 'bg-ink' : 'bg-ink/40'
                   }`}
                 >
                   <span
@@ -670,7 +671,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
               {!canAdvance && (
                 <p className="mt-1.5 text-center text-[11px] text-gris">
-                  Maintenez « Suivant » pour passer ce point
+                  Photo + constat requis · ou maintenez « Suivant » 3 s pour passer
                 </p>
               )}
             </>
