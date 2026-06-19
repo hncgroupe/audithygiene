@@ -39,4 +39,15 @@ Journal chronologique des jalons. Entrée datée après chaque étape (voir rule
 - Déploiement READY : **https://audithygiene-gamma.vercel.app**
 - Smoke test : home, /zones, /zones/paris, llms.txt, sitemap.xml, opengraph-image -> tous 200.
 - **Tunnel lead testé en PRODUCTION réelle** : POST live -> écriture DB confirmée + Telegram + Brevo. Nettoyé.
-- ⏸️ Domaine `audithygiene.fr` (Cloudflare) PAS encore connecté = go-live public reste à valider. Le site n'est public que sur l'URL vercel.app pour l'instant.
+- Domaine connecté ensuite (voir entrée go-live ci-dessous).
+
+## 2026-06-19 — GO-LIVE domaine public (validé par le client)
+- Client a donné le "go" pour connecter `audithygiene.fr`.
+- Domaines `audithygiene.fr` + `app.audithygiene.fr` ajoutés au projet Vercel.
+- DNS Cloudflare (zone active, NS elle/pablo) : 2 records `A -> 76.76.21.21` en **DNS only** (gris). Anciens records IONOS en conflit supprimés (`A 217.160.0.162`, `AAAA 2001:8d8:...`).
+- Token Cloudflare fourni = lecture seule (403 sur DNS edit) -> records faits manuellement par le client.
+- Certificats SSL émis (app auto, apex via `vercel certs issue`).
+- **LIVE vérifié** : https://audithygiene.fr (200, pages + sitemap OK), https://app.audithygiene.fr (307 -> login). SSL OK.
+- Brevo : records DKIM/DMARC/TXT déjà présents dans Cloudflare (domaine vérifié).
+- Note : accès R2 fournis (clé S3 + endpoint `0f46...r2.cloudflarestorage.com`) -> option future pour stocker les PDF au lieu de Supabase Storage. Non branché.
+- ⏸️ Reste (contenu, pas technique) : formules + prix réels ; validation grille d'audit.
