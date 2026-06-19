@@ -33,7 +33,7 @@ export default async function EtablissementsPage() {
           {etabs.map((e) => (
             <div key={e.id} className="rounded-2xl border border-ink/10 bg-white p-5 shadow-card">
               <div className="font-semibold text-ink">{e.nom}</div>
-              <div className="text-sm text-gris">{[e.ville, e.departement].filter(Boolean).join(' · ') || '—'}</div>
+              <div className="text-sm text-gris">{[e.ville, e.departement].filter(Boolean).join(' · ') || '-'}</div>
               <div className="mt-3 text-xs text-gris">Client : {e.client.nom}</div>
               <div className="mt-1 text-xs text-vert-700">{e._count.audits} audit(s)</div>
             </div>

@@ -1,4 +1,4 @@
-/** Constantes de marque et de zone — audit hygiène. */
+/** Constantes de marque et de zone - audit hygiène. */
 
 export const MARQUE = {
   nom: 'audit hygiène',
@@ -19,7 +19,7 @@ export interface Departement {
   villes: string[];
 }
 
-/** Île-de-France — zone de couverture. Villes prioritaires (à enrichir). */
+/** Île-de-France - zone de couverture. Villes prioritaires (à enrichir). */
 export const DEPARTEMENTS: Departement[] = [
   { code: '75', nom: 'Paris', slug: 'paris', villes: ['Paris 1er', 'Paris 11e', 'Paris 18e'] },
   { code: '92', nom: 'Hauts-de-Seine', slug: 'hauts-de-seine', villes: ['Boulogne-Billancourt', 'Nanterre', 'Courbevoie', 'Neuilly-sur-Seine'] },
@@ -32,7 +32,7 @@ export const DEPARTEMENTS: Departement[] = [
 ];
 
 /**
- * Formules — TODO : noms, contenu, durée, prix à valider (voir docs/BUSINESS_MODEL.md).
+ * Formules - TODO : noms, contenu, durée, prix à valider (voir docs/BUSINESS_MODEL.md).
  * Les prix sont des placeholders, à ne pas afficher comme définitifs.
  */
 export interface Formule {

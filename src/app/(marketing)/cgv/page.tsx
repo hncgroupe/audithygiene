@@ -14,7 +14,7 @@ export default function CgvPage() {
     <LegalLayout title="Conditions Générales de Vente">
       <p>
         {/* TODO : CGV à faire valider par un juriste avant usage réel (skill contract-fr-prestation) */}
-        <strong>Document préliminaire — à faire valider juridiquement avant publication.</strong>
+        <strong>Document préliminaire - à faire valider juridiquement avant publication.</strong>
       </p>
       <h2>1. Objet</h2>
       <p>Les présentes CGV régissent les prestations d'audit hygiène réalisées par audit hygiène pour ses clients professionnels de la restauration.</p>

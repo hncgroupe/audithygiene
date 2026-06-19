@@ -23,8 +23,8 @@ export default function ConfidentialitePage() {
       </p>
       <h2>Finalités</h2>
       <p>
-        Vous recontacter au sujet de votre demande, organiser un audit, et — uniquement avec votre
-        consentement — vous envoyer des informations utiles.
+        Vous recontacter au sujet de votre demande, organiser un audit, et - uniquement avec votre
+        consentement - vous envoyer des informations utiles.
       </p>
       <h2>Base légale</h2>
       <p>

@@ -47,7 +47,7 @@ function Check() {
   );
 }
 
-/** Aperçu visuel d'un rapport — illustratif, données fictives marquées comme exemple. */
+/** Aperçu visuel d'un rapport - illustratif, données fictives marquées comme exemple. */
 function ScoreCard() {
   const themes = [
     { nom: 'Chaîne du froid', val: 92 },

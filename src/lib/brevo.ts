@@ -12,7 +12,7 @@ interface SendEmailParams {
 
 export async function sendTransactionalEmail(params: SendEmailParams): Promise<boolean> {
   if (!env.brevoApiKey) {
-    console.warn('[brevo] API key manquante — email ignoré.');
+    console.warn('[brevo] API key manquante - email ignoré.');
     return false;
   }
   try {

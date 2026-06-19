@@ -2,14 +2,14 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { env } from './env';
 
 /**
- * Client Supabase côté serveur (service role) — usage : Storage, opérations privilégiées.
+ * Client Supabase côté serveur (service role) - usage : Storage, opérations privilégiées.
  * NE JAMAIS exposer la service role key au client.
  */
 let serviceClient: SupabaseClient | null = null;
 
 export function getSupabaseAdmin(): SupabaseClient | null {
   if (!env.supabaseUrl || !env.supabaseServiceRoleKey) {
-    console.warn('[supabase] URL ou service role key manquante — client admin indisponible.');
+    console.warn('[supabase] URL ou service role key manquante - client admin indisponible.');
     return null;
   }
   if (!serviceClient) {

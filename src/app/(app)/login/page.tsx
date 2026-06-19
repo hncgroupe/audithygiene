@@ -35,7 +35,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-4 text-center text-xs text-gris">
-          Authentification Supabase à finaliser (TODO — dès réception des clés).
+          Authentification Supabase à finaliser (TODO - dès réception des clés).
         </p>
       </div>
     </div>

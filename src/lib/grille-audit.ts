@@ -1,5 +1,5 @@
 /**
- * Grille d'audit initiale — SQUELETTE À VALIDER (rule methodology-guard).
+ * Grille d'audit initiale - SQUELETTE À VALIDER (rule methodology-guard).
  * Chaque item DOIT être rattaché à un point réglementaire précis, validé par
  * le client/expert avant usage en production. Les références ci-dessous sont
  * indicatives (TODO) et ne doivent pas être présentées comme officielles.

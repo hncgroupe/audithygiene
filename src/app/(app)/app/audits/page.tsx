@@ -59,10 +59,10 @@ export default async function AuditsPage() {
               <li key={a.id} className="flex items-center justify-between px-5 py-4">
                 <div>
                   <div className="font-medium text-ink">{a.establishment.nom}</div>
-                  <div className="text-sm text-gris">{a.dateAudit?.toLocaleDateString('fr-FR') ?? '—'} · {a.statut}</div>
+                  <div className="text-sm text-gris">{a.dateAudit?.toLocaleDateString('fr-FR') ?? '-'} · {a.statut}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-ink">{a.scoreGlobal ?? '—'}<span className="text-sm text-gris">/100</span></div>
+                  <div className="text-lg font-bold text-ink">{a.scoreGlobal ?? '-'}<span className="text-sm text-gris">/100</span></div>
                   {a.nbCasCritiques > 0 && <div className="text-xs font-medium text-amber-700">{a.nbCasCritiques} cas critique(s)</div>}
                 </div>
               </li>

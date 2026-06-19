@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       // On continue : le lead ne doit pas être perdu côté notification.
     }
   } else {
-    console.warn('[lead] DATABASE_URL absent — lead non persisté (notifications uniquement).');
+    console.warn('[lead] DATABASE_URL absent - lead non persisté (notifications uniquement).');
   }
 
   // 2. Notification Telegram (non bloquant)

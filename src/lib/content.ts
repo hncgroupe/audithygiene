@@ -1,4 +1,4 @@
-/** Contenus partagés du site (FAQ, déroulé) — réutilisés pour l'UI et le schema.org. */
+/** Contenus partagés du site (FAQ, déroulé) - réutilisés pour l'UI et le schema.org. */
 
 export const FAQ_ITEMS: { q: string; a: string }[] = [
   {

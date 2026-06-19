@@ -6,7 +6,7 @@ import { env } from './env';
  */
 export async function notifyTelegram(message: string): Promise<boolean> {
   if (!env.telegramBotToken || !env.telegramChatId) {
-    console.warn('[telegram] Token ou chat_id manquant — notification ignorée.');
+    console.warn('[telegram] Token ou chat_id manquant - notification ignorée.');
     return false;
   }
   try {
@@ -43,7 +43,7 @@ export function formatLeadMessage(lead: {
   besoin?: string | null;
 }): string {
   return [
-    '🟢 <b>Nouveau lead — audit hygiène</b>',
+    '🟢 <b>Nouveau lead - audit hygiène</b>',
     `👤 ${lead.nom}`,
     lead.ville ? `📍 ${lead.ville}` : null,
     lead.typeEtablissement ? `🍽️ ${lead.typeEtablissement}` : null,

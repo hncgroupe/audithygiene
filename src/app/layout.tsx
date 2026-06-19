@@ -14,7 +14,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'audit hygiène — Audit hygiène & HACCP pour restaurants en Île-de-France',
+    default: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
     template: '%s | audit hygiène',
   },
   description:
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     url: siteUrl,
     siteName: 'audit hygiène',
-    title: 'audit hygiène — Audit hygiène & HACCP pour restaurants en Île-de-France',
+    title: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
     description:
       "Anticipez le contrôle sanitaire : audit complet, rapport clair, plan d'action. Label privé indépendant, partout en Île-de-France.",
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'audit hygiène — Audit hygiène & HACCP restaurants IDF',
+    title: 'audit hygiène - Audit hygiène & HACCP restaurants IDF',
     description:
       "Audit hygiène et HACCP pour restaurants en Île-de-France. Notation, cas critiques, plan correctif.",
   },

@@ -9,7 +9,7 @@ let stripe: Stripe | null = null;
 
 export function getStripe(): Stripe | null {
   if (!env.stripeSecretKey) {
-    console.warn('[stripe] clé secrète manquante — paiement indisponible.');
+    console.warn('[stripe] clé secrète manquante - paiement indisponible.');
     return null;
   }
   if (!stripe) {

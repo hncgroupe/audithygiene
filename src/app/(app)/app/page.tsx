@@ -23,10 +23,10 @@ export default async function DashboardPage() {
   const stats = await getStats();
 
   const cards = [
-    { label: 'Leads', value: stats?.leads ?? '—', href: '/app/leads' },
-    { label: 'Rendez-vous', value: stats?.rdv ?? '—', href: '/app/audits' },
-    { label: 'Audits', value: stats?.audits ?? '—', href: '/app/audits' },
-    { label: 'Rapports', value: stats?.rapports ?? '—', href: '/app/audits' },
+    { label: 'Leads', value: stats?.leads ?? '-', href: '/app/leads' },
+    { label: 'Rendez-vous', value: stats?.rdv ?? '-', href: '/app/audits' },
+    { label: 'Audits', value: stats?.audits ?? '-', href: '/app/audits' },
+    { label: 'Rapports', value: stats?.rapports ?? '-', href: '/app/audits' },
   ];
 
   return (

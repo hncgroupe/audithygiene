@@ -22,7 +22,7 @@ export default async function LeadsPage() {
 
       {!leads ? (
         <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Base non connectée — aucun lead à afficher.
+          Base non connectée - aucun lead à afficher.
         </p>
       ) : leads.length === 0 ? (
         <p className="mt-6 text-ink/60">Aucun lead pour le moment.</p>
@@ -43,9 +43,9 @@ export default async function LeadsPage() {
                     <div>{l.email}</div>
                     {l.telephone && <div className="text-gris">{l.telephone}</div>}
                   </Td>
-                  <Td>{[l.ville, l.departement].filter(Boolean).join(' · ') || '—'}</Td>
-                  <Td>{l.typeEtablissement ?? '—'}</Td>
-                  <Td>{l.besoin ?? '—'}</Td>
+                  <Td>{[l.ville, l.departement].filter(Boolean).join(' · ') || '-'}</Td>
+                  <Td>{l.typeEtablissement ?? '-'}</Td>
+                  <Td>{l.besoin ?? '-'}</Td>
                   <Td><span className="rounded-full bg-vert-50 px-2.5 py-1 text-xs font-medium text-vert-700">{l.statut}</span></Td>
                 </tr>
               ))}

@@ -39,7 +39,7 @@ const s = StyleSheet.create({
 
 export function ReportDocument({ data }: { data: ReportData }) {
   return (
-    <Document title={`Rapport audit hygiène — ${data.etablissement}`} author="audit hygiène">
+    <Document title={`Rapport audit hygiène - ${data.etablissement}`} author="audit hygiène">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <Text style={s.brand}>
@@ -49,7 +49,7 @@ export function ReportDocument({ data }: { data: ReportData }) {
         </View>
 
         <Text style={s.h1}>Rapport d'audit hygiène</Text>
-        <Text style={s.meta}>Établissement : {data.etablissement}{data.ville ? ` — ${data.ville}` : ''}</Text>
+        <Text style={s.meta}>Établissement : {data.etablissement}{data.ville ? ` - ${data.ville}` : ''}</Text>
         <Text style={s.meta}>Date de l'audit : {data.date}</Text>
         <Text style={s.meta}>Auditeur : {data.auditeur}</Text>
 
