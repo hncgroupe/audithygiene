@@ -365,11 +365,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Conditions pour avancer normalement : constat + note + photo
+  // Avancer normalement : un constat choisi (le clic remplit la note)
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
-  const hasNote = !!current?.commentaire?.trim();
-  const hasPhoto = !!current && current.photos.length > 0;
-  const canAdvance = !current || (hasConstat && hasNote && hasPhoto);
+  const canAdvance = !current || hasConstat;
 
   // Appui long sur « Suivant » : force le passage même si incomplet (~4 s)
   const HOLD_MS = 4000;
@@ -460,91 +458,46 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             )}
 
-            {/* 1. Photo (le bouton de capture est en bas, pleine largeur) */}
-            <div className="mt-4">
-              <span className="mb-1.5 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
-                1 · Photo
-              </span>
-              {current.photos.length === 0 ? (
-                <p className="text-center text-[12px] text-gris">
-                  Aucune photo. Bouton « Prendre une photo » en bas.
-                </p>
-              ) : (
-                <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
-                {current.photos.map((p, idx) => (
-                  <div
-                    key={p.localId ?? p.path ?? idx}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-ink/10 bg-ink/5"
+            {/* Constat : 3 gros boutons empilés, code couleur vert / jaune / rouge */}
+            <div className="mt-5 space-y-3">
+              {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
+                const c = current.constats.find((x) => x.conformite === lvl);
+                const on = current.conformite === lvl;
+                const cfg = {
+                  CONFORME: {
+                    label: 'Conforme',
+                    on: 'border-transparent bg-vert text-white shadow-[0_6px_18px_-6px_rgba(16,185,129,0.6)]',
+                    off: 'border-vert/40 bg-white text-vert-800 hover:bg-vert-50',
+                  },
+                  NC_MINEURE: {
+                    label: 'Non-conformité mineure',
+                    on: 'border-transparent bg-amber-500 text-white shadow-[0_6px_18px_-6px_rgba(245,158,11,0.6)]',
+                    off: 'border-amber-400/60 bg-white text-amber-700 hover:bg-amber-50',
+                  },
+                  NC_MAJEURE: {
+                    label: 'Cas critique',
+                    on: 'border-transparent bg-red-600 text-white shadow-[0_6px_18px_-6px_rgba(220,38,38,0.6)]',
+                    off: 'border-red-400/60 bg-white text-red-700 hover:bg-red-50',
+                  },
+                }[lvl];
+                return (
+                  <button
+                    key={lvl}
+                    disabled={!c}
+                    onClick={() => c && onPickConstat(c)}
+                    className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] disabled:opacity-40 ${
+                      on ? cfg.on : cfg.off
+                    }`}
                   >
-                    {p.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full place-items-center text-xs text-gris">photo</div>
-                    )}
-                    <span
-                      className={`absolute bottom-1 left-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                        p.status === 'done'
-                          ? 'bg-vert text-white'
-                          : 'bg-amber-400 text-ink'
-                      }`}
-                      title={p.status === 'done' ? 'Enregistrée' : 'En attente (sera envoyée au retour du réseau)'}
-                    >
-                      {p.status === 'done' ? '✓' : '⏳'}
-                    </span>
-                    <button
-                      onClick={() => onDeletePhoto(p)}
-                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
-                      aria-label="Supprimer"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                </div>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                onChange={(e) => onUpload(e.target.files)}
-                className="hidden"
-              />
-            </div>
-
-            {/* Constat : 3 niveaux, un clic pose la conformité et remplit la note */}
-            <div className="mt-3">
-              <span className="mb-1.5 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
-                2 · Constat
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
-                  const c = current.constats.find((x) => x.conformite === lvl);
-                  const on = current.conformite === lvl;
-                  const label = { CONFORME: 'Conforme', NC_MINEURE: 'Mineure', NC_MAJEURE: 'Critique' }[lvl];
-                  return (
-                    <button
-                      key={lvl}
-                      disabled={!c}
-                      onClick={() => c && onPickConstat(c)}
-                      className={`rounded-xl border px-2 py-2.5 text-[13px] font-semibold transition-all active:scale-[0.98] disabled:opacity-40 ${
-                        on
-                          ? `border-transparent ${CONF_STYLE[lvl].chip}`
-                          : 'border-ink/10 bg-white text-ink hover:border-ink/25'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
+                    {cfg.label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Synthèse NC : pourquoi + correctif */}
             {activeNc && (
-              <div className="mt-2.5 overflow-hidden rounded-xl border border-red-200 text-left">
+              <div className="mt-3 overflow-hidden rounded-xl border border-red-200 text-left">
                 <div className="bg-red-50 px-3 py-2">
                   <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
                     {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
@@ -560,19 +513,48 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             )}
 
-            {/* Notes (obligatoire) */}
-            <div className="mt-3">
-              <label className="mb-1 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
-                3 · Note
-              </label>
-              <textarea
-                value={current.commentaire ?? ''}
-                onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
-                rows={2}
-                placeholder="Choisissez un constat ci-dessus ou saisissez la note…"
-                className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
-              />
-            </div>
+            {/* Photos (optionnel) : vignettes si présentes */}
+            {current.photos.length > 0 && (
+              <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6">
+                {current.photos.map((p, idx) => (
+                  <div
+                    key={p.localId ?? p.path ?? idx}
+                    className="group relative aspect-square overflow-hidden rounded-xl border border-ink/10 bg-ink/5"
+                  >
+                    {p.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full place-items-center text-xs text-gris">photo</div>
+                    )}
+                    <span
+                      className={`absolute bottom-1 left-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                        p.status === 'done' ? 'bg-vert text-white' : 'bg-amber-400 text-ink'
+                      }`}
+                    >
+                      {p.status === 'done' ? '✓' : '⏳'}
+                    </span>
+                    <button
+                      onClick={() => onDeletePhoto(p)}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      aria-label="Supprimer"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              onChange={(e) => onUpload(e.target.files)}
+              className="hidden"
+            />
 
           </div>
         )}
