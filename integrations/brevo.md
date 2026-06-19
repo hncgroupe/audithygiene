@@ -12,7 +12,8 @@ Emails transactionnels (confirmation RDV, rappel, envoi rapport PDF) + marketing
 
 ## Étapes manuelles (toi)
 1. Créer le compte Brevo.
-2. Authentifier le domaine : SPF, DKIM, DMARC chez IONOS (valeurs fournies par Brevo).
+2. Authentifier le domaine : SPF, DKIM, DMARC chez **Cloudflare** (zone `audithygiene.fr`, valeurs fournies par Brevo).
+   ⚠️ Compte Brevo actuellement rattaché à `contact@hncgroupe.fr` — pour envoyer depuis `contact@audithygiene.fr`, vérifier d'abord ce domaine/expéditeur.
 3. Créer la clé API.
 
 ## Code

@@ -11,7 +11,7 @@ Données SEO réelles (impressions, clics, positions, indexation), branchées à
 
 ## Étapes manuelles (toi)
 1. Search Console → Ajouter propriété **Domaine** `audithygiene.fr`.
-2. Vérifier via TXT chez IONOS (valeur fournie par Google).
+2. Vérifier via TXT chez **Cloudflare** (zone `audithygiene.fr`, valeur fournie par Google).
 3. Pour l'API : créer un Service Account (voir `integrations/google-business.md` / KIT §11) et lui donner accès à la propriété.
 4. Soumettre le `sitemap.xml`.
 

@@ -16,7 +16,7 @@ Les variables runtime (Supabase, Brevo, etc.) sont poussées via `vercel env` ou
 1. Créer le compte Vercel (via GitHub recommandé).
 2. `npm i -g vercel` → `vercel login` → `vercel link`.
 3. Ajouter les domaines : `audithygiene.fr`, `app.audithygiene.fr`, `audithygiene.com`.
-4. Configurer le DNS chez IONOS (voir `integrations/` + KIT §1).
+4. Configurer le DNS chez **Cloudflare** (zone `audithygiene.fr`, enregistrements en mode *DNS only* / nuage gris — voir KIT §1).
 5. Pousser les variables d'environnement.
 
 ## Domaines & redirection

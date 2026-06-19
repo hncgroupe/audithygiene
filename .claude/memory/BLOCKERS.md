@@ -4,10 +4,9 @@ Blocages en cours et ce qui les lèverait.
 
 ## Ouverts
 
-### 🔴 Clés de connexion 🔴 (2026-06-19)
-- **Bloque :** branchement réel DB, déploiement, lead capture live, emails, notifs.
-- **Lève le blocage :** fournir les clés du `KIT_DE_CONNEXION.md`, minimum 🔴 (Supabase ×5, compte Vercel, confirmation domaine IONOS).
-- **Contournement :** tout le code non-secret est construit en attendant (placeholders d'env).
+### 🟠 Clés partielles (2026-06-19, MAJ)
+- **Reçu & vérifié live :** Supabase (URL+anon+service_role), **Postgres connecté** (region aws-1-eu-central-1, migration `init` appliquée, écriture DB testée OK), bucket `rapports` créé, Brevo (clé OK). Domaine `audithygiene.fr` sur **Cloudflare**.
+- **Manque encore :** `TELEGRAM_BOT_TOKEN`/`CHAT_ID` ; expéditeur Brevo (compte rattaché à `hncgroupe.fr`, pas `audithygiene.fr`) ; `VERCEL_TOKEN`/compte (pour déployer) ; Stripe/Yousign/Google (🟢).
 
 ### Grille d'audit réglementaire à valider
 - **Bloque :** mise en production de l'outil d'audit avec contenu définitif.

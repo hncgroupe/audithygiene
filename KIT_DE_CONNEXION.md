@@ -29,19 +29,17 @@
 
 ---
 
-## 1. 🌐 DNS du domaine — IONOS  🔴 BLOQUANT
+## 1. 🌐 DNS du domaine — Cloudflare  🔴 BLOQUANT
 
-**Rôle :** pointer `audithygiene.fr`, `app.audithygiene.fr` et `audithygiene.com` vers Vercel.
+**Domaine :** `audithygiene.fr`, géré chez **Cloudflare**.
+**Rôle :** pointer `audithygiene.fr` et `app.audithygiene.fr` vers Vercel.
 
-**Ce que je te demanderai (au moment du branchement DNS) :**
-- Confirmation que tu possèdes bien `audithygiene.fr` et `audithygiene.com` chez IONOS.
-
-**Étapes manuelles de ton côté (je te donnerai les valeurs exactes une fois le projet Vercel créé) :**
-1. Connecte-toi à [ionos.fr](https://www.ionos.fr) → **Domaines & SSL** → `audithygiene.fr` → **DNS**.
-2. Ajouter un enregistrement **A** `@` → `76.76.21.21` (IP Vercel, je confirmerai).
-3. Ajouter un **CNAME** `www` → `cname.vercel-dns.com`.
-4. Ajouter un **CNAME** `app` → `cname.vercel-dns.com` (pour `app.audithygiene.fr`).
-5. Pour `audithygiene.com` : même type de config, la redirection 301 → `.fr` sera gérée côté Vercel.
+**Étapes manuelles de ton côté (valeurs exactes confirmées une fois le projet Vercel créé) :**
+1. Connecte-toi à [dash.cloudflare.com](https://dash.cloudflare.com) → zone `audithygiene.fr` → **DNS → Records**.
+2. Racine : **CNAME** `@` (ou `audithygiene.fr`) → `cname.vercel-dns.com` (Cloudflare gère le CNAME flattening à l'apex). Alternative : **A** `@` → `76.76.21.21` (IP Vercel, à confirmer).
+3. **CNAME** `app` → `cname.vercel-dns.com` (pour `app.audithygiene.fr`).
+4. ⚠️ **Important Cloudflare** : passer le statut proxy en **DNS only** (nuage gris, pas orange) sur ces enregistrements, sinon conflit TLS avec Vercel.
+5. Pour Brevo (emails) : ajouter ici les enregistrements **SPF / DKIM / DMARC** fournis par Brevo (voir §5).
 
 **Variables d'env :** aucune (config DNS pure). Je te guide pas à pas le moment venu.
 

@@ -38,7 +38,7 @@ Vérifie le site sur http://localhost:3000.
 ## Étape 3 — Notifications & emails (🟠)
 
 1. **Telegram** : crée le bot via @BotFather, récupère `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` (KIT §4).
-2. **Brevo** : crée la clé API, authentifie le domaine (SPF/DKIM/DMARC chez IONOS), renseigne l'expéditeur (KIT §5).
+2. **Brevo** : crée la clé API, authentifie le domaine (SPF/DKIM/DMARC chez **Cloudflare**), renseigne l'expéditeur (KIT §5).
 3. Teste le formulaire de RDV : un lead doit déclencher une notif Telegram + un email de confirmation.
 
 ---
@@ -49,7 +49,7 @@ Vérifie le site sur http://localhost:3000.
 2. Ajoute les variables d'environnement : `vercel env add` (ou via l'UI Vercel) pour chaque clé de `.env.local`.
 3. `vercel` → déploiement **preview** (automatique sur chaque commit).
 4. **Domaines** : Project Settings → Domains → `audithygiene.fr`, `app.audithygiene.fr`, `audithygiene.com`.
-5. **DNS IONOS** : ajoute les enregistrements A/CNAME indiqués par Vercel (KIT §1).
+5. **DNS Cloudflare** : ajoute les enregistrements CNAME indiqués par Vercel, en mode *DNS only* (nuage gris) (KIT §1).
 6. **Go-live prod = ⏸️ EN_ATTENTE_VALIDATION** — ne jamais publier sur le domaine public sans « go » humain.
 
 ---
