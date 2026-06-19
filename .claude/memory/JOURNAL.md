@@ -20,3 +20,15 @@ Journal chronologique des jalons. Entrée datée après chaque étape (voir rule
 - Build : **OK** (20 routes, 8 pages SSG départements, middleware actif).
 - Reste (TODO) : outil de saisie terrain item-par-item + photos ; branchement réel auth Supabase ; déploiement Vercel (dépend des clés).
 - ⏸️ En attente : clés 🔴 + validation grille réglementaire + go-live public.
+
+## 2026-06-19 — Intégrations live + tunnel vérifié + UX/SEO
+- **DB Supabase** : migration `init` appliquée (eu-central-1, pooler aws-1), CRUD testé.
+- **Brevo** : domaine `audithygiene.fr` vérifié, email transactionnel réel envoyé OK (plan gratuit ~300/j).
+- **Telegram** : bot + chat_id branchés, notif réelle envoyée OK.
+- **Tunnel end-to-end vérifié** : POST `/api/lead` → écriture DB + notif Telegram + Brevo. Lead de test créé puis nettoyé.
+- **DNS** : Cloudflare (zone audithygiene.fr), doc mise à jour.
+- **Anti-IA** : suppression de tous les tirets longs (rule `no-tiret-long`).
+- **UX** : composant `Reveal` (scroll, reduced-motion, filet anti-blanc), jauge de score animée (signature), copy humanisée. Rendu validé par capture Playwright.
+- **SEO/GEO** : OG image générée, manifest, favicon (en plus de schema.org/sitemap/robots/llms.txt).
+- **Vercel CLI** installé (disque saturé nettoyé, 4,4 Go libérés).
+- ⏸️ Reste : `vercel login` (action user, interactif) pour déploiement preview ; formules/prix réels ; validation grille.
