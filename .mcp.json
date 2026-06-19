@@ -1,0 +1,13 @@
+{
+  "$comment": "Connecteurs MCP du projet audithygiène. Les serveurs nécessitant des secrets lisent depuis l'environnement (.env.local), jamais de clé en clair ici.",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}

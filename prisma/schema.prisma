@@ -1,0 +1,314 @@
+// Schéma Prisma — audit hygiène
+// Base : Postgres (Supabase). Voir integrations/database.md
+// Couvre : auditeurs, leads, RDV, clients, établissements, audits, items, scores,
+// non-conformités, rapports, paiements.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Utilisateurs / auditeurs
+// ----------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  AUDITEUR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(AUDITEUR)
+  // Lié à l'utilisateur Supabase Auth (auth.users.id)
+  authId    String?  @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  audits    Audit[]
+  appointments Appointment[]
+
+  @@map("users")
+}
+
+// ----------------------------------------------------------------------------
+// Acquisition : leads & RDV
+// ----------------------------------------------------------------------------
+
+enum LeadStatus {
+  NOUVEAU
+  CONTACTE
+  RDV_PRIS
+  CONVERTI
+  PERDU
+}
+
+enum EstablishmentType {
+  RESTAURANT
+  RESTAURATION_RAPIDE
+  DARK_KITCHEN
+  BOULANGERIE
+  TRAITEUR
+  HOTEL_RESTAURANT
+  BAR
+  AUTRE
+}
+
+enum BesoinType {
+  URGENT
+  PREVENTIF
+}
+
+model Lead {
+  id                String            @id @default(cuid())
+  nom               String
+  email             String
+  telephone         String?
+  ville             String?
+  codePostal        String?
+  departement       String?           // 75, 92, 93, 94, 77, 78, 91, 95
+  typeEtablissement EstablishmentType?
+  nombreCouverts    Int?
+  besoin            BesoinType?
+  formule           String?           // référence formule choisie
+  message           String?
+  source            String?           // organic, google-ads, geo, referral...
+  statut            LeadStatus        @default(NOUVEAU)
+  // RGPD
+  consentementRGPD  Boolean           @default(false)
+  consentementAt    DateTime?
+  consentementMarketing Boolean       @default(false)
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  appointment       Appointment?
+  client            Client?           @relation(fields: [clientId], references: [id])
+  clientId          String?
+
+  @@index([statut])
+  @@index([departement])
+  @@map("leads")
+}
+
+enum AppointmentStatus {
+  DEMANDE
+  CONFIRME
+  REALISE
+  ANNULE
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  lead        Lead              @relation(fields: [leadId], references: [id])
+  leadId      String            @unique
+  auditeur    User?             @relation(fields: [auditeurId], references: [id])
+  auditeurId  String?
+  dateSouhaitee DateTime?
+  dateConfirmee DateTime?
+  adresse     String?
+  statut      AppointmentStatus @default(DEMANDE)
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([statut])
+  @@map("appointments")
+}
+
+// ----------------------------------------------------------------------------
+// Clients & établissements
+// ----------------------------------------------------------------------------
+
+model Client {
+  id        String   @id @default(cuid())
+  nom       String   // raison sociale / nom du gérant
+  email     String?
+  telephone String?
+  siret     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  establishments Establishment[]
+  leads          Lead[]
+  payments       Payment[]
+
+  @@map("clients")
+}
+
+model Establishment {
+  id          String            @id @default(cuid())
+  client      Client            @relation(fields: [clientId], references: [id])
+  clientId    String
+  nom         String
+  type        EstablishmentType @default(RESTAURANT)
+  adresse     String?
+  ville       String?
+  codePostal  String?
+  departement String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  audits      Audit[]
+
+  @@index([departement])
+  @@map("establishments")
+}
+
+// ----------------------------------------------------------------------------
+// Audits
+// ----------------------------------------------------------------------------
+
+enum AuditStatus {
+  PLANIFIE
+  EN_COURS
+  TERMINE
+  RAPPORT_ENVOYE
+}
+
+model Audit {
+  id              String        @id @default(cuid())
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+  establishmentId String
+  auditeur        User          @relation(fields: [auditeurId], references: [id])
+  auditeurId      String
+
+  // Version de la grille utilisée (traçabilité — rule methodology-guard)
+  grilleVersion   String        @default("v0-draft")
+  statut          AuditStatus   @default(PLANIFIE)
+  dateAudit       DateTime?
+
+  // Notation
+  scoreGlobal     Float?        // /100
+  nbCasCritiques  Int           @default(0)
+  prochainAuditLe DateTime?     // date du prochain audit recommandé
+
+  items           AuditItem[]
+  scoresParTheme  Score[]
+  nonConformites  NonConformity[]
+  report          Report?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([statut])
+  @@map("audits")
+}
+
+enum ItemConformity {
+  CONFORME
+  NC_MINEURE
+  NC_MAJEURE // = cas critique
+  NON_APPLICABLE
+  NON_EVALUE
+}
+
+// Un item répondu lors d'un audit (instance). Le référentiel de questions
+// est défini côté code/grille (skill haccp-audit-methodology) puis instancié ici.
+model AuditItem {
+  id             String         @id @default(cuid())
+  audit          Audit          @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  auditId        String
+  theme          String         // ex: "Chaîne du froid"
+  code           String         // identifiant de l'item dans la grille
+  intitule       String
+  referenceRegl  String?        // point de réglementation (à valider)
+  conformite     ItemConformity @default(NON_EVALUE)
+  ponderation    Int            @default(1)
+  commentaire    String?
+  photoUrls      String[]       @default([])
+  createdAt      DateTime       @default(now())
+
+  @@index([auditId])
+  @@index([theme])
+  @@map("audit_items")
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  audit     Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  auditId   String
+  theme     String
+  valeur    Float    // /100 pour ce thème
+  createdAt DateTime @default(now())
+
+  @@unique([auditId, theme])
+  @@map("scores")
+}
+
+enum Priorite {
+  HAUTE
+  MOYENNE
+  BASSE
+}
+
+model NonConformity {
+  id          String   @id @default(cuid())
+  audit       Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  auditId     String
+  theme       String
+  description String
+  critique    Boolean  @default(false) // cas critique = NC majeure
+  // Plan correctif
+  actionCorrective String?
+  priorite    Priorite @default(MOYENNE)
+  delaiJours  Int?     // délai conseillé en jours
+  createdAt   DateTime @default(now())
+
+  @@index([auditId])
+  @@index([critique])
+  @@map("non_conformities")
+}
+
+// ----------------------------------------------------------------------------
+// Rapports PDF
+// ----------------------------------------------------------------------------
+
+model Report {
+  id           String   @id @default(cuid())
+  audit        Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  auditId      String   @unique
+  storagePath  String   // chemin dans le bucket Supabase "rapports"
+  fileName     String
+  envoyeAu     String?  // email destinataire
+  envoyeLe     DateTime?
+  createdAt    DateTime @default(now())
+
+  @@map("reports")
+}
+
+// ----------------------------------------------------------------------------
+// Paiements (Stripe)
+// ----------------------------------------------------------------------------
+
+enum PaymentStatus {
+  EN_ATTENTE
+  PAYE
+  ECHOUE
+  REMBOURSE
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  client         Client?       @relation(fields: [clientId], references: [id])
+  clientId       String?
+  montantCents   Int
+  devise         String        @default("eur")
+  statut         PaymentStatus @default(EN_ATTENTE)
+  stripeSessionId String?      @unique
+  stripePaymentIntent String?
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([statut])
+  @@map("payments")
+}

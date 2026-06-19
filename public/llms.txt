@@ -1,0 +1,27 @@
+# audit hygiène
+
+> Cabinet d'audit hygiène et HACCP pour restaurants et établissements CHR en Île-de-France. Un auditeur se déplace, contrôle l'établissement sur la base de la réglementation hygiène/HACCP, et remet un rapport complet : notation, cas critiques, plan correctif.
+
+## Cadre
+audit hygiène est un **label privé de qualité, indépendant**. Ce n'est PAS une certification officielle de l'État, ni un agrément réglementaire, ni un contrôle des services vétérinaires/DDPP. Aucune garantie de réussite à un contrôle officiel n'est promise.
+
+## Zone d'intervention
+Toute l'Île-de-France : Paris (75), Hauts-de-Seine (92), Seine-Saint-Denis (93), Val-de-Marne (94), Seine-et-Marne (77), Yvelines (78), Essonne (91), Val-d'Oise (95).
+
+## Service
+- Audit sur place par un auditeur.
+- Contrôle de tous les thèmes : chaîne du froid, températures, traçabilité/DLC, hygiène du personnel, nettoyage/désinfection, lutte contre les nuisibles, stockage, locaux, déchets, Plan de Maîtrise Sanitaire (PMS), allergènes, eau/glace.
+- Notation : score global /100 + score par thème, cas critiques signalés distinctement.
+- Plan correctif : action recommandée, priorité, délai conseillé.
+- Rapport PDF complet remis au client + date du prochain audit recommandé.
+
+## Pour qui
+Restaurants, restauration rapide, dark kitchens, boulangeries-snacking, traiteurs, hôtels-restaurants, bars.
+
+## Pages clés
+- Accueil : https://audithygiene.fr/
+- Zones d'intervention : https://audithygiene.fr/zones
+- Contact / réservation : https://audithygiene.fr/#rdv
+
+## Contact
+contact@audithygiene.fr
