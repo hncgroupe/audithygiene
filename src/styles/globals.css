@@ -6,17 +6,42 @@
   --vert: #10b981;
   --ink: #0c1b17;
   --gris: #6b7d77;
+  /* Style Stripe : une seule grotesk webfont, identique sur tous les appareils. Jamais de serif. */
+  --font-app: var(--font-stripe), 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
+  font-family: var(--font-app);
+}
+
+/* Tout le monde hérite, y compris les champs de formulaire et boutons. */
+*,
+input,
+button,
+textarea,
+select,
+optgroup {
+  font-family: inherit;
 }
 
 body {
   color: var(--ink);
   background: #ffffff;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern', 'liga', 'cv11';
+}
+
+/* Titres serrés, sans retour à la ligne forcé. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.025em;
+}
+h1 {
+  letter-spacing: -0.035em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -36,12 +61,42 @@ body {
     @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-vert px-6 py-3 font-semibold text-white shadow-soft transition hover:bg-vert-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vert-700;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-vert px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-vert-600 hover:shadow-[0_8px_24px_-6px_rgba(16,185,129,0.5)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vert-700;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ink/10 bg-white px-6 py-3 font-semibold text-ink transition hover:border-vert/40 hover:text-vert-700;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/10 bg-white px-6 py-3 font-semibold text-ink transition-all duration-200 hover:border-vert/40 hover:text-vert-700 hover:shadow-card active:scale-[0.98];
   }
   .eyebrow {
-    @apply text-sm font-semibold uppercase tracking-wide text-vert-700;
+    @apply inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.08em] text-vert-700;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-soft;
+  }
+  .section-title {
+    @apply font-bold tracking-tightest text-ink;
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.125rem);
+    line-height: 1.12;
+  }
+}
+
+@layer utilities {
+  /* Dégradé signature : mesh vert doux façon aurora. */
+  .aurora {
+    background:
+      radial-gradient(60% 50% at 80% 0%, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0) 60%),
+      radial-gradient(50% 50% at 0% 20%, rgba(52, 211, 153, 0.12) 0%, rgba(52, 211, 153, 0) 55%),
+      linear-gradient(180deg, #f3fbf7 0%, #ffffff 60%);
+  }
+  .grid-faint {
+    background-image:
+      linear-gradient(to right, rgba(12, 27, 23, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(12, 27, 23, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .text-gradient-vert {
+    background: linear-gradient(120deg, #059669 0%, #10b981 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }

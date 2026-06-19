@@ -6,25 +6,22 @@ export function Formules() {
   return (
     <section id="formules" className="bg-vert-50/40 py-20 scroll-mt-20">
       <div className="container-ah">
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className="eyebrow">Formules</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Choisissez la formule adaptée à votre établissement
-          </h2>
+          <h2 className="section-title mt-4">Choisissez votre formule</h2>
           <p className="mt-4 text-lg text-ink/70">
-            One-shot ou suivi régulier. Le contenu détaillé et les tarifs sont confirmés lors de la
-            prise de rendez-vous.
+            One-shot ou suivi régulier, adapté à votre établissement.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
           {FORMULES.map((f, i) => (
             <Reveal
               as="div"
               key={f.id}
               delay={i * 90}
-              className={`relative flex flex-col rounded-2xl border bg-white p-7 shadow-card ${
-                f.populaire ? 'border-vert ring-2 ring-vert/30' : 'border-ink/10'
+              className={`relative flex flex-col rounded-2xl border bg-white p-7 card-hover ${
+                f.populaire ? 'border-vert shadow-soft ring-1 ring-vert/30' : 'border-ink/10 shadow-card'
               }`}
             >
               {f.populaire && (

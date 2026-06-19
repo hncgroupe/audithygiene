@@ -4,24 +4,24 @@ import { Reveal } from '@/components/site/Reveal';
 export function Deroule() {
   return (
     <section id="deroule" className="container-ah py-20 scroll-mt-20">
-      <div className="max-w-2xl">
+      <div className="max-w-3xl">
         <p className="eyebrow">Le déroulé</p>
-        <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          Un audit, un rapport clair, un plan d'action
-        </h2>
-        <p className="mt-4 text-lg text-ink/70">
-          De la prise de rendez-vous à la remise du rapport, une méthode structurée et transparente.
+        <h2 className="section-title mt-4">Un audit, un rapport clair, un plan d'action</h2>
+        <p className="mt-4 text-lg text-ink/60">
+          De la prise de rendez-vous à la remise du rapport, une méthode structurée.
         </p>
       </div>
 
-      <ol className="mt-12 grid gap-6 md:grid-cols-4">
+      <ol className="relative mt-12 grid gap-6 md:grid-cols-4">
+        {/* Ligne de liaison sur desktop */}
+        <div aria-hidden="true" className="absolute left-0 right-0 top-5 hidden h-px bg-gradient-to-r from-vert/0 via-vert/30 to-vert/0 md:block" />
         {DEROULE_ETAPES.map((etape, i) => (
-          <Reveal as="li" key={etape.titre} delay={i * 90} className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-vert-50 text-lg font-bold text-vert-700">
+          <Reveal as="li" key={etape.titre} delay={i * 90} className="relative rounded-2xl border border-ink/8 bg-white p-6 card-hover">
+            <span className="relative z-10 grid h-10 w-10 place-items-center rounded-full bg-vert text-base font-bold text-white shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]">
               {i + 1}
             </span>
-            <h3 className="mt-4 font-semibold text-ink">{etape.titre}</h3>
-            <p className="mt-2 text-sm text-ink/65">{etape.texte}</p>
+            <h3 className="mt-5 font-semibold tracking-tight text-ink">{etape.titre}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink/60">{etape.texte}</p>
           </Reveal>
         ))}
       </ol>

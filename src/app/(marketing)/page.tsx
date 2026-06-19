@@ -1,6 +1,10 @@
 import { Hero } from '@/components/marketing/Hero';
+import { TrustBar } from '@/components/marketing/TrustBar';
+import { ThemesAudit } from '@/components/marketing/ThemesAudit';
 import { Deroule } from '@/components/marketing/Deroule';
+import { PourQui } from '@/components/marketing/PourQui';
 import { Formules } from '@/components/marketing/Formules';
+import { Label } from '@/components/marketing/Label';
 import { Faq } from '@/components/marketing/Faq';
 import { RdvForm } from '@/components/marketing/RdvForm';
 import { JsonLd } from '@/components/site/JsonLd';
@@ -15,8 +19,12 @@ export default function HomePage() {
       <JsonLd data={faqSchema(FAQ_ITEMS)} />
 
       <Hero />
+      <TrustBar />
+      <ThemesAudit />
       <Deroule />
+      <PourQui />
       <Formules />
+      <Label />
 
       <section id="rdv" className="bg-ink py-20 scroll-mt-20">
         <div className="container-ah grid items-start gap-12 lg:grid-cols-2">

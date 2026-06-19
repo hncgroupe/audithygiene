@@ -12,23 +12,22 @@ export function Logo({ className = '', dark = false }: { className?: string; dar
     return (
       <Link
         href="/"
-        className={`inline-flex items-center gap-2.5 ${className}`}
+        className={`inline-flex items-center ${className}`}
         aria-label="audit hygiène, accueil"
       >
-        <Image src="/favicon.png" alt="" width={36} height={36} className="h-9 w-9 rounded-lg" />
-        <span className="text-lg font-bold tracking-tight text-white">audit hygiène</span>
+        <Image src="/logo-blanc.png" alt="audit hygiène" width={500} height={100} className="h-9 w-auto" />
       </Link>
     );
   }
   return (
     <Link href="/" className={`inline-flex items-center ${className}`} aria-label="audit hygiène, accueil">
       <Image
-        src="/logo.png"
+        src="/logo-wordmark.png"
         alt="audit hygiène"
         width={500}
         height={100}
         priority
-        className="h-9 w-auto"
+        className="h-[34px] w-auto"
       />
     </Link>
   );

@@ -32,7 +32,17 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-poppins)', 'Poppins', 'system-ui', 'sans-serif'],
+        // Police Apple (San Francisco) : SF Pro sur Apple, fallback propre ailleurs.
+        sans: [
+          'var(--font-stripe)',
+          '"Helvetica Neue"',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+      },
+      letterSpacing: {
+        tightest: '-0.03em',
       },
       boxShadow: {
         soft: '0 4px 24px -8px rgba(12, 27, 23, 0.12)',

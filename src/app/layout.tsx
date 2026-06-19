@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Poppins } from 'next/font/google';
+import { Hanken_Grotesk } from 'next/font/google';
 import '@/styles/globals.css';
 
-const poppins = Poppins({
+// Style Stripe : grotesk propre, identique sur tous les appareils (une seule webfont).
+const display = Hanken_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
   display: 'swap',
+  variable: '--font-stripe',
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={poppins.variable}>
+    <html lang="fr" className={display.variable}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );
