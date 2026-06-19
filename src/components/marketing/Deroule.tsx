@@ -1,4 +1,5 @@
 import { DEROULE_ETAPES } from '@/lib/content';
+import { Reveal } from '@/components/site/Reveal';
 
 export function Deroule() {
   return (
@@ -15,13 +16,13 @@ export function Deroule() {
 
       <ol className="mt-12 grid gap-6 md:grid-cols-4">
         {DEROULE_ETAPES.map((etape, i) => (
-          <li key={etape.titre} className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+          <Reveal as="li" key={etape.titre} delay={i * 90} className="rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-vert-50 text-lg font-bold text-vert-700">
               {i + 1}
             </span>
             <h3 className="mt-4 font-semibold text-ink">{etape.titre}</h3>
             <p className="mt-2 text-sm text-ink/65">{etape.texte}</p>
-          </li>
+          </Reveal>
         ))}
       </ol>
     </section>

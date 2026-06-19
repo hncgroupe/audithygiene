@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { FORMULES } from '@/lib/constants';
+import { Reveal } from '@/components/site/Reveal';
 
 export function Formules() {
   return (
@@ -17,9 +18,11 @@ export function Formules() {
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {FORMULES.map((f) => (
-            <div
+          {FORMULES.map((f, i) => (
+            <Reveal
+              as="div"
               key={f.id}
+              delay={i * 90}
               className={`relative flex flex-col rounded-2xl border bg-white p-7 shadow-card ${
                 f.populaire ? 'border-vert ring-2 ring-vert/30' : 'border-ink/10'
               }`}
@@ -50,7 +53,7 @@ export function Formules() {
               >
                 Réserver
               </Link>
-            </div>
+            </Reveal>
           ))}
         </div>
         <p className="mt-6 text-sm text-gris">

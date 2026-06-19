@@ -45,3 +45,8 @@ coverage/
 
 # OS
 Thumbs.db
+
+# Playwright / captures locales
+.playwright-mcp/
+/home*.png
+.env
