@@ -365,9 +365,10 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Avancer normalement : un constat choisi (le clic remplit la note)
+  // Avancer normalement : un constat choisi + au moins une photo (le clic remplit la note)
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
-  const canAdvance = !current || hasConstat;
+  const hasPhoto = !!current && current.photos.length > 0;
+  const canAdvance = !current || (hasConstat && hasPhoto);
 
   // Appui long sur « Suivant » : force le passage même si incomplet (~4 s)
   const HOLD_MS = 4000;
