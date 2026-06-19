@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="mt-24 border-t border-ink/10 bg-ink text-white/80">
       <div className="container-ah grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-1">
-          <Logo className="[&_*]:!text-white" />
+          <Logo dark />
           <p className="mt-4 text-sm text-white/60">
             Audit hygiène & HACCP pour restaurants et CHR en Île-de-France.
           </p>
