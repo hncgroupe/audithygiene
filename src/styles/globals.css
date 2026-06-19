@@ -6,8 +6,9 @@
   --vert: #10b981;
   --ink: #0c1b17;
   --gris: #6b7d77;
-  /* Style Stripe : une seule grotesk webfont, identique sur tous les appareils. Jamais de serif. */
-  --font-app: var(--font-stripe), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Police système Apple (San Francisco) sur Apple, équivalents propres ailleurs. Jamais de serif. */
+  --font-app: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI',
+    'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 html {

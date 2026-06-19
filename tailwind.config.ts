@@ -34,7 +34,11 @@ const config: Config = {
       fontFamily: {
         // Police Apple (San Francisco) : SF Pro sur Apple, fallback propre ailleurs.
         sans: [
-          'var(--font-stripe)',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          '"Segoe UI"',
           '"Helvetica Neue"',
           'Helvetica',
           'Arial',

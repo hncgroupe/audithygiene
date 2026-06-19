@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { calculerNotation, type Conformite } from '@/lib/notation';
+import { Logo } from '@/components/site/Logo';
 import { enqueuePhoto, removePhoto, pendingForAudit } from '@/lib/photo-queue';
 
 export interface WizardConstat {
@@ -91,6 +91,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const [finishing, setFinishing] = useState(false);
   const [done, setDone] = useState(statutInitial === 'TERMINE');
   const [online, setOnline] = useState(true);
+  const [infoOpen, setInfoOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const syncing = useRef(false);
@@ -152,9 +153,42 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
+  /** Upload d'une photo (direct ou depuis la file). Marque ✓ en cas de succès. */
+  const uploadOne = useCallback(
+    async (localId: string, code: string, blob: Blob, type: string) => {
+      const fd = new FormData();
+      fd.append('file', blob, `${localId}.${(type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')}`);
+      fd.append('code', code);
+      try {
+        const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        await removePhoto(localId);
+        setItems((prev) =>
+          prev.map((i) =>
+            i.code === code
+              ? {
+                  ...i,
+                  photos: i.photos.map((p) =>
+                    p.localId === localId
+                      ? { path: data.path, url: data.url, status: 'done' as const }
+                      : p
+                  ),
+                }
+              : i
+          )
+        );
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [auditId]
+  );
+
   /**
-   * Moteur de sync : vide la file IndexedDB. Tolérant aux pannes, idempotent,
-   * relancé à l'ouverture, au retour du réseau et toutes les 20 s.
+   * Moteur de sync : vide la file IndexedDB (photos prises hors-ligne ou dont
+   * l'upload direct a échoué). Relancé à l'ouverture, au retour du réseau et toutes les 20 s.
    */
   const syncQueue = useCallback(async () => {
     if (syncing.current) return;
@@ -163,36 +197,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     try {
       const pending = await pendingForAudit(auditId);
       for (const rec of pending) {
-        const fd = new FormData();
-        fd.append('file', rec.blob, `${rec.localId}.${(rec.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg')}`);
-        fd.append('code', rec.code);
-        try {
-          const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
-          if (!res.ok) throw new Error();
-          const data = await res.json();
-          await removePhoto(rec.localId);
-          setItems((prev) =>
-            prev.map((i) =>
-              i.code === rec.code
-                ? {
-                    ...i,
-                    photos: i.photos.map((p) =>
-                      p.localId === rec.localId
-                        ? { path: data.path, url: data.url, status: 'done' as const }
-                        : p
-                    ),
-                  }
-                : i
-            )
-          );
-        } catch {
-          /* échec (hors-ligne / serveur) : la photo reste en file, retry plus tard */
-        }
+        await uploadOne(rec.localId, rec.code, rec.blob, rec.type);
       }
     } finally {
       syncing.current = false;
     }
-  }, [auditId]);
+  }, [auditId, uploadOne]);
 
   // Réhydratation + moteur de sync : récupère les photos en file (reload/hors-ligne),
   // suit l'état réseau et relance la sync au retour de connexion et toutes les 20 s.
@@ -254,7 +264,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     patchItem(current.code, { conformite: c.conformite, commentaire: c.label });
   };
 
-  // Sauvegarde instantanée (locale) puis tentative d'upload.
+  // Enregistrement immédiat : aperçu instant, persistance locale, puis upload direct.
   const onUpload = async (files: FileList | null) => {
     if (!files || !current) return;
     setUploading(true);
@@ -265,9 +275,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const objectUrl = URL.createObjectURL(file);
-      // 1. Persistance locale immédiate (survit reload / hors-ligne)
-      await enqueuePhoto({ localId, auditId, code, blob: file, type: file.type, createdAt: Date.now() });
-      // 2. Aperçu instantané
+      // 1. Aperçu instantané
       setItems((prev) =>
         prev.map((i) =>
           i.code === code
@@ -275,11 +283,14 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             : i
         )
       );
+      // 2. Persistance locale (secours hors-ligne, survit reload)
+      await enqueuePhoto({ localId, auditId, code, blob: file, type: file.type, createdAt: Date.now() });
+      // 3. Upload direct immédiat ; si échec (hors-ligne), la file prendra le relais
+      const ok = await uploadOne(localId, code, file, file.type);
+      if (!ok) syncQueue();
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = '';
-    // 3. Upload en arrière-plan
-    syncQueue();
   };
 
   const onDeletePhoto = async (photo: WizardPhoto) => {
@@ -336,41 +347,53 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       ? current.constats.find((c) => c.conformite === current.conformite)
       : null;
 
+  // Enregistrer et reprendre plus tard (l'audit reste EN_COURS, déjà sauvegardé)
+  const quitter = async () => {
+    if (timer.current) clearTimeout(timer.current);
+    await persist(items);
+    router.push('/app/audits');
+  };
+
+  // Marquer la question sans objet (non applicable dans cet établissement) et avancer
+  const sansObjet = () => {
+    if (!current) return;
+    const next = items.map((i) =>
+      i.code === current.code
+        ? { ...i, conformite: 'NON_APPLICABLE' as Conformite, commentaire: i.commentaire?.trim() || 'Sans objet' }
+        : i
+    );
+    setItems(next);
+    if (timer.current) clearTimeout(timer.current);
+    persist(next);
+    setStep((s) => Math.min(total, s + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Conditions pour avancer : constat + note + photo (sauf "sans objet")
+  const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
+  const hasNote = !!current?.commentaire?.trim();
+  const hasPhoto = !!current && current.photos.length > 0;
+  const isNA = current?.conformite === 'NON_APPLICABLE';
+  const canAdvance = !current || isNA || (hasConstat && hasNote && hasPhoto);
+  const manque = [
+    !hasConstat && 'constat',
+    !hasNote && 'note',
+    !hasPhoto && 'photo',
+  ].filter(Boolean) as string[];
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
-      {/* En-tête de pilotage (épinglé) */}
-      <div className="shrink-0 border-b border-ink/10 bg-white/95 backdrop-blur">
-        <div className="container-ah flex items-center gap-3 py-2.5">
-          <Link href="/app/audits" className="text-sm text-gris hover:text-ink" aria-label="Retour">
-            ←
-          </Link>
-          <ScoreRing score={notation.scoreGlobal} evalues={evalues} />
-          <div className="min-w-0 flex-1 text-center sm:text-left">
-            <div className="truncate font-semibold text-ink">{etablissement.nom}</div>
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gris sm:justify-start">
-              <span className="tabular-nums">
-                {isRecap ? 'Récapitulatif' : `Point ${step + 1}/${total}`}
-              </span>
-              {notation.nbCasCritiques > 0 && (
-                <span className="rounded-full bg-red-50 px-2 py-0.5 font-semibold text-red-700">
-                  {notation.nbCasCritiques} critique{notation.nbCasCritiques > 1 ? 's' : ''}
-                </span>
-              )}
-              {saveLabel && (
-                <span className={save === 'error' ? 'text-red-600' : save === 'saved' ? 'text-vert-700' : ''}>
-                  {saveLabel}
-                </span>
-              )}
-              {!online && (
-                <span className="rounded-full bg-ink px-2 py-0.5 font-semibold text-white">Hors-ligne</span>
-              )}
-              {pendingCount > 0 && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-800">
-                  ⏳ {pendingCount} photo{pendingCount > 1 ? 's' : ''} en attente
-                </span>
-              )}
-            </div>
-          </div>
+      {/* En-tête minimal : logo seul (épinglé) */}
+      <div className="shrink-0 border-b border-ink/10 bg-white">
+        <div className="container-ah relative flex h-12 items-center justify-center">
+          <button
+            onClick={quitter}
+            className="absolute left-0 flex items-center text-xl leading-none text-gris hover:text-ink"
+            aria-label="Enregistrer et quitter"
+          >
+            ‹
+          </button>
+          <Logo className="shrink-0" />
         </div>
         <div className="h-1 w-full bg-ink/5">
           <div
@@ -385,38 +408,61 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         <div className="container-ah py-4">
         {!isRecap && current && (
           <div className="mx-auto max-w-2xl">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wide text-vert-700 sm:justify-start">
+            {/* Repère compact : thème · point · score */}
+            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gris">
               <span className={`h-2 w-2 rounded-full ${CONF_STYLE[current.conformite].dot}`} />
-              {current.theme}
-              <span className="rounded-md bg-ink/5 px-2 py-0.5 font-medium normal-case tracking-normal text-gris sm:ml-auto">
-                {current.code}
+              <span className="uppercase tracking-wide text-vert-700">{current.theme}</span>
+              <span>·</span>
+              <span className="tabular-nums">
+                {step + 1}/{total}
+              </span>
+              <span>·</span>
+              <span
+                className="tabular-nums font-semibold"
+                style={{ color: evalues === 0 ? undefined : bandColor(notation.scoreGlobal) }}
+              >
+                {evalues === 0 ? '-' : Math.round(notation.scoreGlobal)}/100
               </span>
             </div>
 
-            <h1 className="mt-2 text-center text-xl font-bold tracking-tight text-ink sm:text-left">
+            <h1 className="mt-1.5 text-center text-lg font-bold leading-tight tracking-tight text-ink">
               {current.intitule}
             </h1>
-            <p className="mt-1.5 text-center text-[15px] leading-relaxed text-ink/60 sm:text-left">
-              {current.explication}
-            </p>
 
-            {/* Encart à lire au client présent */}
-            <div className="mt-3 rounded-xl border border-vert-200 bg-vert-50/70 p-3 text-center sm:text-left">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-vert-800 sm:justify-start">
-                À expliquer au client
-              </div>
-              <p className="mt-1 text-sm leading-relaxed text-ink/80">{current.pedagogie}</p>
+            {/* Aide repliée par défaut : explication + à expliquer au client */}
+            <div className="mt-1.5 text-center">
+              <button
+                type="button"
+                onClick={() => setInfoOpen((v) => !v)}
+                className="inline-flex items-center gap-1 text-[12px] font-medium text-vert-700"
+              >
+                {infoOpen ? 'Masquer l’aide' : 'Aide & à expliquer au client'}
+                <span className="text-[9px]">{infoOpen ? '▲' : '▼'}</span>
+              </button>
             </div>
-
-            {/* Photos */}
-            <div className="mt-5">
-              <div className="mb-2 flex flex-col items-center gap-0.5 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm font-semibold text-ink">
-                  Photos{current.photoConseillee ? ' (conseillé)' : ''}
-                </span>
-                <span className="text-xs text-gris">{current.photos.length} ajoutée(s)</span>
+            {infoOpen && (
+              <div className="mt-2 space-y-2 rounded-xl border border-ink/10 bg-white p-3 text-left">
+                <p className="text-[13px] leading-snug text-ink/70">{current.explication}</p>
+                <div className="rounded-lg border border-vert-200 bg-vert-50/70 p-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-vert-800">
+                    À expliquer au client
+                  </div>
+                  <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{current.pedagogie}</p>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            )}
+
+            {/* 1. Photo (obligatoire) */}
+            <div className="mt-4">
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="btn-primary w-full disabled:opacity-60"
+              >
+                {uploading ? 'Ajout…' : current.photos.length > 0 ? 'Ajouter une photo' : '1 · Prendre une photo'}
+              </button>
+              {current.photos.length > 0 && (
+                <div className="mt-2 grid grid-cols-5 gap-2 sm:grid-cols-6">
                 {current.photos.map((p, idx) => (
                   <div
                     key={p.localId ?? p.path ?? idx}
@@ -447,14 +493,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     </button>
                   </div>
                 ))}
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  disabled={uploading}
-                  className="grid aspect-square place-items-center rounded-xl border-2 border-dashed border-ink/15 text-sm font-medium text-gris transition-colors hover:border-vert hover:text-vert-700 disabled:opacity-50"
-                >
-                  {uploading ? '…' : '+ Photo'}
-                </button>
-              </div>
+                </div>
+              )}
               <input
                 ref={fileRef}
                 type="file"
@@ -466,69 +506,63 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               />
             </div>
 
-            {/* Constats pré-remplis */}
-            <div className="mt-4">
-              <span className="block text-center text-sm font-semibold text-ink sm:text-left">Constat</span>
-              <div className="mt-2 space-y-2">
-                {current.constats.map((c) => {
-                  const on = current.conformite === c.conformite && current.commentaire === c.label;
+            {/* Constat : 3 niveaux, un clic pose la conformité et remplit la note */}
+            <div className="mt-3">
+              <span className="mb-1.5 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
+                2 · Constat
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
+                  const c = current.constats.find((x) => x.conformite === lvl);
+                  const on = current.conformite === lvl;
+                  const label = { CONFORME: 'Conforme', NC_MINEURE: 'Mineure', NC_MAJEURE: 'Critique' }[lvl];
                   return (
                     <button
-                      key={c.label}
-                      onClick={() => onPickConstat(c)}
-                      className={`flex w-full items-center justify-center gap-3 rounded-xl border px-4 py-3 text-center text-sm font-medium transition-all active:scale-[0.99] sm:justify-start sm:text-left ${
+                      key={lvl}
+                      disabled={!c}
+                      onClick={() => c && onPickConstat(c)}
+                      className={`rounded-xl border px-2 py-2.5 text-[13px] font-semibold transition-all active:scale-[0.98] disabled:opacity-40 ${
                         on
-                          ? `border-transparent ${CONF_STYLE[c.conformite].chip}`
+                          ? `border-transparent ${CONF_STYLE[lvl].chip}`
                           : 'border-ink/10 bg-white text-ink hover:border-ink/25'
                       }`}
                     >
-                      <span
-                        className={`h-2.5 w-2.5 shrink-0 rounded-full ${on ? 'bg-white/80' : CONF_STYLE[c.conformite].dot}`}
-                      />
-                      {c.label}
+                      {label}
                     </button>
                   );
                 })}
-                <button
-                  onClick={() => current && patchItem(current.code, { conformite: 'NON_APPLICABLE', commentaire: 'Non applicable' })}
-                  className={`block w-full text-center text-xs font-medium sm:w-auto ${
-                    current.conformite === 'NON_APPLICABLE' ? 'text-ink' : 'text-gris hover:text-ink'
-                  }`}
-                >
-                  Non applicable ici
-                </button>
               </div>
             </div>
 
             {/* Synthèse NC : pourquoi + correctif */}
             {activeNc && (
-              <div className="mt-4 overflow-hidden rounded-xl border border-red-200">
-                <div className="bg-red-50 px-4 py-3">
-                  <div className="text-xs font-bold uppercase tracking-wide text-red-700">
+              <div className="mt-2.5 overflow-hidden rounded-xl border border-red-200 text-left">
+                <div className="bg-red-50 px-3 py-2">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
                     {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
                   </div>
-                  <p className="mt-1 text-sm text-ink/80">{activeNc.pourquoi}</p>
+                  <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.pourquoi}</p>
                 </div>
                 {activeNc.correctif && (
-                  <div className="border-t border-red-100 bg-white px-4 py-3">
-                    <div className="text-xs font-bold uppercase tracking-wide text-vert-700">Correctif</div>
-                    <p className="mt-1 text-sm text-ink/80">{activeNc.correctif}</p>
+                  <div className="border-t border-red-100 bg-white px-3 py-2">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-vert-700">Correctif</div>
+                    <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.correctif}</p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Notes */}
-            <div className="mt-5">
-              <label className="mb-1.5 block text-center text-sm font-semibold text-ink sm:text-left">
-                Notes de l’auditeur
+            {/* Notes (obligatoire) */}
+            <div className="mt-3">
+              <label className="mb-1 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
+                3 · Note
               </label>
               <textarea
                 value={current.commentaire ?? ''}
                 onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
                 rows={2}
-                placeholder="Précisez le constat (ou choisissez un bouton ci-dessus)…"
-                className="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+                placeholder="Choisissez un constat ci-dessus ou saisissez la note…"
+                className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
               />
             </div>
 
@@ -600,22 +634,40 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
       {/* Barre d'action épinglée en bas : jamais besoin de scroller pour avancer */}
       <div className="shrink-0 border-t border-ink/10 bg-white">
-        <div className="container-ah flex items-center gap-3 py-3">
+        <div className="container-ah py-2.5">
           {!isRecap ? (
             <>
-              <button
-                onClick={() => goto(step - 1)}
-                disabled={step === 0}
-                className="btn-ghost flex-1 disabled:opacity-40"
-              >
-                Précédent
-              </button>
-              <button onClick={() => goto(step + 1)} className="btn-primary flex-1">
-                {step === total - 1 ? 'Voir le récap' : 'Suivant'}
-              </button>
+              {!canAdvance && manque.length > 0 && (
+                <p className="mb-2 text-center text-[11px] text-gris">
+                  Requis pour continuer : {manque.join(' · ')}
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={sansObjet}
+                  className="shrink-0 rounded-full border border-ink/15 px-3 py-2.5 text-[13px] font-medium text-gris hover:border-ink/30 hover:text-ink"
+                  title="Question non applicable dans cet établissement"
+                >
+                  Sans objet
+                </button>
+                <button
+                  onClick={() => goto(step - 1)}
+                  disabled={step === 0}
+                  className="btn-ghost flex-1 disabled:opacity-40"
+                >
+                  Précédent
+                </button>
+                <button
+                  onClick={() => goto(step + 1)}
+                  disabled={!canAdvance}
+                  className="btn-primary flex-1 disabled:opacity-40"
+                >
+                  {step === total - 1 ? 'Récap' : 'Suivant'}
+                </button>
+              </div>
             </>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <button onClick={() => goto(total - 1)} className="btn-ghost flex-1">
                 Revenir
               </button>
@@ -628,7 +680,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   {finishing ? 'Finalisation…' : 'Terminer'}
                 </button>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
