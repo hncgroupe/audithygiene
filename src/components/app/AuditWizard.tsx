@@ -92,7 +92,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const [done, setDone] = useState(statutInitial === 'TERMINE');
   const [online, setOnline] = useState(true);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [holdingNext, setHoldingNext] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const syncing = useRef(false);
 
@@ -151,7 +153,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     });
   };
 
-  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      if (holdTimer.current) clearTimeout(holdTimer.current);
+    },
+    []
+  );
 
   /** Upload d'une photo (direct ou depuis la file). Marque ✓ en cas de succès. */
   const uploadOne = useCallback(
@@ -357,32 +365,29 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Marquer la question sans objet (non applicable dans cet établissement) et avancer
-  const sansObjet = () => {
-    if (!current) return;
-    const next = items.map((i) =>
-      i.code === current.code
-        ? { ...i, conformite: 'NON_APPLICABLE' as Conformite, commentaire: i.commentaire?.trim() || 'Sans objet' }
-        : i
-    );
-    setItems(next);
-    if (timer.current) clearTimeout(timer.current);
-    persist(next);
-    setStep((s) => Math.min(total, s + 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Conditions pour avancer : constat + note + photo (sauf "sans objet")
+  // Conditions pour avancer normalement : constat + note + photo
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
   const hasNote = !!current?.commentaire?.trim();
   const hasPhoto = !!current && current.photos.length > 0;
-  const isNA = current?.conformite === 'NON_APPLICABLE';
-  const canAdvance = !current || isNA || (hasConstat && hasNote && hasPhoto);
-  const manque = [
-    !hasConstat && 'constat',
-    !hasNote && 'note',
-    !hasPhoto && 'photo',
-  ].filter(Boolean) as string[];
+  const canAdvance = !current || (hasConstat && hasNote && hasPhoto);
+
+  // Appui long sur « Suivant » : force le passage même si incomplet (~4 s)
+  const HOLD_MS = 4000;
+  const onNext = () => {
+    if (canAdvance) goto(step + 1);
+  };
+  const startHold = () => {
+    if (canAdvance) return;
+    setHoldingNext(true);
+    holdTimer.current = setTimeout(() => {
+      setHoldingNext(false);
+      goto(step + 1);
+    }, HOLD_MS);
+  };
+  const cancelHold = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    setHoldingNext(false);
+  };
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
@@ -652,19 +657,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     ? 'Ajouter une photo'
                     : 'Prendre une photo'}
               </button>
-              {!canAdvance && manque.length > 0 && (
-                <p className="mb-2 text-center text-[11px] text-gris">
-                  Requis pour continuer : {manque.join(' · ')}
-                </p>
-              )}
               <div className="flex items-center gap-2">
-                <button
-                  onClick={sansObjet}
-                  className="shrink-0 rounded-full border border-ink/15 px-3 py-2.5 text-[13px] font-medium text-gris hover:border-ink/30 hover:text-ink"
-                  title="Question non applicable dans cet établissement"
-                >
-                  Sans objet
-                </button>
                 <button
                   onClick={() => goto(step - 1)}
                   disabled={step === 0}
@@ -673,13 +666,30 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   Précédent
                 </button>
                 <button
-                  onClick={() => goto(step + 1)}
-                  disabled={!canAdvance}
-                  className="rounded-full bg-ink px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-40 flex-1"
+                  onClick={onNext}
+                  onPointerDown={startHold}
+                  onPointerUp={cancelHold}
+                  onPointerLeave={cancelHold}
+                  onPointerCancel={cancelHold}
+                  className={`relative flex-1 select-none overflow-hidden rounded-full bg-ink px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] ${
+                    canAdvance ? '' : 'opacity-80'
+                  }`}
                 >
-                  {step === total - 1 ? 'Récap' : 'Suivant'}
+                  <span
+                    className="absolute inset-y-0 left-0 bg-vert"
+                    style={{
+                      width: holdingNext ? '100%' : '0%',
+                      transition: holdingNext ? `width ${HOLD_MS}ms linear` : 'width 150ms ease-out',
+                    }}
+                  />
+                  <span className="relative">{step === total - 1 ? 'Récap' : 'Suivant'}</span>
                 </button>
               </div>
+              {!canAdvance && (
+                <p className="mt-1.5 text-center text-[11px] text-gris">
+                  Maintenez « Suivant » pour passer ce point
+                </p>
+              )}
             </>
           ) : (
             <div className="flex items-center gap-3">
