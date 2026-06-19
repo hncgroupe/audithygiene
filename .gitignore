@@ -50,3 +50,5 @@ Thumbs.db
 .playwright-mcp/
 /home*.png
 .env
+
+.vercel

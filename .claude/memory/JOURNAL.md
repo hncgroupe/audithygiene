@@ -31,4 +31,12 @@ Journal chronologique des jalons. Entrée datée après chaque étape (voir rule
 - **UX** : composant `Reveal` (scroll, reduced-motion, filet anti-blanc), jauge de score animée (signature), copy humanisée. Rendu validé par capture Playwright.
 - **SEO/GEO** : OG image générée, manifest, favicon (en plus de schema.org/sitemap/robots/llms.txt).
 - **Vercel CLI** installé (disque saturé nettoyé, 4,4 Go libérés).
-- ⏸️ Reste : `vercel login` (action user, interactif) pour déploiement preview ; formules/prix réels ; validation grille.
+- ⏸️ Reste : formules/prix réels ; validation grille.
+
+## 2026-06-19 — Déploiement Vercel LIVE
+- Compte : **hncgroupe** (équipe `hncgroupes-projects`). Projet `audithygiene`. (Projet vide créé par erreur sur l'ancienne équipe bac-graisse, supprimé/abandonné.)
+- 15 variables d'env poussées (production + preview + development).
+- Déploiement READY : **https://audithygiene-gamma.vercel.app**
+- Smoke test : home, /zones, /zones/paris, llms.txt, sitemap.xml, opengraph-image -> tous 200.
+- **Tunnel lead testé en PRODUCTION réelle** : POST live -> écriture DB confirmée + Telegram + Brevo. Nettoyé.
+- ⏸️ Domaine `audithygiene.fr` (Cloudflare) PAS encore connecté = go-live public reste à valider. Le site n'est public que sur l'URL vercel.app pour l'instant.
