@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { calculerNotation, type Conformite } from '@/lib/notation';
 import { Logo } from '@/components/site/Logo';
-import { enqueuePhoto, removePhoto, pendingForAudit } from '@/lib/photo-queue';
+import { enqueuePhoto, removePhoto, pendingForAudit, compressImage } from '@/lib/photo-queue';
 
 export interface WizardConstat {
   label: string;
@@ -274,8 +274,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      // 1. Aperçu instantané (sur l'original, immédiat)
       const objectUrl = URL.createObjectURL(file);
-      // 1. Aperçu instantané
       setItems((prev) =>
         prev.map((i) =>
           i.code === code
@@ -283,10 +283,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             : i
         )
       );
-      // 2. Persistance locale (secours hors-ligne, survit reload)
-      await enqueuePhoto({ localId, auditId, code, blob: file, type: file.type, createdAt: Date.now() });
-      // 3. Upload direct immédiat ; si échec (hors-ligne), la file prendra le relais
-      const ok = await uploadOne(localId, code, file, file.type);
+      // 2. Compression (allège ~10-20×, upload bien plus rapide)
+      const blob = await compressImage(file);
+      const type = blob.type || 'image/jpeg';
+      // 3. Persistance locale (secours hors-ligne, survit reload)
+      await enqueuePhoto({ localId, auditId, code, blob, type, createdAt: Date.now() });
+      // 4. Upload direct immédiat ; si échec (hors-ligne), la file prend le relais
+      const ok = await uploadOne(localId, code, blob, type);
       if (!ok) syncQueue();
     }
     setUploading(false);
@@ -452,17 +455,17 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             )}
 
-            {/* 1. Photo (obligatoire) */}
+            {/* 1. Photo (le bouton de capture est en bas, pleine largeur) */}
             <div className="mt-4">
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="btn-primary w-full disabled:opacity-60"
-              >
-                {uploading ? 'Ajout…' : current.photos.length > 0 ? 'Ajouter une photo' : '1 · Prendre une photo'}
-              </button>
-              {current.photos.length > 0 && (
-                <div className="mt-2 grid grid-cols-5 gap-2 sm:grid-cols-6">
+              <span className="mb-1.5 block text-center text-xs font-semibold uppercase tracking-wide text-ink/60">
+                1 · Photo
+              </span>
+              {current.photos.length === 0 ? (
+                <p className="text-center text-[12px] text-gris">
+                  Aucune photo. Bouton « Prendre une photo » en bas.
+                </p>
+              ) : (
+                <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
                 {current.photos.map((p, idx) => (
                   <div
                     key={p.localId ?? p.path ?? idx}
@@ -637,6 +640,18 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         <div className="container-ah py-2.5">
           {!isRecap ? (
             <>
+              {/* Gros bouton photo, pleine largeur, juste au-dessus de la navigation */}
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
+              >
+                {uploading
+                  ? 'Ajout…'
+                  : current?.photos.length
+                    ? 'Ajouter une photo'
+                    : 'Prendre une photo'}
+              </button>
               {!canAdvance && manque.length > 0 && (
                 <p className="mb-2 text-center text-[11px] text-gris">
                   Requis pour continuer : {manque.join(' · ')}
@@ -660,7 +675,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 <button
                   onClick={() => goto(step + 1)}
                   disabled={!canAdvance}
-                  className="btn-primary flex-1 disabled:opacity-40"
+                  className="rounded-full bg-ink px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-40 flex-1"
                 >
                   {step === total - 1 ? 'Récap' : 'Suivant'}
                 </button>

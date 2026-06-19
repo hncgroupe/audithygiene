@@ -25,6 +25,38 @@ function hasIDB(): boolean {
   return typeof window !== 'undefined' && 'indexedDB' in window;
 }
 
+/**
+ * Compresse/redimensionne une photo côté client avant upload (gros gain de vitesse :
+ * une photo de smartphone passe de plusieurs Mo à ~200-500 Ko). Respecte l'orientation EXIF.
+ * Renvoie le fichier original si la compression échoue ou si ce n'est pas une image.
+ */
+export async function compressImage(file: Blob, maxDim = 1600, quality = 0.7): Promise<Blob> {
+  if (typeof document === 'undefined' || !file.type.startsWith('image/')) return file;
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      bitmap.close?.();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    );
+    // On ne garde la version compressée que si elle est réellement plus légère.
+    return blob && blob.size < file.size ? blob : file;
+  } catch {
+    return file;
+  }
+}
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
