@@ -8,13 +8,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { PrismaClient } from '@prisma/client';
 
-const [, , emailArg, passwordArg, nameArg] = process.argv;
+const [, , emailArg, passwordArg, nameArg, roleArg] = process.argv;
 const email = (emailArg ?? '').trim().toLowerCase();
 const password = passwordArg ?? '';
 const name = nameArg ?? 'Auditeur';
+const role = roleArg === 'AUDITEUR' ? 'AUDITEUR' : 'ADMIN';
 
 if (!email || !password) {
-  console.error('Usage : npx tsx scripts/create-admin.ts <email> <password> "<Nom>"');
+  console.error('Usage : npx tsx scripts/create-admin.ts <email> <password> "<Nom>" [ADMIN|AUDITEUR]');
   process.exit(1);
 }
 
@@ -56,7 +57,7 @@ async function main() {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name, role: 'ADMIN' },
+      user_metadata: { name, role },
     });
     if (error) throw error;
     authId = data.user.id;
@@ -65,13 +66,13 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email },
-    update: { name, role: 'ADMIN', active: true, authId },
-    create: { email, name, role: 'ADMIN', active: true, authId },
+    update: { name, role, active: true, authId },
+    create: { email, name, role, active: true, authId },
   });
   console.log(`[create-admin] Record Prisma synchronisé : ${user.id} (${user.role})`);
 
   await prisma.$disconnect();
-  console.log('\n✅ Compte ADMIN prêt.');
+  console.log(`\n✅ Compte ${role} prêt.`);
   console.log(`   Email    : ${email}`);
   console.log(`   Mot de passe : ${password}`);
 }
