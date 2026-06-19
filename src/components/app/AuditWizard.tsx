@@ -345,9 +345,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             ←
           </Link>
           <ScoreRing score={notation.scoreGlobal} evalues={evalues} />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 text-center sm:text-left">
             <div className="truncate font-semibold text-ink">{etablissement.nom}</div>
-            <div className="flex items-center gap-2 text-xs text-gris">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gris sm:justify-start">
               <span className="tabular-nums">
                 {isRecap ? 'Récapitulatif' : `Point ${step + 1}/${total}`}
               </span>
@@ -383,20 +383,24 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       <div className="container-ah py-6">
         {!isRecap && current && (
           <div className="mx-auto max-w-2xl">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-vert-700">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wide text-vert-700 sm:justify-start">
               <span className={`h-2 w-2 rounded-full ${CONF_STYLE[current.conformite].dot}`} />
               {current.theme}
-              <span className="ml-auto rounded-md bg-ink/5 px-2 py-0.5 font-medium normal-case tracking-normal text-gris">
+              <span className="rounded-md bg-ink/5 px-2 py-0.5 font-medium normal-case tracking-normal text-gris sm:ml-auto">
                 {current.code}
               </span>
             </div>
 
-            <h1 className="mt-2 text-xl font-bold tracking-tight text-ink">{current.intitule}</h1>
-            <p className="mt-1.5 text-[15px] leading-relaxed text-ink/60">{current.explication}</p>
+            <h1 className="mt-2 text-center text-xl font-bold tracking-tight text-ink sm:text-left">
+              {current.intitule}
+            </h1>
+            <p className="mt-1.5 text-center text-[15px] leading-relaxed text-ink/60 sm:text-left">
+              {current.explication}
+            </p>
 
             {/* Encart à lire au client présent */}
-            <div className="mt-4 rounded-xl border border-vert-200 bg-vert-50/70 p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-vert-800">
+            <div className="mt-4 rounded-xl border border-vert-200 bg-vert-50/70 p-4 text-center sm:text-left">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-vert-800 sm:justify-start">
                 À expliquer au client
               </div>
               <p className="mt-1 text-sm leading-relaxed text-ink/80">{current.pedagogie}</p>
@@ -404,7 +408,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
             {/* Photos */}
             <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex flex-col items-center gap-0.5 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-semibold text-ink">
                   Photos{current.photoConseillee ? ' (conseillé)' : ''}
                 </span>
@@ -462,7 +466,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
             {/* Constats pré-remplis */}
             <div className="mt-6">
-              <span className="text-sm font-semibold text-ink">Constat</span>
+              <span className="block text-center text-sm font-semibold text-ink sm:text-left">Constat</span>
               <div className="mt-2 space-y-2">
                 {current.constats.map((c) => {
                   const on = current.conformite === c.conformite && current.commentaire === c.label;
@@ -470,7 +474,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     <button
                       key={c.label}
                       onClick={() => onPickConstat(c)}
-                      className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-all active:scale-[0.99] ${
+                      className={`flex w-full items-center justify-center gap-3 rounded-xl border px-4 py-3 text-center text-sm font-medium transition-all active:scale-[0.99] sm:justify-start sm:text-left ${
                         on
                           ? `border-transparent ${CONF_STYLE[c.conformite].chip}`
                           : 'border-ink/10 bg-white text-ink hover:border-ink/25'
@@ -485,7 +489,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 })}
                 <button
                   onClick={() => current && patchItem(current.code, { conformite: 'NON_APPLICABLE', commentaire: 'Non applicable' })}
-                  className={`text-xs font-medium ${
+                  className={`block w-full text-center text-xs font-medium sm:w-auto ${
                     current.conformite === 'NON_APPLICABLE' ? 'text-ink' : 'text-gris hover:text-ink'
                   }`}
                 >
@@ -514,7 +518,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
             {/* Notes */}
             <div className="mt-5">
-              <label className="mb-1.5 block text-sm font-semibold text-ink">Notes de l’auditeur</label>
+              <label className="mb-1.5 block text-center text-sm font-semibold text-ink sm:text-left">
+                Notes de l’auditeur
+              </label>
               <textarea
                 value={current.commentaire ?? ''}
                 onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
@@ -529,11 +535,11 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               <button
                 onClick={() => goto(step - 1)}
                 disabled={step === 0}
-                className="btn-ghost disabled:opacity-40"
+                className="btn-ghost flex-1 disabled:opacity-40 sm:flex-none"
               >
                 Précédent
               </button>
-              <button onClick={() => goto(step + 1)} className="btn-primary">
+              <button onClick={() => goto(step + 1)} className="btn-primary flex-1 sm:flex-none">
                 {step === total - 1 ? 'Voir le récap' : 'Suivant'}
               </button>
             </div>
@@ -543,7 +549,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         {/* Récapitulatif */}
         {isRecap && (
           <div className="mx-auto max-w-2xl">
-            <div className="flex items-center gap-5 rounded-2xl border border-ink/10 bg-white p-6 shadow-card">
+            <div className="flex flex-col items-center gap-5 rounded-2xl border border-ink/10 bg-white p-6 text-center shadow-card sm:flex-row sm:text-left">
               <ScoreRing score={notation.scoreGlobal} evalues={evalues} size={88} />
               <div>
                 <div className="text-sm text-gris">Score global</div>
