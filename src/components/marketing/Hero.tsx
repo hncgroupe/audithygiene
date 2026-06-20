@@ -39,8 +39,8 @@ export function Hero() {
         <div className="relative animate-fade-up [animation-delay:120ms]">
           <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
             <Image
-              src="https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?auto=format&fit=crop&w=1200&q=80"
-              alt="Cuisine professionnelle d'un restaurant en service"
+              src="https://images.unsplash.com/photo-1759521296013-559479e2a891?auto=format&fit=crop&w=1200&q=80"
+              alt="Professionnel en tenue blanche contrôlant une cuisine de restaurant"
               width={1200}
               height={1400}
               priority
