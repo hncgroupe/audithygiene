@@ -44,6 +44,20 @@ export function Footer() {
         </div>
       </div>
 
+      {/* Certification Qualiopi (formulation officielle obligatoire) */}
+      <div className="border-t border-white/10">
+        <div className="container-ah flex flex-col items-start gap-3 py-6 sm:flex-row sm:items-center">
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-bold text-white">
+            <span className="grid h-5 w-5 place-items-center rounded bg-vert text-[11px] text-white">Q</span>
+            Qualiopi
+          </span>
+          <p className="text-xs text-white/60">
+            La certification qualité a été délivrée au titre de la catégorie : actions de formation.
+            {/* TODO : ajouter le logo officiel Qualiopi + le numéro de certificat. */}
+          </p>
+        </div>
+      </div>
+
       <div className="border-t border-white/10">
         <div className="container-ah flex flex-col gap-3 py-6 text-xs text-white/45 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} audit hygiène. Tous droits réservés.</p>

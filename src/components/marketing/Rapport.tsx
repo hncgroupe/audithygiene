@@ -33,7 +33,7 @@ export function Rapport() {
     <section id="rapport" className="container-ah py-24 scroll-mt-20">
       <div className="max-w-3xl">
         <h2 className="section-title">Le rapport qui dit quoi corriger</h2>
-        <p className="mt-4 text-lg text-ink/60">
+        <p className="mt-4 text-lg text-ink/80">
           À la fin de l'audit, vous ne repartez pas avec une impression, mais avec un document
           précis : point par point, du plus urgent au moins urgent.
         </p>
@@ -50,7 +50,7 @@ export function Rapport() {
               {i + 1}
             </span>
             <h3 className="mt-4 font-semibold tracking-tight text-ink">{c.titre}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-ink/60">{c.texte}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink/80">{c.texte}</p>
           </Reveal>
         ))}
       </div>

@@ -75,10 +75,13 @@ export async function POST(request: Request) {
   await notifyTelegram(
     formatLeadMessage({
       nom: data.nom,
+      email: data.email || null,
+      telephone: data.telephone || null,
       ville: data.ville || data.departement || null,
       typeEtablissement: data.typeEtablissement || null,
       besoin: data.besoin || null,
       formule: data.formule || null,
+      message: data.message || null,
     })
   ).catch(() => false);
 

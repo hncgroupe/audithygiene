@@ -33,8 +33,8 @@ export const DEROULE_ETAPES = [
     texte: "Vous décrivez votre établissement et votre besoin. On convient d'un créneau de visite.",
   },
   {
-    titre: 'Audit sur place',
-    texte: "Un auditeur contrôle l'ensemble des thèmes : chaîne du froid, traçabilité, hygiène, nettoyage, nuisibles, PMS…",
+    titre: 'Audit sur place, environ 2h',
+    texte: "En conditions réelles, sans interrompre votre service. L'auditeur contrôle chaque thème : froid, cuisson, traçabilité, hygiène, nettoyage, nuisibles, PMS, allergènes.",
   },
   {
     titre: 'Notation & cas critiques',

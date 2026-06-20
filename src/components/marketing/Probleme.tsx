@@ -24,10 +24,8 @@ export function Probleme() {
     <section className="border-y border-ink/8 bg-ink/[0.015]">
       <div className="container-ah py-24">
         <div className="max-w-3xl">
-          <h2 className="section-title">
-            Le contrôle d'hygiène fait peur. À raison.
-          </h2>
-          <p className="mt-4 text-lg text-ink/60">
+          <h2 className="section-title">Et si un contrôle tombait aujourd'hui ?</h2>
+          <p className="mt-4 text-lg text-ink/80">
             Personne ne vous prévient. Et les conséquences d'une non-conformité ne pardonnent pas.
             La seule vraie protection : avoir déjà tout vérifié, avant l'inspection.
           </p>
@@ -41,7 +39,7 @@ export function Probleme() {
               className="rounded-2xl border border-ink/8 bg-white p-6 card-hover"
             >
               <h3 className="font-semibold tracking-tight text-ink">{r.titre}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink/60">{r.texte}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink/80">{r.texte}</p>
             </Reveal>
           ))}
         </div>

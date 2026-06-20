@@ -37,18 +37,24 @@ export async function notifyTelegram(message: string): Promise<boolean> {
 /** Message formaté pour un nouveau lead. */
 export function formatLeadMessage(lead: {
   nom: string;
+  email?: string | null;
+  telephone?: string | null;
   ville?: string | null;
   typeEtablissement?: string | null;
   formule?: string | null;
   besoin?: string | null;
+  message?: string | null;
 }): string {
   return [
     '🟢 <b>Nouveau lead - audit hygiène</b>',
     `👤 ${lead.nom}`,
+    lead.email ? `✉️ ${lead.email}` : null,
+    lead.telephone ? `📞 ${lead.telephone}` : null,
     lead.ville ? `📍 ${lead.ville}` : null,
     lead.typeEtablissement ? `🍽️ ${lead.typeEtablissement}` : null,
     lead.besoin ? `⏱️ ${lead.besoin}` : null,
     lead.formule ? `📦 ${lead.formule}` : null,
+    lead.message ? `📝 ${lead.message}` : null,
   ]
     .filter(Boolean)
     .join('\n');

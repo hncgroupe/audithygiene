@@ -8,7 +8,7 @@ export function Faq() {
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
             Questions fréquentes
           </h2>
-          <p className="mt-4 text-ink/70">
+          <p className="mt-4 text-ink/80">
             Tout ce qu'il faut savoir sur l'audit hygiène et notre cadre d'intervention.
           </p>
         </div>
@@ -24,7 +24,7 @@ export function Faq() {
                     </svg>
                   </span>
                 </summary>
-                <dd className="mt-3 text-ink/70">{item.a}</dd>
+                <dd className="mt-3 text-ink/80">{item.a}</dd>
               </details>
             ))}
           </dl>

@@ -13,8 +13,8 @@ export function Label() {
     <section className="container-ah py-24">
       <div className="grid items-center gap-12 rounded-3xl border border-ink/8 bg-vert-50/50 p-8 sm:p-12 lg:grid-cols-2">
         <div>
-          <h2 className="section-title">Un label qui rassure vos clients</h2>
-          <p className="mt-4 text-lg text-ink/65">
+          <h2 className="section-title">Un label qui rassure</h2>
+          <p className="mt-4 text-lg text-ink/80">
             Une démarche volontaire et indépendante, pas une certification d'État. Un standard de
             qualité que vous choisissez d'afficher.
           </p>

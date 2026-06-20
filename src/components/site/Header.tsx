@@ -6,8 +6,8 @@ import { Logo } from './Logo';
 
 const NAV = [
   { href: '/#deroule', label: 'Comment ça marche' },
+  { href: '/#rapport', label: 'Le rapport' },
   { href: '/#formules', label: 'Formules' },
-  { href: '/zones', label: 'Zones' },
   { href: '/#faq', label: 'FAQ' },
 ];
 
@@ -25,7 +25,7 @@ export function Header() {
     <header
       className={`sticky top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'border-b border-ink/8 bg-white/85 backdrop-blur-md'
+          ? 'border-b border-ink/8 bg-white/90 backdrop-blur-md'
           : 'border-b border-transparent bg-transparent'
       }`}
     >
@@ -36,7 +36,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-ink/70 transition-colors hover:text-ink"
+              className="text-sm font-medium text-ink/80 transition-colors hover:text-ink"
             >
               {item.label}
             </Link>

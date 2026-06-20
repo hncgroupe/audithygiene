@@ -8,25 +8,9 @@ export function Formules() {
       <div className="container-ah">
         <div className="max-w-3xl">
           <h2 className="section-title">Choisissez votre formule</h2>
-          <p className="mt-4 text-lg text-ink/70">
+          <p className="mt-4 text-lg text-ink/80">
             Du diagnostic rapide à l'audit complet avec plan d'action, adapté à votre établissement.
           </p>
-        </div>
-
-        {/* Express 48 h */}
-        <div className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-vert/30 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-semibold text-ink">
-              Besoin urgent ? Rendez-vous express sous 48 h.
-            </p>
-            <p className="mt-1 text-sm text-ink/60">
-              Contrôle imminent ou ouverture proche : on intervient en priorité, supplément urgence
-              appliqué.
-            </p>
-          </div>
-          <Link href="/#rdv" className="btn-primary shrink-0">
-            Demander un créneau express
-          </Link>
         </div>
 
         <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
@@ -45,12 +29,12 @@ export function Formules() {
                 </span>
               )}
               <h3 className="text-lg font-bold text-ink">{f.nom}</h3>
-              <p className="mt-2 text-sm text-ink/65">{f.description}</p>
+              <p className="mt-2 text-sm text-ink/80">{f.description}</p>
               <div className="mt-5">
                 <span className="text-3xl font-extrabold text-ink">
                   {f.prix === 'TODO' ? 'Sur devis' : f.prix}
                 </span>
-                {f.recurrent && f.prix !== 'TODO' && <span className="text-gris"> /mois</span>}
+                {f.recurrent && f.prix !== 'TODO' && <span className="text-ink/70"> /mois</span>}
               </div>
               <ul className="mt-6 space-y-2.5 text-sm text-ink/75">
                 {f.inclus.map((item) => (
@@ -68,7 +52,7 @@ export function Formules() {
             </Reveal>
           ))}
         </div>
-        <p className="mt-6 text-sm text-gris">
+        <p className="mt-6 text-sm text-ink/70">
           Tarifs indicatifs, précisés selon la taille de l'établissement. Supplément pour le rendez-vous
           express sous 48 h. Aucun engagement avant validation du devis.
         </p>

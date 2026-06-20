@@ -24,7 +24,7 @@ export function ThemesAudit() {
     <section className="container-ah py-24">
       <div className="max-w-3xl">
         <h2 className="section-title">On passe tout au crible</h2>
-        <p className="mt-4 text-lg text-ink/60">
+        <p className="mt-4 text-lg text-ink/80">
           Notre grille couvre les thèmes de la réglementation hygiène et des principes HACCP.
         </p>
       </div>
@@ -38,7 +38,7 @@ export function ThemesAudit() {
               </span>
               <h3 className="font-semibold tracking-tight text-ink">{t.nom}</h3>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-ink/55">{t.desc}</p>
+            <p className="mt-3 text-sm leading-relaxed text-ink/75">{t.desc}</p>
           </Reveal>
         ))}
       </div>

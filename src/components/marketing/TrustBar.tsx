@@ -23,7 +23,7 @@ export function TrustBar() {
               <Mark />
               <h2 className="text-base font-semibold tracking-tight text-ink">{p.titre}</h2>
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-ink/60">{p.texte}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink/80">{p.texte}</p>
           </div>
         ))}
       </div>
