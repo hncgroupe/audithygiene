@@ -29,6 +29,7 @@ export interface WizardItem {
   conformite: Conformite;
   commentaire: string | null;
   constats: WizardConstat[];
+  motifs: string[];
   photos: WizardPhoto[];
 }
 
@@ -269,7 +270,28 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   const onPickConstat = (c: WizardConstat) => {
     if (!current) return;
-    patchItem(current.code, { conformite: c.conformite, commentaire: c.label });
+    if (c.conformite === 'CONFORME') {
+      patchItem(current.code, { conformite: c.conformite, commentaire: c.label });
+    } else {
+      // Non conforme : on garde la note existante, construite via les motifs ci-dessous
+      patchItem(current.code, { conformite: c.conformite });
+    }
+  };
+
+  // Ajoute/retire un motif prédéfini dans la note
+  const toggleMotif = (m: string) => {
+    if (!current) return;
+    const cur = current.commentaire ?? '';
+    if (cur.includes(m)) {
+      const cleaned = cur
+        .split(' · ')
+        .map((s) => s.trim())
+        .filter((x) => x && x !== m)
+        .join(' · ');
+      patchItem(current.code, { commentaire: cleaned });
+    } else {
+      patchItem(current.code, { commentaire: cur.trim() ? `${cur.trim()} · ${m}` : m });
+    }
   };
 
   // Enregistrement immédiat : aperçu instant, persistance locale, puis upload direct.
@@ -515,17 +537,38 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             )}
 
-            {/* Note libre quand non conforme */}
+            {/* Motifs + note libre quand non conforme */}
             {(current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE') && (
-              <div className="mt-3">
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink/60">
-                  Note
+              <div className="mt-3 text-left">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink/60">
+                  Motifs
                 </label>
+                {current.motifs.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-1.5">
+                    {current.motifs.map((m) => {
+                      const on = (current.commentaire ?? '').includes(m);
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => toggleMotif(m)}
+                          className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                            on
+                              ? 'border-transparent bg-ink text-white'
+                              : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
+                          }`}
+                        >
+                          {m}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 <textarea
                   value={current.commentaire ?? ''}
                   onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
                   rows={2}
-                  placeholder="Précisez ce qui a été constaté…"
+                  placeholder="Détail libre (optionnel)…"
                   className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
                 />
               </div>

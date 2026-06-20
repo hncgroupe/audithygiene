@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getCurrentDbUser } from '@/lib/auth';
 import { AuditWizard, type WizardItem } from '@/components/app/AuditWizard';
-import { grilleByCode } from '@/lib/grille-audit';
+import { grilleByCode, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
 import { getSignedUrl } from '@/lib/supabase';
 import type { Conformite } from '@/lib/notation';
 
@@ -47,6 +47,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         conformite: it.conformite as Conformite,
         commentaire: it.commentaire,
         constats: g?.constats ?? [],
+        motifs: MOTIFS_PAR_CODE[it.code] ?? [],
         photos,
       };
     })

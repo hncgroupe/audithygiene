@@ -463,6 +463,41 @@ export const GRILLE_AUDIT: GrilleTheme[] = [
   },
 ];
 
+/**
+ * Motifs de non-conformité prédéfinis par item (TODO à valider).
+ * Affichés quand l'auditeur sélectionne « mineure » ou « critique » : un clic
+ * ajoute le motif à la note ; l'auditeur peut compléter avec un détail libre.
+ */
+export const MOTIFS_PAR_CODE: Record<string, string[]> = {
+  'FROID-01': ['Température au-dessus du seuil', 'Pas de thermomètre / défaillant', 'Enceinte surchargée', 'Joint de porte abîmé'],
+  'FROID-02': ['Température > -18 °C', 'Givre excessif', 'Produits déjà décongelés', 'Appareil en panne'],
+  'FROID-03': ['Relevés non tenus', 'Relevés incomplets', 'Pas d’archivage', 'Valeurs hors seuil non traitées'],
+  'TEMP-01': ['Pas de contrôle à cœur', 'Cuisson insuffisante', 'Barème non défini', 'Sonde absente'],
+  'TEMP-02': ['Refroidissement à l’air libre', 'Pas de cellule', 'Durée trop longue', 'Aucune traçabilité'],
+  'TEMP-03': ['Remontée trop lente', 'Maintien en zone à risque', 'Matériel inadapté', 'Pas de procédure'],
+  'TRAC-01': ['Produit périmé', 'Pas de date d’ouverture', 'Étiquetage illisible', 'DLC dépassée en stock'],
+  'TRAC-02': ['Étiquettes non conservées', 'N° de lot absent', 'Conservation partielle', 'Aucune traçabilité amont'],
+  'PERS-01': ['Tenue sale', 'Coiffe absente', 'Bijoux / montre', 'Tenue de ville en cuisine'],
+  'PERS-02': ['Savon manquant', 'Essuie-mains absent', 'Lave-mains inaccessible', 'Lavage non pratiqué'],
+  'PERS-03': ['Aucune formation', 'Formation partielle', 'Pas de justificatif', 'À recycler'],
+  'NETT-01': ['Pas de plan', 'Plan non appliqué', 'Zones oubliées', 'Propreté insuffisante'],
+  'NETT-02': ['Produits près des denrées', 'Produit non agréé', 'Stockage non dédié', 'Étiquetage produit absent'],
+  'NETT-03': ['Aucun enregistrement', 'Fiches non signées', 'Suivi incomplet', 'Non daté'],
+  'NUIS-01': ['Pas de contrat / plan', 'Rapports non à jour', 'Plan des appâts absent', 'Suivi insuffisant'],
+  'NUIS-02': ['Déjections observées', 'Insectes présents', 'Traces de passage', 'Nuisible vu'],
+  'STOCK-01': ['Cru/cuit mélangés', 'Ustensiles partagés', 'Contamination croisée', 'Plan de travail commun'],
+  'STOCK-02': ['Denrées au sol', 'Pas de rotation', 'Produits non protégés', 'Stock désorganisé'],
+  'LOC-01': ['Surface dégradée', 'Sol / mur non nettoyable', 'Plafond abîmé', 'Zone non entretenue'],
+  'LOC-02': ['Matériel abîmé', 'Surface non alimentaire', 'Équipement rouillé', 'À remplacer'],
+  'DECH-01': ['Poubelle à commande manuelle', 'Évacuation insuffisante', 'Accumulation', 'Tri non fait'],
+  'DECH-02': ['Local sale', 'Local non fermé', 'Présence de nuisibles', 'Odeurs'],
+  'PMS-01': ['Pas de PMS', 'PMS incomplet', 'Non mis à jour', 'Volet manquant'],
+  'PMS-02': ['Autocontrôles absents', 'Partiels', 'Non tracés', 'Points critiques non suivis'],
+  'ALL-01': ['Aucune information', 'Information incomplète', 'Non à jour', 'Pas accessible au client'],
+  'ALL-02': ['Pas de matériel dédié', 'Risque contamination croisée', 'Organisation absente', 'Non formalisé'],
+  'EAU-01': ['Machine à glaçons sale', 'Entretien non fait', 'Eau non contrôlée', 'Détartrage absent'],
+};
+
 /** Liste plate de tous les items (utile pour instancier un audit). */
 export function flattenGrille(): Array<GrilleItem & { theme: string }> {
   return GRILLE_AUDIT.flatMap((t) => t.items.map((i) => ({ ...i, theme: t.theme })));
