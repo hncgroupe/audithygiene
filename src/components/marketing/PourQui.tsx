@@ -13,10 +13,9 @@ const CIBLES = [
 
 export function PourQui() {
   return (
-    <section className="border-y border-ink/8 bg-ink py-20 text-white">
+    <section className="border-y border-ink/8 bg-ink py-24 text-white">
       <div className="container-ah grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-vert-300">Pour qui</p>
           <h2 className="mt-4 text-3xl font-bold tracking-tightest sm:text-[2.5rem] sm:leading-[1.1]">
             Conçu pour tous les métiers de bouche
           </h2>

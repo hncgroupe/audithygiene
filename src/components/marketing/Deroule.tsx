@@ -3,10 +3,9 @@ import { Reveal } from '@/components/site/Reveal';
 
 export function Deroule() {
   return (
-    <section id="deroule" className="container-ah py-20 scroll-mt-20">
+    <section id="deroule" className="container-ah py-24 scroll-mt-20">
       <div className="max-w-3xl">
-        <p className="eyebrow">Le déroulé</p>
-        <h2 className="section-title mt-4">Un audit, un rapport clair, un plan d'action</h2>
+        <h2 className="section-title">Un audit, un rapport clair, un plan d'action</h2>
         <p className="mt-4 text-lg text-ink/60">
           De la prise de rendez-vous à la remise du rapport, une méthode structurée.
         </p>

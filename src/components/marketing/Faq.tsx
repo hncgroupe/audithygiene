@@ -2,10 +2,9 @@ import { FAQ_ITEMS } from '@/lib/content';
 
 export function Faq() {
   return (
-    <section id="faq" className="container-ah py-20 scroll-mt-20">
+    <section id="faq" className="container-ah py-24 scroll-mt-20">
       <div className="grid gap-12 md:grid-cols-3">
         <div className="md:col-span-1">
-          <p className="eyebrow">FAQ</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
             Questions fréquentes
           </h2>

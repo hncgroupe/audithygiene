@@ -30,12 +30,9 @@ const CONTENU = [
 
 export function Rapport() {
   return (
-    <section id="rapport" className="container-ah py-20 scroll-mt-20">
+    <section id="rapport" className="container-ah py-24 scroll-mt-20">
       <div className="max-w-3xl">
-        <p className="eyebrow">Le livrable</p>
-        <h2 className="section-title mt-4">
-          Un rapport qui vous dit exactement quoi corriger
-        </h2>
+        <h2 className="section-title">Le rapport qui dit quoi corriger</h2>
         <p className="mt-4 text-lg text-ink/60">
           À la fin de l'audit, vous ne repartez pas avec une impression, mais avec un document
           précis : point par point, du plus urgent au moins urgent.

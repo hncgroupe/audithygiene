@@ -21,10 +21,9 @@ const THEMES = [
 
 export function ThemesAudit() {
   return (
-    <section className="container-ah py-20">
+    <section className="container-ah py-24">
       <div className="max-w-3xl">
-        <p className="eyebrow">La méthode</p>
-        <h2 className="section-title mt-4">On passe tout au crible</h2>
+        <h2 className="section-title">On passe tout au crible</h2>
         <p className="mt-4 text-lg text-ink/60">
           Notre grille couvre les thèmes de la réglementation hygiène et des principes HACCP.
         </p>

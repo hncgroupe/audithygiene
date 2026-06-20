@@ -4,11 +4,10 @@ import { Reveal } from '@/components/site/Reveal';
 
 export function Formules() {
   return (
-    <section id="formules" className="bg-vert-50/40 py-20 scroll-mt-20">
+    <section id="formules" className="bg-vert-50/40 py-24 scroll-mt-20">
       <div className="container-ah">
         <div className="max-w-3xl">
-          <p className="eyebrow">Formules</p>
-          <h2 className="section-title mt-4">Choisissez votre formule</h2>
+          <h2 className="section-title">Choisissez votre formule</h2>
           <p className="mt-4 text-lg text-ink/70">
             Du diagnostic rapide à l'audit complet avec plan d'action, adapté à votre établissement.
           </p>

@@ -22,10 +22,9 @@ const RISQUES = [
 export function Probleme() {
   return (
     <section className="border-y border-ink/8 bg-ink/[0.015]">
-      <div className="container-ah py-20">
+      <div className="container-ah py-24">
         <div className="max-w-3xl">
-          <p className="eyebrow">La réalité du terrain</p>
-          <h2 className="section-title mt-4">
+          <h2 className="section-title">
             Le contrôle d'hygiène fait peur. À raison.
           </h2>
           <p className="mt-4 text-lg text-ink/60">

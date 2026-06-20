@@ -30,11 +30,10 @@ export default function HomePage() {
       <Formules />
       <Label />
 
-      <section id="rdv" className="bg-ink py-20 scroll-mt-20">
+      <section id="rdv" className="bg-ink py-24 scroll-mt-20">
         <div className="container-ah grid items-start gap-12 lg:grid-cols-2">
           <div className="text-white">
-            <p className="text-sm font-semibold uppercase tracking-wide text-vert-300">Réserver</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Réservez votre audit hygiène
             </h2>
             <p className="mt-4 max-w-md text-white/70">

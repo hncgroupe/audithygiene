@@ -11,8 +11,6 @@ const ESTABLISHMENT_TYPES = [
   'AUTRE',
 ] as const;
 
-const DEPARTEMENTS = ['75', '92', '93', '94', '77', '78', '91', '95'] as const;
-
 /** Coercition d'un champ checkbox HTML ("true" / "on" / undefined). */
 const checkbox = z
   .union([z.literal('true'), z.literal('on'), z.boolean(), z.undefined()])
@@ -36,7 +34,7 @@ export const leadSchema = z.object({
   email: z.string().trim().email('Email invalide').max(160),
   telephone: optString(40),
   ville: optString(120),
-  departement: optEnum(DEPARTEMENTS),
+  departement: optString(3),
   typeEtablissement: optEnum(ESTABLISHMENT_TYPES),
   nombreCouverts: z.preprocess(
     blankToUndef,
