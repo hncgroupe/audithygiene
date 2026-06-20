@@ -8,7 +8,7 @@ const NAV = [
   { href: '/#deroule', label: 'Comment ça marche' },
   { href: '/#rapport', label: 'Le rapport' },
   { href: '/#formules', label: 'Formules' },
-  { href: '/#faq', label: 'FAQ' },
+  { href: '/faq', label: 'FAQ' },
 ];
 
 export function Header() {

@@ -12,7 +12,6 @@ import { LeadMagnet } from '@/components/marketing/LeadMagnet';
 import { StickyCta } from '@/components/marketing/StickyCta';
 import { PourQui } from '@/components/marketing/PourQui';
 import { Formules } from '@/components/marketing/Formules';
-import { Label } from '@/components/marketing/Label';
 import { Faq } from '@/components/marketing/Faq';
 import { RdvForm } from '@/components/marketing/RdvForm';
 import { JsonLd } from '@/components/site/JsonLd';
@@ -39,7 +38,6 @@ export default function HomePage() {
       <ThemesAudit />
       <Formules />
       <LeadMagnet />
-      <Label />
       <PourQui />
 
       <section id="rdv" className="container-ah scroll-mt-24 py-24">
