@@ -36,7 +36,7 @@ export function Hero() {
           </dl>
         </div>
 
-        <div className="relative animate-fade-up [animation-delay:120ms]">
+        <div className="animate-fade-up [animation-delay:120ms]">
           <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
             <Image
               src="/img/audit-tablette.jpg"
@@ -44,10 +44,10 @@ export function Hero() {
               width={1200}
               height={600}
               priority
-              className="h-[400px] w-full object-cover sm:h-[520px]"
+              className="h-[260px] w-full object-cover sm:h-[320px]"
             />
           </div>
-          <div className="mx-auto -mt-16 w-[290px] sm:absolute sm:-bottom-6 sm:-left-6 sm:mx-0 sm:mt-0">
+          <div className="mt-5">
             <ScoreCard />
           </div>
         </div>
