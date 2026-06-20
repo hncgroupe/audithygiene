@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Reveal } from '@/components/site/Reveal';
 
 const CONTENU = [
@@ -31,12 +32,23 @@ const CONTENU = [
 export function Rapport() {
   return (
     <section id="rapport" className="container-ah py-24 scroll-mt-20">
-      <div className="max-w-3xl">
-        <h2 className="section-title">Le rapport qui dit quoi corriger</h2>
-        <p className="mt-4 text-lg text-ink/80">
-          À la fin de l'audit, vous ne repartez pas avec une impression, mais avec un document
-          précis : point par point, du plus urgent au moins urgent.
-        </p>
+      <div className="grid items-center gap-10 lg:grid-cols-2">
+        <div className="max-w-xl">
+          <h2 className="section-title">Le rapport qui dit quoi corriger</h2>
+          <p className="mt-4 text-lg text-ink/80">
+            À la fin de l'audit, vous ne repartez pas avec une impression, mais avec un document
+            précis : point par point, du plus urgent au moins urgent.
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
+          <Image
+            src="https://images.unsplash.com/photo-1653233797467-1a528819fd4f?auto=format&fit=crop&w=1000&q=80"
+            alt="Professionnel analysant les points de contrôle d'une cuisine"
+            width={1000}
+            height={720}
+            className="h-[280px] w-full object-cover sm:h-[340px]"
+          />
+        </div>
       </div>
 
       <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
