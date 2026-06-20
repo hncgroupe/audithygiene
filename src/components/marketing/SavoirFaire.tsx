@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Reveal } from '@/components/site/Reveal';
 
 const PILIERS = [
@@ -26,13 +27,24 @@ const PILIERS = [
 export function SavoirFaire() {
   return (
     <section className="container-ah py-24">
-      <div className="max-w-3xl">
-        <h2 className="section-title">Notre savoir-faire</h2>
-        <p className="mt-4 text-lg text-ink/80">
-          L’audit hygiène est un métier. Notre rôle de tiers de confiance : appliquer la
-          réglementation avec la rigueur d’un expert, et la traduire en actions que vous pouvez
-          mener dès le lendemain.
-        </p>
+      <div className="grid items-center gap-10 lg:grid-cols-2">
+        <div className="max-w-xl">
+          <h2 className="section-title">Notre savoir-faire</h2>
+          <p className="mt-4 text-lg text-ink/80">
+            L’audit hygiène est un métier. Notre rôle de tiers de confiance : appliquer la
+            réglementation avec la rigueur d’un expert, et la traduire en actions que vous pouvez
+            mener dès le lendemain.
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
+          <Image
+            src="https://images.unsplash.com/photo-1653233797467-1a528819fd4f?auto=format&fit=crop&w=1000&q=80"
+            alt="Professionnel des métiers de bouche au travail en cuisine"
+            width={1000}
+            height={720}
+            className="h-[280px] w-full object-cover sm:h-[360px]"
+          />
+        </div>
       </div>
 
       <div className="mt-12 grid gap-5 md:grid-cols-2">

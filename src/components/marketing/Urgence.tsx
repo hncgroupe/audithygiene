@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const POINTS = [
   'Avertissement ou mise en demeure reçus',
@@ -38,16 +39,23 @@ export function Urgence() {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-ink/10 bg-white p-7 shadow-card">
-            <div className="text-sm font-semibold uppercase tracking-wide text-vert-700">Express 48 h</div>
-            <p className="mt-3 text-2xl font-bold tracking-tight text-ink">
-              Reprenez votre activité sereinement
-            </p>
-            <p className="mt-3 text-ink/80">
-              Contrôle imminent, ouverture proche ou suite à une visite des services officiels : nous
-              priorisons votre intervention. En conditions réelles, sans interrompre votre service.
-            </p>
-            <p className="mt-4 text-sm text-ink/70">Supplément urgence appliqué pour les délais express.</p>
+          <div className="relative">
+            <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
+              <Image
+                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1000&q=80"
+                alt="Cuisinier en cuisine professionnelle pendant le service"
+                width={1000}
+                height={1100}
+                className="h-[360px] w-full object-cover sm:h-[440px]"
+              />
+            </div>
+            <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-ink/5 bg-white/95 p-4 shadow-card backdrop-blur">
+              <div className="text-xs font-semibold uppercase tracking-wide text-vert-700">Express 48 h</div>
+              <p className="mt-1 text-sm font-medium text-ink">
+                Reprenez votre activité sereinement, sans interrompre votre service. Supplément urgence
+                appliqué.
+              </p>
+            </div>
           </div>
         </div>
       </div>
