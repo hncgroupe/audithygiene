@@ -470,6 +470,94 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   const saveLabel = { idle: '', saving: 'Enregistrement…', saved: '✓ Enregistré', error: 'Échec' }[save];
 
+  // Bloc « Ajouter un point » (réutilisé sur le récap mobile et la barre latérale tablette)
+  const renderAdd = () =>
+    !addOpen ? (
+      <button onClick={() => setAddOpen(true)} className="btn-primary w-full">
+        + Ajouter un point
+      </button>
+    ) : (
+      <div className="rounded-xl border border-ink/10 bg-white p-3 text-left">
+        <input
+          autoFocus
+          value={addQuery}
+          onChange={(e) => setAddQuery(e.target.value)}
+          placeholder="Rechercher ou créer un point…"
+          className="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+        />
+        {suggestions.length > 0 && (
+          <ul className="mt-2 overflow-hidden rounded-lg border border-ink/10">
+            {suggestions.map((s) => (
+              <li key={s.code} className="border-b border-ink/5 last:border-0">
+                <button
+                  disabled={adding}
+                  onClick={() => addFromLibrary(s)}
+                  className="block w-full px-3 py-2 text-left text-sm hover:bg-vert-50 disabled:opacity-50"
+                >
+                  <span className="font-medium text-ink">{s.intitule}</span>
+                  <span className="text-gris"> · {s.theme}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {addQuery.trim().length >= 2 && (
+          <button
+            disabled={adding}
+            onClick={() => addCustom(addQuery)}
+            className="mt-2 w-full rounded-lg border border-dashed border-ink/25 px-3 py-2 text-sm font-medium text-ink/70 hover:border-vert hover:text-vert-700 disabled:opacity-50"
+          >
+            + Créer « {addQuery.trim()} » (sur mesure)
+          </button>
+        )}
+        <button
+          onClick={() => {
+            setAddOpen(false);
+            setAddQuery('');
+          }}
+          className="mt-2 w-full text-center text-xs text-gris hover:text-ink"
+        >
+          Annuler
+        </button>
+      </div>
+    );
+
+  // Checklist par thème (tap un point pour l'ouvrir)
+  const renderChecklist = () => (
+    <div className="space-y-4">
+      {Array.from(new Set(items.map((i) => i.theme))).map((theme) => (
+        <div key={theme}>
+          <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wide text-gris">{theme}</h3>
+          <ul className="overflow-hidden rounded-xl border border-ink/10 bg-white">
+            {items.map((it, idx) =>
+              it.theme !== theme ? null : (
+                <li key={it.code} className="border-b border-ink/5 last:border-0">
+                  <button
+                    onClick={() => {
+                      setStep(idx);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-vert-50/50 ${
+                      idx === step ? 'bg-vert-50' : ''
+                    }`}
+                  >
+                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${CONF_STYLE[it.conformite].dot}`} />
+                    <span className="flex-1 text-sm text-ink">{it.intitule}</span>
+                    {it.photos.length > 0 && (
+                      <span className="rounded bg-ink/5 px-1.5 text-[10px] font-medium text-gris">
+                        {it.photos.length}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              )
+            )}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+
   // Synthèse de la NC sélectionnée sur l'item courant
   const activeNc =
     current && (current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE')
@@ -529,9 +617,14 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         </div>
       </div>
 
-      {/* Contenu : page fixe, action toujours visible en bas */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="container-ah py-4">
+      {/* Contenu : barre latérale checklist (tablette) + point courant */}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="container-ah flex h-full gap-6 py-4">
+          <aside className="hidden w-80 shrink-0 flex-col overflow-y-auto pr-1 lg:flex">
+            <div className="mb-3">{renderAdd()}</div>
+            {renderChecklist()}
+          </aside>
+          <div className="min-h-0 flex-1 overflow-y-auto">
         {!isRecap && current && (
           <div className="mx-auto max-w-2xl">
             {/* Repère compact : thème · point · score */}
@@ -742,93 +835,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             </div>
 
-            {/* Ajouter un point (bibliothèque ou sur mesure) */}
-            <div className="mt-5">
-              {!addOpen ? (
-                <button onClick={() => setAddOpen(true)} className="btn-primary w-full">
-                  + Ajouter un point
-                </button>
-              ) : (
-                <div className="rounded-xl border border-ink/10 bg-white p-3 text-left">
-                  <input
-                    autoFocus
-                    value={addQuery}
-                    onChange={(e) => setAddQuery(e.target.value)}
-                    placeholder="Rechercher ou créer un point…"
-                    className="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
-                  />
-                  {suggestions.length > 0 && (
-                    <ul className="mt-2 overflow-hidden rounded-lg border border-ink/10">
-                      {suggestions.map((s) => (
-                        <li key={s.code} className="border-b border-ink/5 last:border-0">
-                          <button
-                            disabled={adding}
-                            onClick={() => addFromLibrary(s)}
-                            className="block w-full px-3 py-2 text-left text-sm hover:bg-vert-50 disabled:opacity-50"
-                          >
-                            <span className="font-medium text-ink">{s.intitule}</span>
-                            <span className="text-gris"> · {s.theme}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {addQuery.trim().length >= 2 && (
-                    <button
-                      disabled={adding}
-                      onClick={() => addCustom(addQuery)}
-                      className="mt-2 w-full rounded-lg border border-dashed border-ink/25 px-3 py-2 text-sm font-medium text-ink/70 hover:border-vert hover:text-vert-700 disabled:opacity-50"
-                    >
-                      + Créer « {addQuery.trim()} » (sur mesure)
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setAddOpen(false);
-                      setAddQuery('');
-                    }}
-                    className="mt-2 w-full text-center text-xs text-gris hover:text-ink"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Checklist par thème : tap un point pour le modifier */}
-            <div className="mt-6 space-y-4">
-              {Array.from(new Set(items.map((i) => i.theme))).map((theme) => (
-                <div key={theme}>
-                  <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wide text-gris">{theme}</h3>
-                  <ul className="overflow-hidden rounded-xl border border-ink/10 bg-white">
-                    {items.map((it, idx) =>
-                      it.theme !== theme ? null : (
-                        <li key={it.code} className="border-b border-ink/5 last:border-0">
-                          <button
-                            onClick={() => {
-                              setStep(idx);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-vert-50/50"
-                          >
-                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${CONF_STYLE[it.conformite].dot}`} />
-                            <span className="flex-1 text-sm text-ink">{it.intitule}</span>
-                            {it.photos.length > 0 && (
-                              <span className="rounded bg-ink/5 px-1.5 text-[10px] font-medium text-gris">
-                                {it.photos.length}
-                              </span>
-                            )}
-                          </button>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            {/* Sur mobile : ajout + checklist sous le score (sur tablette : barre latérale) */}
+            <div className="mt-5 lg:hidden">{renderAdd()}</div>
+            <div className="mt-6 lg:hidden">{renderChecklist()}</div>
 
           </div>
         )}
+          </div>
         </div>
       </div>
 
