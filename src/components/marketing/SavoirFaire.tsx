@@ -38,10 +38,10 @@ export function SavoirFaire() {
         </div>
         <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
           <Image
-            src="https://images.unsplash.com/photo-1653233797467-1a528819fd4f?auto=format&fit=crop&w=1000&q=80"
-            alt="Professionnel des métiers de bouche au travail en cuisine"
-            width={1000}
-            height={720}
+            src="/img/chef.jpg"
+            alt="Mains d'un chef en train de travailler une préparation"
+            width={1400}
+            height={935}
             className="h-[280px] w-full object-cover sm:h-[360px]"
           />
         </div>

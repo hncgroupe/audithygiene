@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 const CLIENTS = [
   'Restaurants',
   'Brasseries',
@@ -28,12 +30,12 @@ export function Reseau() {
             </span>
           ))}
         </div>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">
-          <span className="inline-flex items-center gap-2 rounded-lg border border-ink/12 bg-white px-3 py-2 font-semibold text-ink">
-            <span className="grid h-5 w-5 place-items-center rounded bg-vert text-[11px] text-white">Q</span>
-            Qualiopi · actions de formation
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm">
+          <span className="inline-flex items-center gap-3 rounded-lg border border-ink/12 bg-white px-4 py-2.5">
+            <Image src="/img/qualiopi.png" alt="Certifié Qualiopi" width={633} height={338} className="h-9 w-auto" />
+            <span className="font-medium text-ink/80">Actions de formation</span>
           </span>
-          <span className="inline-flex items-center gap-2 rounded-lg border border-ink/12 bg-white px-3 py-2 font-medium text-ink/80">
+          <span className="inline-flex items-center gap-2 rounded-lg border border-ink/12 bg-white px-4 py-2.5 font-medium text-ink/80">
             Basé sur la réglementation officielle (HACCP, Paquet hygiène)
           </span>
         </div>
