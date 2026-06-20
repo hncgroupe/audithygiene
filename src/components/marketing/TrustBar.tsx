@@ -5,7 +5,7 @@ const PILIERS = [
   },
   {
     titre: 'Un auditeur sur place',
-    texte: "Une visite réelle de votre établissement, partout en Île-de-France.",
+    texte: "Une visite réelle de votre établissement, partout en France.",
   },
   {
     titre: 'Un rapport actionnable',

@@ -42,7 +42,7 @@ export default function HomePage() {
               convenir d'un créneau. Sans engagement.
             </p>
             <ul className="mt-8 space-y-3 text-white/80">
-              <li className="flex items-center gap-3"><DotW /> Intervention dans toute l'Île-de-France</li>
+              <li className="flex items-center gap-3"><DotW /> Intervention dans toute la France</li>
               <li className="flex items-center gap-3"><DotW /> Rapport PDF complet à la clé</li>
               <li className="flex items-center gap-3"><DotW /> Plan correctif priorisé</li>
             </ul>

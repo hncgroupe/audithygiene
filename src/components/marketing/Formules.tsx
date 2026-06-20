@@ -10,11 +10,27 @@ export function Formules() {
           <p className="eyebrow">Formules</p>
           <h2 className="section-title mt-4">Choisissez votre formule</h2>
           <p className="mt-4 text-lg text-ink/70">
-            One-shot ou suivi régulier, adapté à votre établissement.
+            Du diagnostic rapide à l'audit complet avec plan d'action, adapté à votre établissement.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {/* Express 48 h */}
+        <div className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-vert/30 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-ink">
+              Besoin urgent ? Rendez-vous express sous 48 h.
+            </p>
+            <p className="mt-1 text-sm text-ink/60">
+              Contrôle imminent ou ouverture proche : on intervient en priorité, supplément urgence
+              appliqué.
+            </p>
+          </div>
+          <Link href="/#rdv" className="btn-primary shrink-0">
+            Demander un créneau express
+          </Link>
+        </div>
+
+        <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
           {FORMULES.map((f, i) => (
             <Reveal
               as="div"
@@ -54,7 +70,8 @@ export function Formules() {
           ))}
         </div>
         <p className="mt-6 text-sm text-gris">
-          Tarifs et contenu en cours de finalisation. Aucun engagement avant validation du devis.
+          Tarifs indicatifs, précisés selon la taille de l'établissement. Supplément pour le rendez-vous
+          express sous 48 h. Aucun engagement avant validation du devis.
         </p>
       </div>
     </section>

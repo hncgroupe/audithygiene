@@ -11,7 +11,7 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "Dans quelles zones intervenez-vous ?",
-    a: "Nous intervenons dans toute l'Île-de-France : Paris (75), Hauts-de-Seine (92), Seine-Saint-Denis (93), Val-de-Marne (94), Seine-et-Marne (77), Yvelines (78), Essonne (91) et Val-d'Oise (95).",
+    a: "Nous intervenons partout en France. Décrivez votre établissement et votre localisation lors de la prise de rendez-vous, et nous organisons la visite d'un auditeur.",
   },
   {
     q: "Combien de temps dure un audit ?",

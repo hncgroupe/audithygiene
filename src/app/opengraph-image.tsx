@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'audit hygiène - audit HACCP pour restaurants en Île-de-France';
+export const alt = 'audit hygiène - audit HACCP pour restaurants en France';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -47,7 +47,7 @@ export default function OgImage() {
             Anticipez le contrôle sanitaire.
           </div>
           <div style={{ fontSize: 32, color: '#9AA8A3', marginTop: 24 }}>
-            Audit hygiène et HACCP pour restaurants, partout en Île-de-France.
+            Audit hygiène et HACCP pour restaurants, partout en France.
           </div>
         </div>
 

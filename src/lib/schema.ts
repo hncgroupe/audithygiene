@@ -12,7 +12,7 @@ export function localBusinessSchema(opts?: { areaServed?: string; name?: string;
       "Audit hygiène et HACCP pour restaurants et CHR. Label privé indépendant. Notation, cas critiques, plan correctif.",
     url: opts?.url ?? siteUrl,
     email: MARQUE.email,
-    areaServed: opts?.areaServed ?? 'Île-de-France, France',
+    areaServed: opts?.areaServed ?? 'France',
     serviceType: "Audit d'hygiène et HACCP pour la restauration",
     knowsAbout: ['HACCP', 'Plan de Maîtrise Sanitaire', "Hygiène alimentaire", 'Restauration'],
   };
@@ -24,7 +24,7 @@ export function serviceSchema() {
     '@type': 'Service',
     serviceType: "Audit d'hygiène et HACCP",
     provider: { '@type': 'ProfessionalService', name: MARQUE.nom, url: siteUrl },
-    areaServed: 'Île-de-France, France',
+    areaServed: 'France',
     description:
       "Un auditeur contrôle votre établissement sur la base de la réglementation hygiène/HACCP et vous remet un rapport : notation, cas critiques, plan correctif.",
   };

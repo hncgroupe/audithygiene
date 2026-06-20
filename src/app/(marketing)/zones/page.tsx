@@ -7,9 +7,9 @@ import { breadcrumbSchema } from '@/lib/schema';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
 export const metadata: Metadata = {
-  title: "Audit hygiène restaurant en Île-de-France - toutes nos zones",
+  title: "Audit hygiène restaurant en France - toutes nos zones",
   description:
-    "audit hygiène intervient dans toute l'Île-de-France : Paris, 92, 93, 94, 77, 78, 91, 95. Trouvez votre département pour un audit hygiène et HACCP de votre restaurant.",
+    "audit hygiène intervient dans toute la France : Paris, 92, 93, 94, 77, 78, 91, 95. Trouvez votre département pour un audit hygiène et HACCP de votre restaurant.",
   alternates: { canonical: '/zones' },
 };
 
@@ -23,9 +23,9 @@ export default function ZonesPage() {
         ])}
       />
       <section className="container-ah py-16">
-        <p className="eyebrow">Île-de-France</p>
+        <p className="eyebrow">France</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          Audit hygiène restaurant partout en Île-de-France
+          Audit hygiène restaurant partout en France
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-ink/70">
           Nos auditeurs se déplacent dans les huit départements franciliens. Sélectionnez votre

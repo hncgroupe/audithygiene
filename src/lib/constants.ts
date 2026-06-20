@@ -19,7 +19,7 @@ export interface Departement {
   villes: string[];
 }
 
-/** Île-de-France - zone de couverture. Villes prioritaires (à enrichir). */
+/** France - zone de couverture. Villes prioritaires (à enrichir). */
 export const DEPARTEMENTS: Departement[] = [
   { code: '75', nom: 'Paris', slug: 'paris', villes: ['Paris 1er', 'Paris 11e', 'Paris 18e'] },
   { code: '92', nom: 'Hauts-de-Seine', slug: 'hauts-de-seine', villes: ['Boulogne-Billancourt', 'Nanterre', 'Courbevoie', 'Neuilly-sur-Seine'] },
@@ -48,31 +48,34 @@ export interface Formule {
 
 export const FORMULES: Formule[] = [
   {
-    id: 'decouverte',
-    nom: 'Audit Découverte',
-    description: 'Premier diagnostic pour faire le point sur vos pratiques.', // TODO valider
-    inclus: ['Visite sur place', 'Contrôle des points essentiels', 'Synthèse des priorités'],
+    id: 'essentiel',
+    nom: 'Audit Essentiel',
+    description: 'Le diagnostic rapide pour savoir où vous en êtes.', // TODO valider
+    inclus: [
+      'Visite sur place',
+      '20 points de contrôle clés',
+      'Cas critiques signalés',
+      'Synthèse des priorités (PDF)',
+    ],
     duree: 'TODO',
-    prix: 'TODO',
+    prix: '690 €', // proposition à valider
     recurrent: false,
   },
   {
     id: 'complet',
     nom: 'Audit Complet',
-    description: 'Audit approfondi sur l’ensemble des thèmes réglementaires.', // TODO valider
-    inclus: ['Visite sur place', 'Grille complète HACCP', 'Rapport PDF détaillé', 'Plan correctif', 'Cas critiques signalés'],
+    description: 'L’audit approfondi sur tous les thèmes, avec plan d’action détaillé.', // TODO valider
+    inclus: [
+      'Visite sur place',
+      '50 points de contrôle (grille HACCP complète)',
+      'Chaque non-conformité photographiée',
+      'Rapport PDF détaillé',
+      'Plan d’action priorisé (action, priorité, délai)',
+      'Date du prochain audit recommandé',
+    ],
     duree: 'TODO',
-    prix: 'TODO',
+    prix: '990 €', // proposition à valider
     recurrent: false,
     populaire: true,
-  },
-  {
-    id: 'abonnement',
-    nom: 'Auto-contrôle mensuel',
-    description: 'Suivi régulier pour maintenir votre conformité dans le temps.', // TODO valider
-    inclus: ['Audits récurrents', 'Suivi du plan correctif', 'Rappels automatiques', 'Historique par établissement'],
-    duree: 'récurrent',
-    prix: 'TODO',
-    recurrent: true,
   },
 ];

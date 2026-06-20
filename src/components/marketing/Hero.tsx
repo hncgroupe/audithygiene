@@ -8,7 +8,7 @@ export function Hero() {
       <div className="container-ah relative grid items-center gap-14 py-20 md:grid-cols-[1.05fr_0.95fr] md:py-28">
         <div>
           <span className="eyebrow animate-fade-up">
-            <Pulse /> Label privé · Île-de-France
+            <Pulse /> Label privé · France
           </span>
           <h1 className="mt-5 text-5xl font-bold leading-[1.03] tracking-tightest text-ink sm:text-[4rem] sm:leading-[0.98] animate-fade-up">
             Le contrôle d'hygiène ne devrait plus vous{' '}
