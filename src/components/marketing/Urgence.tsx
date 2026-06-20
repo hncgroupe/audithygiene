@@ -42,10 +42,10 @@ export function Urgence() {
           <div className="relative">
             <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
               <Image
-                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1000&q=80"
-                alt="Cuisinier en cuisine professionnelle pendant le service"
-                width={1000}
-                height={1100}
+                src="/img/support.webp"
+                alt="Accompagnement à la mise en conformité après contrôle"
+                width={920}
+                height={775}
                 className="h-[360px] w-full object-cover sm:h-[440px]"
               />
             </div>

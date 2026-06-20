@@ -39,10 +39,10 @@ export function Hero() {
         <div className="relative animate-fade-up [animation-delay:120ms]">
           <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
             <Image
-              src="/img/inspection.jpg"
-              alt="Contrôle hygiène en cuisine professionnelle, en tenue"
-              width={1400}
-              height={933}
+              src="/img/audit-tablette.jpg"
+              alt="Auditrice contrôlant une cuisine professionnelle avec une tablette"
+              width={1200}
+              height={600}
               priority
               className="h-[400px] w-full object-cover sm:h-[520px]"
             />

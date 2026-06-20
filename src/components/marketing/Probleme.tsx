@@ -34,10 +34,10 @@ export function Probleme() {
           </div>
           <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
             <Image
-              src="/img/auditeur-1.jpg"
-              alt="Auditeur en tenue contrôlant une cuisine de restaurant"
-              width={1400}
-              height={933}
+              src="/img/controle-cover.webp"
+              alt="Contrôle d'hygiène en restaurant"
+              width={900}
+              height={502}
               className="h-[280px] w-full object-cover sm:h-[340px]"
             />
           </div>
