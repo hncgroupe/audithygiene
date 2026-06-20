@@ -1,7 +1,9 @@
 import { Hero } from '@/components/marketing/Hero';
 import { TrustBar } from '@/components/marketing/TrustBar';
+import { Probleme } from '@/components/marketing/Probleme';
 import { ThemesAudit } from '@/components/marketing/ThemesAudit';
 import { Deroule } from '@/components/marketing/Deroule';
+import { Rapport } from '@/components/marketing/Rapport';
 import { PourQui } from '@/components/marketing/PourQui';
 import { Formules } from '@/components/marketing/Formules';
 import { Label } from '@/components/marketing/Label';
@@ -20,8 +22,10 @@ export default function HomePage() {
 
       <Hero />
       <TrustBar />
+      <Probleme />
       <ThemesAudit />
       <Deroule />
+      <Rapport />
       <PourQui />
       <Formules />
       <Label />

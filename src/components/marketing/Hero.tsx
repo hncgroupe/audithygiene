@@ -11,12 +11,13 @@ export function Hero() {
             <Pulse /> Label privé · Île-de-France
           </span>
           <h1 className="mt-5 text-5xl font-bold leading-[1.03] tracking-tightest text-ink sm:text-[4rem] sm:leading-[0.98] animate-fade-up">
-            Anticipez le contrôle sanitaire,{' '}
-            <span className="text-gradient-vert">ne le subissez pas.</span>
+            Le contrôle d'hygiène ne devrait plus vous{' '}
+            <span className="text-gradient-vert">faire peur.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink/65 animate-fade-up [animation-delay:80ms]">
-            Un auditeur passe dans votre restaurant, contrôle chaque point d'hygiène et vous laisse
-            un rapport sans jargon : ce qui va, ce qui bloque, et quoi corriger en premier.
+            Mettez-vous en conformité avant lui. Un auditeur passe dans votre établissement, vérifie
+            chaque point sur la base de la réglementation hygiène et HACCP, puis vous remet un rapport
+            détaillé : chaque non-conformité, la correction à apporter, sa priorité et son délai.
           </p>
           <div className="mt-9 flex flex-wrap gap-3 animate-fade-up [animation-delay:160ms]">
             <Link href="/#rdv" className="btn-primary text-base">
