@@ -33,10 +33,10 @@ export function ThemesAudit() {
         </div>
         <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
           <Image
-            src="https://images.unsplash.com/photo-1761095596618-081ea3f043a5?auto=format&fit=crop&w=1000&q=80"
-            alt="Professionnel en tenue blanche contrôlant une cuisine professionnelle"
-            width={1000}
-            height={720}
+            src="/img/auditeur-3.jpg"
+            alt="Auditeur en tenue contrôlant une cuisine professionnelle"
+            width={1400}
+            height={2100}
             className="h-[280px] w-full object-cover sm:h-[360px]"
           />
         </div>

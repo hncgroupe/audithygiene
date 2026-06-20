@@ -42,10 +42,10 @@ export function Rapport() {
         </div>
         <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
           <Image
-            src="https://images.unsplash.com/photo-1653233797467-1a528819fd4f?auto=format&fit=crop&w=1000&q=80"
-            alt="Professionnel analysant les points de contrôle d'une cuisine"
-            width={1000}
-            height={720}
+            src="/img/auditeur-2.jpg"
+            alt="Auditeur relevant les points de contrôle d'une cuisine"
+            width={1400}
+            height={2100}
             className="h-[280px] w-full object-cover sm:h-[340px]"
           />
         </div>
