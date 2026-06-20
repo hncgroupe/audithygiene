@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Logo } from './Logo';
-import { MENTION_LABEL_PRIVE, DEPARTEMENTS } from '@/lib/constants';
+import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 
 export function Footer() {
   return (
@@ -25,13 +25,12 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-white">Zones</h3>
-          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
-            {DEPARTEMENTS.map((d) => (
-              <li key={d.code}>
-                <Link href={`/zones/${d.slug}`} className="hover:text-vert">{d.nom}</Link>
-              </li>
-            ))}
+          <h3 className="text-sm font-semibold text-white">Contact</h3>
+          <ul className="mt-3 space-y-2 text-sm text-white/60">
+            <li><a href="mailto:contact@audithygiene.fr" className="hover:text-vert">contact@audithygiene.fr</a></li>
+            <li><Link href="/#configurateur" className="hover:text-vert">Configurer mon audit</Link></li>
+            <li><Link href="/#rdv" className="hover:text-vert">Demande express 48 h</Link></li>
+            <li className="text-white/40">Intervention partout en France</li>
           </ul>
         </div>
 

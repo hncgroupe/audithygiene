@@ -1,7 +1,6 @@
 import { Hero } from '@/components/marketing/Hero';
 import { Reseau } from '@/components/marketing/Reseau';
 import { Configurateur } from '@/components/marketing/Configurateur';
-import { TrustBar } from '@/components/marketing/TrustBar';
 import { Probleme } from '@/components/marketing/Probleme';
 import { Urgence } from '@/components/marketing/Urgence';
 import { SavoirFaire } from '@/components/marketing/SavoirFaire';
@@ -10,7 +9,6 @@ import { Deroule } from '@/components/marketing/Deroule';
 import { Rapport } from '@/components/marketing/Rapport';
 import { LeadMagnet } from '@/components/marketing/LeadMagnet';
 import { StickyCta } from '@/components/marketing/StickyCta';
-import { PourQui } from '@/components/marketing/PourQui';
 import { Formules } from '@/components/marketing/Formules';
 import { Faq } from '@/components/marketing/Faq';
 import { RdvForm } from '@/components/marketing/RdvForm';
@@ -25,20 +23,18 @@ export default function HomePage() {
       <JsonLd data={serviceSchema()} />
       <JsonLd data={faqSchema(FAQ_ITEMS)} />
 
-      {/* Funnel optimisé conversion : hook → confiance → devis → peur → valeur → preuve → prix → capture → résa */}
+      {/* Tunnel conversion : hook → confiance → peur → urgence → expertise → méthode → process → livrable → devis → prix → capture → résa → objections */}
       <Hero />
       <Reseau />
-      <Configurateur />
-      <TrustBar />
       <Probleme />
       <Urgence />
-      <Rapport />
       <SavoirFaire />
-      <Deroule />
       <ThemesAudit />
+      <Deroule />
+      <Rapport />
+      <Configurateur />
       <Formules />
       <LeadMagnet />
-      <PourQui />
 
       <section id="rdv" className="container-ah scroll-mt-24 py-24">
         <div className="max-w-3xl">

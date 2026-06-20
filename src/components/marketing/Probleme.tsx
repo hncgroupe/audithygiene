@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Reveal } from '@/components/site/Reveal';
 
 const RISQUES = [
@@ -23,12 +24,23 @@ export function Probleme() {
   return (
     <section className="border-y border-ink/8 bg-ink/[0.015]">
       <div className="container-ah py-24">
-        <div className="max-w-3xl">
-          <h2 className="section-title">Et si un contrôle tombait aujourd'hui ?</h2>
-          <p className="mt-4 text-lg text-ink/80">
-            Personne ne vous prévient. Et les conséquences d'une non-conformité ne pardonnent pas.
-            La seule vraie protection : avoir déjà tout vérifié, avant l'inspection.
-          </p>
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div className="max-w-xl">
+            <h2 className="section-title">Et si un contrôle tombait aujourd'hui ?</h2>
+            <p className="mt-4 text-lg text-ink/80">
+              Personne ne vous prévient. Et les conséquences d'une non-conformité ne pardonnent pas.
+              La seule vraie protection : avoir déjà tout vérifié, avant l'inspection.
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
+            <Image
+              src="https://images.unsplash.com/photo-1588416820614-f8d6ac6cea56?auto=format&fit=crop&w=1000&q=80"
+              alt="Cuisine de restaurant à inspecter"
+              width={1000}
+              height={720}
+              className="h-[280px] w-full object-cover sm:h-[340px]"
+            />
+          </div>
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
