@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ScoreCard } from './ScoreCard';
 
 export function Hero() {
@@ -35,8 +36,20 @@ export function Hero() {
           </dl>
         </div>
 
-        <div className="animate-fade-up [animation-delay:120ms]">
-          <ScoreCard />
+        <div className="relative animate-fade-up [animation-delay:120ms]">
+          <div className="overflow-hidden rounded-3xl shadow-soft ring-1 ring-ink/5">
+            <Image
+              src="https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?auto=format&fit=crop&w=1200&q=80"
+              alt="Cuisine professionnelle d'un restaurant en service"
+              width={1200}
+              height={1400}
+              priority
+              className="h-[400px] w-full object-cover sm:h-[520px]"
+            />
+          </div>
+          <div className="mx-auto -mt-16 w-[290px] sm:absolute sm:-bottom-6 sm:-left-6 sm:mx-0 sm:mt-0">
+            <ScoreCard />
+          </div>
         </div>
       </div>
     </section>
