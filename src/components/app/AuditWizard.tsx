@@ -33,11 +33,24 @@ export interface WizardItem {
   photos: WizardPhoto[];
 }
 
+export interface LibraryEntry {
+  code: string;
+  theme: string;
+  intitule: string;
+  explication: string;
+  pedagogie: string;
+  ponderation: number;
+  photoConseillee: boolean;
+  constats: WizardConstat[];
+  motifs: string[];
+}
+
 interface Props {
   auditId: string;
   etablissement: { nom: string; ville: string | null; type: string };
   statutInitial: string;
   items: WizardItem[];
+  library: LibraryEntry[];
 }
 
 const CONF_STYLE: Record<string, { dot: string; chip: string }> = {
@@ -83,9 +96,12 @@ function ScoreRing({ score, evalues, size = 56 }: { score: number; evalues: numb
   );
 }
 
-export function AuditWizard({ auditId, etablissement, statutInitial, items: initial }: Props) {
+export function AuditWizard({ auditId, etablissement, statutInitial, items: initial, library }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<WizardItem[]>(initial);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addQuery, setAddQuery] = useState('');
+  const [adding, setAdding] = useState(false);
   const [step, setStep] = useState(0); // 0..n-1 = items, n = récap
   const [save, setSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [uploading, setUploading] = useState(false);
@@ -371,7 +387,87 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     }
   };
 
-  const ncList = items.filter((i) => i.conformite === 'NC_MINEURE' || i.conformite === 'NC_MAJEURE');
+  // Ajout d'un point (bibliothèque ou sur mesure)
+  const appendItem = (item: WizardItem) => {
+    const idx = items.length;
+    setItems((prev) => [...prev, item]);
+    setStep(idx);
+    setAddOpen(false);
+    setAddQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const addFromLibrary = async (entry: LibraryEntry) => {
+    setAdding(true);
+    try {
+      const res = await fetch(`/api/audits/${auditId}/item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromCode: entry.code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error();
+      appendItem({
+        code: data.code,
+        theme: data.theme,
+        intitule: data.intitule,
+        explication: entry.explication,
+        pedagogie: entry.pedagogie,
+        ponderation: data.ponderation,
+        photoConseillee: entry.photoConseillee,
+        conformite: 'NON_EVALUE',
+        commentaire: null,
+        constats: entry.constats,
+        motifs: entry.motifs,
+        photos: [],
+      });
+    } catch {
+      /* ignore */
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const addCustom = async (text: string) => {
+    const intitule = text.trim();
+    if (!intitule) return;
+    setAdding(true);
+    try {
+      const res = await fetch(`/api/audits/${auditId}/item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intitule }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error();
+      appendItem({
+        code: data.code,
+        theme: data.theme,
+        intitule: data.intitule,
+        explication: '',
+        pedagogie: '',
+        ponderation: data.ponderation,
+        photoConseillee: false,
+        conformite: 'NON_EVALUE',
+        commentaire: null,
+        constats: [],
+        motifs: [],
+        photos: [],
+      });
+    } catch {
+      /* ignore */
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const suggestions =
+    addQuery.trim().length >= 2
+      ? library
+          .filter((l) => l.intitule.toLowerCase().includes(addQuery.trim().toLowerCase()))
+          .slice(0, 6)
+      : [];
+
   const saveLabel = { idle: '', saving: 'Enregistrement…', saved: '✓ Enregistré', error: 'Échec' }[save];
 
   // Synthèse de la NC sélectionnée sur l'item courant
@@ -460,6 +556,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             </h1>
 
             {/* Aide repliée par défaut : explication + à expliquer au client */}
+            {(current.explication || current.pedagogie) && (
+            <>
             <div className="mt-1.5 text-center">
               <button
                 type="button"
@@ -481,11 +579,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
               </div>
             )}
+            </>
+            )}
 
             {/* Constat : 3 gros boutons empilés, code couleur vert / jaune / rouge */}
             <div className="mt-5 space-y-3">
               {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
-                const c = current.constats.find((x) => x.conformite === lvl);
                 const on = current.conformite === lvl;
                 const cfg = {
                   CONFORME: {
@@ -504,12 +603,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     off: 'border-red-400/60 bg-white text-red-700 hover:bg-red-50',
                   },
                 }[lvl];
+                const c =
+                  current.constats.find((x) => x.conformite === lvl) ?? { label: cfg.label, conformite: lvl };
                 return (
                   <button
                     key={lvl}
-                    disabled={!c}
-                    onClick={() => c && onPickConstat(c)}
-                    className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] disabled:opacity-40 ${
+                    onClick={() => onPickConstat(c)}
+                    className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] ${
                       on ? cfg.on : cfg.off
                     }`}
                   >
@@ -642,41 +742,90 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             </div>
 
-            <h2 className="mt-7 font-semibold text-ink">Non-conformités & plan correctif</h2>
-            {ncList.length === 0 ? (
-              <p className="mt-2 rounded-xl bg-vert-50 px-4 py-3 text-sm text-vert-800">
-                Aucune non-conformité relevée.
-              </p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {ncList.map((i) => {
-                  const c = i.constats.find((x) => x.conformite === i.conformite);
-                  const crit = i.conformite === 'NC_MAJEURE';
-                  return (
-                    <li
-                      key={i.code}
-                      className={`rounded-xl border p-4 ${crit ? 'border-red-200 bg-red-50/40' : 'border-amber-200 bg-amber-50/30'}`}
+            {/* Ajouter un point (bibliothèque ou sur mesure) */}
+            <div className="mt-5">
+              {!addOpen ? (
+                <button onClick={() => setAddOpen(true)} className="btn-primary w-full">
+                  + Ajouter un point
+                </button>
+              ) : (
+                <div className="rounded-xl border border-ink/10 bg-white p-3 text-left">
+                  <input
+                    autoFocus
+                    value={addQuery}
+                    onChange={(e) => setAddQuery(e.target.value)}
+                    placeholder="Rechercher ou créer un point…"
+                    className="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+                  />
+                  {suggestions.length > 0 && (
+                    <ul className="mt-2 overflow-hidden rounded-lg border border-ink/10">
+                      {suggestions.map((s) => (
+                        <li key={s.code} className="border-b border-ink/5 last:border-0">
+                          <button
+                            disabled={adding}
+                            onClick={() => addFromLibrary(s)}
+                            className="block w-full px-3 py-2 text-left text-sm hover:bg-vert-50 disabled:opacity-50"
+                          >
+                            <span className="font-medium text-ink">{s.intitule}</span>
+                            <span className="text-gris"> · {s.theme}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {addQuery.trim().length >= 2 && (
+                    <button
+                      disabled={adding}
+                      onClick={() => addCustom(addQuery)}
+                      className="mt-2 w-full rounded-lg border border-dashed border-ink/25 px-3 py-2 text-sm font-medium text-ink/70 hover:border-vert hover:text-vert-700 disabled:opacity-50"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-ink">{i.intitule}</span>
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${crit ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'}`}
-                        >
-                          {crit ? 'Critique' : 'Mineure'}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-ink/70">{i.commentaire || c?.pourquoi}</p>
-                      {c?.correctif && (
-                        <p className="mt-1.5 text-sm text-vert-800">
-                          <span className="font-semibold">Correctif : </span>
-                          {c.correctif}
-                        </p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                      + Créer « {addQuery.trim()} » (sur mesure)
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setAddOpen(false);
+                      setAddQuery('');
+                    }}
+                    className="mt-2 w-full text-center text-xs text-gris hover:text-ink"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Checklist par thème : tap un point pour le modifier */}
+            <div className="mt-6 space-y-4">
+              {Array.from(new Set(items.map((i) => i.theme))).map((theme) => (
+                <div key={theme}>
+                  <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wide text-gris">{theme}</h3>
+                  <ul className="overflow-hidden rounded-xl border border-ink/10 bg-white">
+                    {items.map((it, idx) =>
+                      it.theme !== theme ? null : (
+                        <li key={it.code} className="border-b border-ink/5 last:border-0">
+                          <button
+                            onClick={() => {
+                              setStep(idx);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-vert-50/50"
+                          >
+                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${CONF_STYLE[it.conformite].dot}`} />
+                            <span className="flex-1 text-sm text-ink">{it.intitule}</span>
+                            {it.photos.length > 0 && (
+                              <span className="rounded bg-ink/5 px-1.5 text-[10px] font-medium text-gris">
+                                {it.photos.length}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
 
           </div>
         )}

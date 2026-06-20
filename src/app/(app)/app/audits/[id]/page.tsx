@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getCurrentDbUser } from '@/lib/auth';
 import { AuditWizard, type WizardItem } from '@/components/app/AuditWizard';
-import { grilleByCode, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
+import { grilleByCode, flattenGrille, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
 import { getSignedUrl } from '@/lib/supabase';
 import type { Conformite } from '@/lib/notation';
 
@@ -26,9 +26,12 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
     .slice()
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+  // Code de base pour les points ajoutés depuis la bibliothèque (suffixés -XXXX)
+  const baseCode = (code: string) => code.replace(/-[A-Z0-9]{4}$/, '');
+
   const items: WizardItem[] = await Promise.all(
     sorted.map(async (it) => {
-      const g = grille.get(it.code);
+      const g = grille.get(it.code) ?? grille.get(baseCode(it.code));
       const photos = await Promise.all(
         it.photoUrls.map(async (path) => ({
           path,
@@ -47,11 +50,24 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         conformite: it.conformite as Conformite,
         commentaire: it.commentaire,
         constats: g?.constats ?? [],
-        motifs: MOTIFS_PAR_CODE[it.code] ?? [],
+        motifs: MOTIFS_PAR_CODE[it.code] ?? MOTIFS_PAR_CODE[baseCode(it.code)] ?? [],
         photos,
       };
     })
   );
+
+  // Bibliothèque pour l'autocomplétion « Ajouter un point »
+  const library = flattenGrille().map((i) => ({
+    code: i.code,
+    theme: i.theme,
+    intitule: i.intitule,
+    explication: i.explication,
+    pedagogie: i.pedagogie,
+    ponderation: i.ponderation,
+    photoConseillee: i.photoConseillee ?? false,
+    constats: i.constats,
+    motifs: MOTIFS_PAR_CODE[i.code] ?? [],
+  }));
 
   return (
     <AuditWizard
@@ -63,6 +79,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
       }}
       statutInitial={audit.statut}
       items={items}
+      library={library}
     />
   );
 }
