@@ -515,6 +515,22 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
             )}
 
+            {/* Note libre quand non conforme */}
+            {(current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE') && (
+              <div className="mt-3">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink/60">
+                  Note
+                </label>
+                <textarea
+                  value={current.commentaire ?? ''}
+                  onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
+                  rows={2}
+                  placeholder="Précisez ce qui a été constaté…"
+                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+                />
+              </div>
+            )}
+
             {/* Photos (optionnel) : vignettes si présentes */}
             {current.photos.length > 0 && (
               <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6">
@@ -669,11 +685,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   <span className="relative">{step === total - 1 ? 'Récap' : 'Suivant'}</span>
                 </button>
               </div>
-              {!canAdvance && (
-                <p className="mt-1.5 text-center text-[11px] text-gris">
-                  Photo + constat requis · ou maintenez « Suivant » 3 s pour passer
-                </p>
-              )}
             </>
           ) : (
             <div className="flex items-center gap-3">
