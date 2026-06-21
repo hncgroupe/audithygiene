@@ -777,35 +777,60 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </div>
     ) : null;
 
-  // Bouton capture photo (tablette : dans la colonne contexte)
+  // Bouton capture photo rond (tablette : épinglé en bas-droite, à portée du pouce)
   const photoButton = () =>
     current && (
       <button
         onClick={() => fileRef.current?.click()}
         disabled={uploading}
-        className={`w-full rounded-full py-3 text-sm font-semibold transition-all active:scale-[0.99] disabled:opacity-60 ${
+        aria-label={hasPhoto ? 'Ajouter une photo' : 'Prendre une photo'}
+        className={`grid h-16 w-16 shrink-0 place-items-center rounded-full shadow-lg transition-all active:scale-95 disabled:opacity-60 ${
           hasPhoto
-            ? 'border-2 border-vert/40 bg-white text-vert-800 hover:bg-vert-50'
+            ? 'border-2 border-vert/50 bg-white text-vert-700'
             : 'bg-vert text-white hover:bg-vert-600'
         }`}
       >
-        {uploading ? 'Ajout…' : hasPhoto ? '+ Ajouter une photo' : '📷 Prendre une photo (obligatoire)'}
+        {uploading ? (
+          <span className="text-lg">…</span>
+        ) : (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-7 w-7"
+            aria-hidden="true"
+          >
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        )}
       </button>
     );
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
-      {/* En-tête minimal : logo seul (épinglé) */}
+      {/* En-tête : retour + logo + nom du client (épinglé) */}
       <div className="shrink-0 border-b border-ink/10 bg-white">
-        <div className="container-ah relative flex h-12 items-center justify-center">
+        <div className="container-ah relative flex h-12 items-center">
           <button
             onClick={quitter}
-            className="absolute left-0 flex items-center text-xl leading-none text-gris hover:text-ink"
+            className="flex items-center text-xl leading-none text-gris hover:text-ink"
             aria-label="Enregistrer et quitter"
           >
             ‹
           </button>
-          <Logo className="shrink-0" />
+          <Logo className="ml-1.5 shrink-0" />
+          <div className="absolute left-1/2 max-w-[55%] -translate-x-1/2 text-center">
+            <div className="truncate text-sm font-semibold leading-tight text-ink">
+              {etablissement.nom}
+            </div>
+            {etablissement.ville && (
+              <div className="truncate text-[11px] leading-tight text-gris">{etablissement.ville}</div>
+            )}
+          </div>
         </div>
         <div className="h-1 w-full bg-ink/5">
           <div
@@ -846,8 +871,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               </div>
 
               {/* Tablette paysage : centre (constat) + colonne contexte, zéro scroll */}
-              <div className="hidden min-h-0 flex-1 gap-6 lg:flex">
-                <div className="flex min-h-0 flex-1 flex-col justify-start overflow-hidden pt-2">
+              <div className="hidden min-h-0 flex-1 gap-6 pt-2 lg:flex">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                   <div className="mx-auto w-full max-w-md">
                     {repereTitre()}
                     {constatButtons()}
@@ -867,8 +892,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                       </p>
                     )}
                   </div>
-                  {/* Bouton photo épinglé en bas-droite : à portée du pouce */}
-                  <div className="shrink-0">{photoButton()}</div>
+                  {/* Bouton photo rond épinglé en bas-droite : à portée du pouce */}
+                  <div className="flex shrink-0 justify-end">{photoButton()}</div>
                 </div>
               </div>
             </>
