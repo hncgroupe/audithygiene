@@ -109,7 +109,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const [done, setDone] = useState(statutInitial === 'TERMINE');
   const [online, setOnline] = useState(true);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [pointsOpen, setPointsOpen] = useState(false); // tiroir liste des points (tablette)
   const [holdingNext, setHoldingNext] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -490,7 +489,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     setStep(idx);
     setAddOpen(false);
     setAddQuery('');
-    setPointsOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -632,7 +630,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   <button
                     onClick={() => {
                       setStep(idx);
-                      setPointsOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className={`flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-vert-50/50 lg:py-1.5 ${
@@ -983,6 +980,11 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       {/* Contenu : barre latérale checklist (tablette) + point courant */}
       <div className="min-h-0 flex-1 overflow-hidden">
         <div className="container-ah flex h-full gap-5 py-4">
+          {/* GAUCHE : liste des points (questions) par thème + ajout */}
+          <aside className="hidden w-60 shrink-0 flex-col pr-1 lg:flex xl:w-72">
+            <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">{renderChecklist()}</div>
+            <div className="mt-3 shrink-0">{renderAdd()}</div>
+          </aside>
           {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
           <input
             ref={fileRef}
@@ -1006,107 +1008,45 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
               </div>
 
-              {/* Tablette paysage : GAUCHE = lecture, DROITE = panneau d'action (tout cliquable, sous le pouce) */}
+              {/* Tablette paysage : CENTRE = énoncé + constat, DROITE = contexte (motifs + photo) */}
               <div className="hidden min-h-0 flex-1 gap-5 pt-1 lg:flex">
-                {/* GAUCHE : lecture seule (énoncé, explication, synthèse, photos) */}
+                {/* CENTRE : énoncé puis constat */}
                 <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
                   <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-card">
                     {repereTitre()}
                   </div>
-                  {isNc && syntheseNc()}
-                  {photoThumbs() && (
-                    <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                      <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">
-                        Photos du point
-                      </div>
-                      {photoThumbs()}
-                    </div>
-                  )}
+                  <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
+                    <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">Constat</div>
+                    {constatButtons()}
+                  </div>
                 </div>
 
-                {/* DROITE : panneau d'action industriel, étapes numérotées, nav en pied */}
-                <div className="relative flex w-[26rem] shrink-0 flex-col overflow-hidden rounded-2xl border border-ink/15 bg-white shadow-card">
-                  {/* Barre titre : point courant + accès liste */}
-                  <div className="flex items-center justify-between gap-2 border-b border-ink/10 bg-ink/[0.02] px-4 py-2.5">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-gris tabular-nums">
-                      Point {step + 1} / {total}
+                {/* DROITE : contexte de la non-conformité + photo */}
+                <div className="flex w-[24rem] shrink-0 flex-col gap-3 overflow-y-auto pr-0.5">
+                  {isNc && syntheseNc()}
+                  {isNc && (
+                    <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+                      {motifsNote()}
                     </div>
-                    <button
-                      onClick={() => setPointsOpen(true)}
-                      className="rounded-full border border-ink/15 px-3 py-1 text-[12px] font-semibold text-ink/70 transition-colors hover:border-ink/30 hover:text-ink"
-                    >
-                      ☰ Points
-                    </button>
-                  </div>
-
-                  {/* Corps : étapes numérotées (cliquable) */}
-                  <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-                    <section>
-                      <div className="mb-2 flex items-center gap-2">
-                        <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
-                          1
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Constat</span>
-                      </div>
-                      {constatButtons()}
-                    </section>
-
-                    {isNc && (
-                      <section>
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
-                            2
-                          </span>
-                          <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Motifs</span>
-                        </div>
-                        {motifsNote()}
-                      </section>
-                    )}
-
-                    <section>
-                      <div className="mb-2 flex items-center gap-2">
-                        <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
-                          {isNc ? 3 : 2}
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wide text-ink/70">
+                  )}
+                  <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold text-ink">
                           Photo {hasPhoto ? '' : '(obligatoire)'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[13px] leading-snug text-gris">
+                        </div>
+                        <div className="truncate text-[12px] text-gris">
                           {!hasConstat
                             ? 'Choisis un constat'
                             : hasPhoto
                               ? `${current.photos.length} photo${current.photos.length > 1 ? 's' : ''} ✓`
                               : 'À prendre →'}
-                        </span>
-                        {photoButton()}
+                        </div>
                       </div>
-                    </section>
-                  </div>
-
-                  {/* Pied : navigation (sous le pouce) */}
-                  <div className="border-t border-ink/10 bg-ink/[0.02] p-3">{navButtons()}</div>
-
-                  {/* Tiroir liste des points (overlay sur le panneau) */}
-                  {pointsOpen && (
-                    <div className="absolute inset-0 z-10 flex flex-col bg-white">
-                      <div className="flex items-center justify-between border-b border-ink/10 px-4 py-2.5">
-                        <span className="text-xs font-bold uppercase tracking-wide text-gris">
-                          Tous les points
-                        </span>
-                        <button
-                          onClick={() => setPointsOpen(false)}
-                          className="grid h-7 w-7 place-items-center rounded-full text-xl leading-none text-gris hover:bg-ink/5 hover:text-ink"
-                          aria-label="Fermer"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div className="min-h-0 flex-1 overflow-y-auto p-3">{renderChecklist()}</div>
-                      <div className="border-t border-ink/10 p-3">{renderAdd()}</div>
+                      {photoButton()}
                     </div>
-                  )}
+                    {photoThumbs() && <div className="mt-3">{photoThumbs()}</div>}
+                  </div>
                 </div>
               </div>
             </>
@@ -1144,16 +1084,16 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         </div>
       </div>
 
-      {/* Barre d'action épinglée en bas (mobile, + récap sur tablette) */}
-      <div className={`shrink-0 border-t border-ink/10 bg-white ${!isRecap ? 'lg:hidden' : ''}`}>
+      {/* Barre d'action épinglée en bas : navigation (+ photo sur mobile) */}
+      <div className="shrink-0 border-t border-ink/10 bg-white">
         <div className="container-ah py-2.5">
           {!isRecap ? (
-            // Mobile/portrait seulement : sur tablette, photo + navigation sont dans le panneau droit.
-            <div className="lg:hidden">
+            <>
+              {/* Bouton photo pleine largeur : mobile uniquement (tablette : carte Photo à droite) */}
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
+                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60 lg:hidden"
               >
                 {uploading
                   ? 'Ajout…'
@@ -1162,7 +1102,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     : 'Prendre une photo'}
               </button>
               {navButtons()}
-            </div>
+            </>
           ) : (
             <div className="flex items-center gap-3">
               <button onClick={() => goto(total - 1)} className="btn-ghost flex-1">
