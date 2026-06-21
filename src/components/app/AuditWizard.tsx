@@ -114,10 +114,31 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const syncing = useRef(false);
+  const itemsRef = useRef<WizardItem[]>(initial); // dernier état connu (flush à la fermeture)
+
+  // Clés de secours local (reprise + filet anti-perte)
+  const STEP_KEY = `audit:${auditId}:step`;
+  const ANSW_KEY = `audit:${auditId}:answers`;
+
+  // Écrit un instantané des réponses en local (synchrone, instantané) : survit à une fermeture brutale.
+  const writeLocal = (next: WizardItem[]) => {
+    try {
+      const snap: Record<string, { conformite: Conformite; commentaire: string | null }> = {};
+      for (const i of next) {
+        if (i.conformite !== 'NON_EVALUE' || i.commentaire) {
+          snap[i.code] = { conformite: i.conformite, commentaire: i.commentaire };
+        }
+      }
+      localStorage.setItem(ANSW_KEY, JSON.stringify(snap));
+    } catch {
+      /* quota / mode privé : on ignore, le serveur reste la source */
+    }
+  };
 
   const total = items.length;
   const isRecap = step >= total;
   const current = items[step];
+  itemsRef.current = items;
 
   const notation = useMemo(
     () =>
@@ -135,6 +156,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         const res = await fetch(`/api/audits/${auditId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
+          keepalive: true, // permet l'envoi même si la page se ferme
           body: JSON.stringify({
             items: next
               .filter((i) => i.conformite !== 'NON_EVALUE' || i.commentaire)
@@ -165,6 +187,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const patchItem = (code: string, patch: Partial<WizardItem>) => {
     setItems((prev) => {
       const next = prev.map((i) => (i.code === code ? { ...i, ...patch } : i));
+      writeLocal(next); // filet local instantané (avant même l'aller-retour réseau)
       scheduleSave(next);
       return next;
     });
@@ -177,6 +200,72 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     },
     []
   );
+
+  // (A) Reprise au point interrompu + (B) récupération des réponses perdues avant la dernière sauvegarde.
+  // Exécuté une fois au montage. Le serveur reste la source : on ne réapplique le local que
+  // si le serveur n'a pas (ou moins) l'info pour un point donné.
+  useEffect(() => {
+    try {
+      const s = Number(localStorage.getItem(STEP_KEY));
+      if (Number.isFinite(s) && s >= 0) setStep(Math.min(s, items.length));
+    } catch {
+      /* ignore */
+    }
+    try {
+      const raw = localStorage.getItem(ANSW_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw) as Record<string, { conformite: Conformite; commentaire: string | null }>;
+      let changed = false;
+      setItems((prev) => {
+        const next = prev.map((i) => {
+          const loc = snap[i.code];
+          if (!loc) return i;
+          const serverVide = i.conformite === 'NON_EVALUE' && !i.commentaire;
+          const localRempli = loc.conformite !== 'NON_EVALUE' || !!loc.commentaire;
+          if (serverVide && localRempli) {
+            changed = true;
+            return { ...i, conformite: loc.conformite, commentaire: loc.commentaire };
+          }
+          return i;
+        });
+        if (changed) scheduleSave(next); // réconcilie côté serveur
+        return next;
+      });
+    } catch {
+      /* snapshot illisible : on ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // (A) Mémorise le point courant à chaque changement.
+  useEffect(() => {
+    try {
+      localStorage.setItem(STEP_KEY, String(step));
+    } catch {
+      /* ignore */
+    }
+  }, [STEP_KEY, step]);
+
+  // (C) Flush à la fermeture / mise en arrière-plan : envoie la dernière sauvegarde en attente.
+  useEffect(() => {
+    const flush = () => {
+      if (timer.current) clearTimeout(timer.current);
+      writeLocal(itemsRef.current); // local d'abord (toujours fiable)
+      persist(itemsRef.current); // réseau best-effort (keepalive)
+    };
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('beforeunload', flush);
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => {
+      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onHide);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persist]);
 
   /** Upload d'une photo (direct ou depuis la file). Marque ✓ en cas de succès. */
   const uploadOne = useCallback(
@@ -383,6 +472,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     setFinishing(false);
     if (ok) {
       setDone(true);
+      try {
+        localStorage.removeItem(STEP_KEY);
+        localStorage.removeItem(ANSW_KEY);
+      } catch {
+        /* ignore */
+      }
       router.refresh();
     }
   };
@@ -870,30 +965,33 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
               </div>
 
-              {/* Tablette paysage : centre (constat) + colonne contexte, zéro scroll */}
+              {/* Tablette paysage (optimisé droitier) : énoncé/contexte au centre, ACTIONS à droite */}
               <div className="hidden min-h-0 flex-1 gap-6 pt-2 lg:flex">
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="mx-auto w-full max-w-md">
-                    {repereTitre()}
-                    {constatButtons()}
+                {/* CENTRE : énoncé + saisie secondaire (lecture, main gauche) */}
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-0.5">
+                  {repereTitre()}
+                  <div className="mt-3 space-y-3">
+                    {isNc && contexteNc()}
+                    {photoThumbs()}
                   </div>
                 </div>
-                <div className="flex w-80 shrink-0 flex-col gap-3">
-                  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
-                    {photoThumbs()}
-                    {contexteNc()}
-                    {!isNc && (
-                      <p className="rounded-xl border border-dashed border-ink/15 px-3 py-4 text-center text-[12px] leading-snug text-gris">
-                        {!hasConstat
-                          ? 'Choisis un constat à gauche, puis prends une photo.'
-                          : hasPhoto
-                            ? 'Point validé. Tu peux passer au suivant.'
-                            : 'Prends une photo pour valider ce point.'}
-                      </p>
-                    )}
+
+                {/* DROITE : actions principales (constat + photo), sous le pouce */}
+                <div className="flex w-[22rem] shrink-0 flex-col">
+                  <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto">
+                    {constatButtons()}
                   </div>
-                  {/* Bouton photo rond épinglé en bas-droite : à portée du pouce */}
-                  <div className="flex shrink-0 justify-end">{photoButton()}</div>
+                  <div className="mt-3 flex shrink-0 items-center justify-between gap-3">
+                    <span className="text-[12px] leading-snug text-gris">
+                      {!hasConstat
+                        ? 'Choisis un constat'
+                        : hasPhoto
+                          ? 'Point validé ✓'
+                          : 'Prends une photo →'}
+                    </span>
+                    {/* Bouton photo rond, bas-droite : à portée du pouce */}
+                    {photoButton()}
+                  </div>
                 </div>
               </div>
             </>
