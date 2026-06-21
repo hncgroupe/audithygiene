@@ -712,13 +712,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           </span>
         </div>
 
-        <h1 className="mt-1.5 text-center text-lg font-bold leading-tight tracking-tight text-ink lg:text-xl">
+        <h1 className="mt-1 text-center text-base font-bold leading-tight tracking-tight text-ink lg:text-lg">
           {current.intitule}
         </h1>
 
         {(current.explication || current.pedagogie) && (
           <>
-            <div className="mt-1.5 text-center">
+            <div className="mt-1 text-center">
               <button
                 type="button"
                 onClick={() => setInfoOpen((v) => !v)}
@@ -773,7 +773,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             <button
               key={lvl}
               onClick={() => onPickConstat(c)}
-              className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] ${
+              className={`w-full rounded-2xl border-2 py-4 text-base font-bold transition-all active:scale-[0.99] ${
                 on ? cfg.on : cfg.off
               }`}
             >
@@ -805,37 +805,28 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   // Motifs (chips) + note libre (colonne droite, sous les constats)
   const motifsNote = () =>
-    current && isNc ? (
+    current && isNc && current.motifs.length > 0 ? (
       <div className="text-left">
-        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gris">Motifs</label>
-        {current.motifs.length > 0 && (
-          <div className="mb-2 flex flex-wrap gap-1.5">
-            {current.motifs.map((m) => {
-              const on = (current.commentaire ?? '').includes(m);
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => toggleMotif(m)}
-                  className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                    on
-                      ? 'border-transparent bg-ink text-white'
-                      : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
-                  }`}
-                >
-                  {m}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        <textarea
-          value={current.commentaire ?? ''}
-          onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
-          rows={2}
-          placeholder="Détail libre (optionnel)…"
-          className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
-        />
+        <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gris">Motifs</div>
+        <div className="flex flex-wrap gap-1.5">
+          {current.motifs.map((m) => {
+            const on = (current.commentaire ?? '').includes(m);
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => toggleMotif(m)}
+                className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                  on
+                    ? 'border-transparent bg-ink text-white'
+                    : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
+                }`}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
       </div>
     ) : null;
 
@@ -1008,38 +999,33 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
               </div>
 
-              {/* Tablette paysage : TITRE partagé en haut, puis CENTRE (lecture) + DROITE (actions) */}
+              {/* Tablette paysage : TITRE en bandeau, CENTRE = explication + motifs, DROITE = constat + photo */}
               <div className="hidden min-h-0 flex-1 flex-col pt-1 lg:flex">
                 {/* Titre sur toute la largeur (colonnes 2 + 3) */}
-                <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
+                <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
                   {repereTitre()}
                 </div>
 
-                <div className="mt-3 flex min-h-0 flex-1 gap-5">
-                  {/* CENTRE : lecture (synthèse non-conformité + photos) */}
-                  <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
+                <div className="mt-2 flex min-h-0 flex-1 gap-4">
+                  {/* CENTRE : explication de la (non-)conformité + motifs juste dessous + photos */}
+                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
                     {isNc && syntheseNc()}
-                    {photoThumbs() && (
+                    {isNc && (
                       <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">
-                          Photos
-                        </div>
+                        {motifsNote()}
+                      </div>
+                    )}
+                    {photoThumbs() && (
+                      <div className="rounded-2xl border border-ink/10 bg-white p-2.5 shadow-card">
                         {photoThumbs()}
                       </div>
                     )}
                   </div>
 
-                  {/* DROITE : constat → motifs ; icône photo seule en bas-droite */}
-                  <div className="flex w-[24rem] shrink-0 flex-col">
-                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
-                      {constatButtons()}
-                      {isNc && (
-                        <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                          {motifsNote()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-3 flex shrink-0 justify-end">
+                  {/* DROITE : Conforme / NC, icône photo seule en bas-droite */}
+                  <div className="flex w-[22rem] shrink-0 flex-col">
+                    <div className="min-h-0 flex-1">{constatButtons()}</div>
+                    <div className="mt-2 flex shrink-0 justify-end">
                       <div className="relative">
                         {photoButton()}
                         {hasPhoto && (
