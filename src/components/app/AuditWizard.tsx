@@ -577,14 +577,24 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     </button>
   );
 
-  // Petit bouton rond « + » (footer, à gauche de Précédent)
+  // Petit bouton rond « + » vert (footer, à gauche de Précédent)
   const addPlusButton = () => (
     <button
       onClick={() => setAddOpen(true)}
       aria-label="Ajouter un point"
-      className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-vert/40 bg-white text-2xl font-bold leading-none text-vert-700 transition-colors hover:bg-vert-50"
+      className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-vert text-white shadow-md transition-colors hover:bg-vert-600"
     >
-      +
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        className="h-5 w-5"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
     </button>
   );
 
@@ -986,7 +996,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       )}
 
       {/* En-tête : retour + logo + nom du client (épinglé) */}
-      <div className="shrink-0 border-b border-ink/10 bg-white">
+      <div className="shrink-0 bg-white">
         <div className="container-ah relative flex h-12 items-center">
           <button
             onClick={quitter}
