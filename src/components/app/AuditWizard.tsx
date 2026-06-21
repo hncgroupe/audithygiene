@@ -977,12 +977,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             )}
           </div>
         </div>
-        <div className="h-1 w-full bg-ink/5">
-          <div
-            className="h-full bg-vert transition-all duration-500"
-            style={{ width: `${total ? (Math.min(step, total) / total) * 100 : 0}%` }}
-          />
-        </div>
       </div>
 
       {/* Contenu : barre latérale checklist (tablette) + point courant */}
