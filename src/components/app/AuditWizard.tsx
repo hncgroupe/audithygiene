@@ -109,6 +109,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const [done, setDone] = useState(statutInitial === 'TERMINE');
   const [online, setOnline] = useState(true);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [pointsOpen, setPointsOpen] = useState(false); // tiroir liste des points (tablette)
   const [holdingNext, setHoldingNext] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -489,6 +490,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     setStep(idx);
     setAddOpen(false);
     setAddQuery('');
+    setPointsOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -630,6 +632,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   <button
                     onClick={() => {
                       setStep(idx);
+                      setPointsOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className={`flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-vert-50/50 lg:py-1.5 ${
@@ -747,7 +750,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   // 3 gros boutons constat empilés
   const constatButtons = () =>
     current && (
-      <div className="mt-5 space-y-3 lg:mt-4">
+      <div className="space-y-3">
         {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
           const on = current.conformite === lvl;
           const cfg = {
@@ -784,29 +787,30 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </div>
     );
 
-  // Synthèse NC + motifs + note libre (contexte non-conformité)
-  const contexteNc = () =>
-    current && isNc ? (
-      <div className="text-left">
-        {activeNc && (
-          <div className="overflow-hidden rounded-xl border border-red-200">
-            <div className="bg-red-50 px-3 py-2">
-              <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
-                {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
-              </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.pourquoi}</p>
-            </div>
-            {activeNc.correctif && (
-              <div className="border-t border-red-100 bg-white px-3 py-2">
-                <div className="text-[11px] font-bold uppercase tracking-wide text-vert-700">Correctif</div>
-                <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.correctif}</p>
-              </div>
-            )}
+  // Synthèse NC : pourquoi + correctif (colonne centre)
+  const syntheseNc = () =>
+    current && isNc && activeNc ? (
+      <div className="overflow-hidden rounded-xl border border-red-200 text-left">
+        <div className="bg-red-50 px-3 py-2.5">
+          <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
+            {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
+          </div>
+          <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.pourquoi}</p>
+        </div>
+        {activeNc.correctif && (
+          <div className="border-t border-red-100 bg-white px-3 py-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-vert-700">Correctif</div>
+            <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.correctif}</p>
           </div>
         )}
-        <label className="mt-3 mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink/60">
-          Motifs
-        </label>
+      </div>
+    ) : null;
+
+  // Motifs (chips) + note libre (colonne droite, sous les constats)
+  const motifsNote = () =>
+    current && isNc ? (
+      <div className="text-left">
+        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gris">Motifs</label>
         {current.motifs.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-1.5">
             {current.motifs.map((m) => {
@@ -816,7 +820,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   key={m}
                   type="button"
                   onClick={() => toggleMotif(m)}
-                  className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                  className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                     on
                       ? 'border-transparent bg-ink text-white'
                       : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
@@ -835,6 +839,15 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           placeholder="Détail libre (optionnel)…"
           className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
         />
+      </div>
+    ) : null;
+
+  // Composé : synthèse + motifs + note empilés (utilisé en mobile/portrait)
+  const contexteNc = () =>
+    current && isNc ? (
+      <div className="space-y-3">
+        {syntheseNc()}
+        {motifsNote()}
       </div>
     ) : null;
 
@@ -905,6 +918,38 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </button>
     );
 
+  // Navigation Précédent / Suivant (footer mobile + colonne droite tablette)
+  const navButtons = () => (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => goto(step - 1)}
+        disabled={step === 0}
+        className="btn-ghost flex-1 disabled:opacity-40"
+      >
+        Précédent
+      </button>
+      <button
+        onClick={onNext}
+        onPointerDown={startHold}
+        onPointerUp={cancelHold}
+        onPointerLeave={cancelHold}
+        onPointerCancel={cancelHold}
+        className={`relative flex-1 select-none overflow-hidden rounded-full px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] ${
+          canAdvance ? 'bg-ink' : 'bg-ink/40'
+        }`}
+      >
+        <span
+          className="absolute inset-y-0 left-0 bg-vert"
+          style={{
+            width: holdingNext ? '100%' : '0%',
+            transition: holdingNext ? `width ${HOLD_MS}ms linear` : 'width 150ms ease-out',
+          }}
+        />
+        <span className="relative">{step === total - 1 ? 'Récap' : 'Suivant'}</span>
+      </button>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
       {/* En-tête : retour + logo + nom du client (épinglé) */}
@@ -937,11 +982,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
       {/* Contenu : barre latérale checklist (tablette) + point courant */}
       <div className="min-h-0 flex-1 overflow-hidden">
-        <div className="container-ah flex h-full gap-6 py-4">
-          <aside className="hidden w-56 shrink-0 flex-col pr-1 lg:flex xl:w-72">
-            <div className="min-h-0 flex-1 overflow-y-auto">{renderChecklist()}</div>
-            <div className="mt-3 shrink-0">{renderAdd()}</div>
-          </aside>
+        <div className="container-ah flex h-full gap-5 py-4">
           {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
           <input
             ref={fileRef}
@@ -959,39 +1000,113 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
               <div className="min-h-0 flex-1 overflow-y-auto lg:hidden">
                 <div className="mx-auto max-w-2xl">
                   {repereTitre()}
-                  {constatButtons()}
+                  <div className="mt-5">{constatButtons()}</div>
                   {isNc && <div className="mt-3">{contexteNc()}</div>}
                   {photoThumbs() && <div className="mt-3">{photoThumbs()}</div>}
                 </div>
               </div>
 
-              {/* Tablette paysage (optimisé droitier) : énoncé/contexte au centre, ACTIONS à droite */}
-              <div className="hidden min-h-0 flex-1 gap-6 pt-2 lg:flex">
-                {/* CENTRE : énoncé + saisie secondaire (lecture, main gauche) */}
-                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pr-0.5">
-                  {repereTitre()}
-                  <div className="mt-3 space-y-3">
-                    {isNc && contexteNc()}
-                    {photoThumbs()}
+              {/* Tablette paysage : GAUCHE = lecture, DROITE = panneau d'action (tout cliquable, sous le pouce) */}
+              <div className="hidden min-h-0 flex-1 gap-5 pt-1 lg:flex">
+                {/* GAUCHE : lecture seule (énoncé, explication, synthèse, photos) */}
+                <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
+                  <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-card">
+                    {repereTitre()}
                   </div>
+                  {isNc && syntheseNc()}
+                  {photoThumbs() && (
+                    <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+                      <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">
+                        Photos du point
+                      </div>
+                      {photoThumbs()}
+                    </div>
+                  )}
                 </div>
 
-                {/* DROITE : actions principales (constat + photo), sous le pouce */}
-                <div className="flex w-[22rem] shrink-0 flex-col">
-                  <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto">
-                    {constatButtons()}
+                {/* DROITE : panneau d'action industriel, étapes numérotées, nav en pied */}
+                <div className="relative flex w-[26rem] shrink-0 flex-col overflow-hidden rounded-2xl border border-ink/15 bg-white shadow-card">
+                  {/* Barre titre : point courant + accès liste */}
+                  <div className="flex items-center justify-between gap-2 border-b border-ink/10 bg-ink/[0.02] px-4 py-2.5">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-gris tabular-nums">
+                      Point {step + 1} / {total}
+                    </div>
+                    <button
+                      onClick={() => setPointsOpen(true)}
+                      className="rounded-full border border-ink/15 px-3 py-1 text-[12px] font-semibold text-ink/70 transition-colors hover:border-ink/30 hover:text-ink"
+                    >
+                      ☰ Points
+                    </button>
                   </div>
-                  <div className="mt-3 flex shrink-0 items-center justify-between gap-3">
-                    <span className="text-[12px] leading-snug text-gris">
-                      {!hasConstat
-                        ? 'Choisis un constat'
-                        : hasPhoto
-                          ? 'Point validé ✓'
-                          : 'Prends une photo →'}
-                    </span>
-                    {/* Bouton photo rond, bas-droite : à portée du pouce */}
-                    {photoButton()}
+
+                  {/* Corps : étapes numérotées (cliquable) */}
+                  <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+                    <section>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
+                          1
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Constat</span>
+                      </div>
+                      {constatButtons()}
+                    </section>
+
+                    {isNc && (
+                      <section>
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
+                            2
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Motifs</span>
+                        </div>
+                        {motifsNote()}
+                      </section>
+                    )}
+
+                    <section>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="grid h-5 w-5 place-items-center rounded-full bg-ink text-[11px] font-bold text-white">
+                          {isNc ? 3 : 2}
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-wide text-ink/70">
+                          Photo {hasPhoto ? '' : '(obligatoire)'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[13px] leading-snug text-gris">
+                          {!hasConstat
+                            ? 'Choisis un constat'
+                            : hasPhoto
+                              ? `${current.photos.length} photo${current.photos.length > 1 ? 's' : ''} ✓`
+                              : 'À prendre →'}
+                        </span>
+                        {photoButton()}
+                      </div>
+                    </section>
                   </div>
+
+                  {/* Pied : navigation (sous le pouce) */}
+                  <div className="border-t border-ink/10 bg-ink/[0.02] p-3">{navButtons()}</div>
+
+                  {/* Tiroir liste des points (overlay sur le panneau) */}
+                  {pointsOpen && (
+                    <div className="absolute inset-0 z-10 flex flex-col bg-white">
+                      <div className="flex items-center justify-between border-b border-ink/10 px-4 py-2.5">
+                        <span className="text-xs font-bold uppercase tracking-wide text-gris">
+                          Tous les points
+                        </span>
+                        <button
+                          onClick={() => setPointsOpen(false)}
+                          className="grid h-7 w-7 place-items-center rounded-full text-xl leading-none text-gris hover:bg-ink/5 hover:text-ink"
+                          aria-label="Fermer"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto p-3">{renderChecklist()}</div>
+                      <div className="border-t border-ink/10 p-3">{renderAdd()}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -1029,16 +1144,16 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         </div>
       </div>
 
-      {/* Barre d'action épinglée en bas : jamais besoin de scroller pour avancer */}
-      <div className="shrink-0 border-t border-ink/10 bg-white">
+      {/* Barre d'action épinglée en bas (mobile, + récap sur tablette) */}
+      <div className={`shrink-0 border-t border-ink/10 bg-white ${!isRecap ? 'lg:hidden' : ''}`}>
         <div className="container-ah py-2.5">
           {!isRecap ? (
-            <>
-              {/* Gros bouton photo (mobile seulement : sur tablette il est en colonne contexte) */}
+            // Mobile/portrait seulement : sur tablette, photo + navigation sont dans le panneau droit.
+            <div className="lg:hidden">
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60 lg:hidden"
+                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
               >
                 {uploading
                   ? 'Ajout…'
@@ -1046,35 +1161,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     ? 'Ajouter une photo'
                     : 'Prendre une photo'}
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => goto(step - 1)}
-                  disabled={step === 0}
-                  className="btn-ghost flex-1 disabled:opacity-40"
-                >
-                  Précédent
-                </button>
-                <button
-                  onClick={onNext}
-                  onPointerDown={startHold}
-                  onPointerUp={cancelHold}
-                  onPointerLeave={cancelHold}
-                  onPointerCancel={cancelHold}
-                  className={`relative flex-1 select-none overflow-hidden rounded-full px-5 py-2.5 font-semibold text-white transition-all active:scale-[0.98] ${
-                    canAdvance ? 'bg-ink' : 'bg-ink/40'
-                  }`}
-                >
-                  <span
-                    className="absolute inset-y-0 left-0 bg-vert"
-                    style={{
-                      width: holdingNext ? '100%' : '0%',
-                      transition: holdingNext ? `width ${HOLD_MS}ms linear` : 'width 150ms ease-out',
-                    }}
-                  />
-                  <span className="relative">{step === total - 1 ? 'Récap' : 'Suivant'}</span>
-                </button>
-              </div>
-            </>
+              {navButtons()}
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <button onClick={() => goto(total - 1)} className="btn-ghost flex-1">
