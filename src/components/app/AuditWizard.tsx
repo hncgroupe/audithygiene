@@ -982,7 +982,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   );
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
+    <div className="fixed inset-0 z-40 flex flex-col bg-vert-50">
       {/* Modal « Ajouter un point » (ouvert via le bouton rond + du footer) */}
       {addOpen && (
         <div
