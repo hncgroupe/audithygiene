@@ -818,9 +818,9 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       {/* Contenu : barre latérale checklist (tablette) + point courant */}
       <div className="min-h-0 flex-1 overflow-hidden">
         <div className="container-ah flex h-full gap-6 py-4">
-          <aside className="hidden w-56 shrink-0 flex-col overflow-y-auto pr-1 lg:flex xl:w-72">
-            <div className="mb-3">{renderAdd()}</div>
-            {renderChecklist()}
+          <aside className="hidden w-56 shrink-0 flex-col pr-1 lg:flex xl:w-72">
+            <div className="min-h-0 flex-1 overflow-y-auto">{renderChecklist()}</div>
+            <div className="mt-3 shrink-0">{renderAdd()}</div>
           </aside>
           {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
           <input
@@ -847,25 +847,28 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
               {/* Tablette paysage : centre (constat) + colonne contexte, zéro scroll */}
               <div className="hidden min-h-0 flex-1 gap-6 lg:flex">
-                <div className="flex min-h-0 flex-1 flex-col justify-center overflow-hidden">
+                <div className="flex min-h-0 flex-1 flex-col justify-start overflow-hidden pt-2">
                   <div className="mx-auto w-full max-w-md">
                     {repereTitre()}
                     {constatButtons()}
                   </div>
                 </div>
-                <div className="flex w-80 shrink-0 flex-col gap-3 overflow-y-auto pb-1">
-                  {photoButton()}
-                  {photoThumbs()}
-                  {contexteNc()}
-                  {!isNc && (
-                    <p className="rounded-xl border border-dashed border-ink/15 px-3 py-4 text-center text-[12px] leading-snug text-gris">
-                      {!hasConstat
-                        ? 'Choisis un constat à gauche, puis prends une photo.'
-                        : hasPhoto
-                          ? 'Point validé. Tu peux passer au suivant.'
-                          : 'Prends une photo pour valider ce point.'}
-                    </p>
-                  )}
+                <div className="flex w-80 shrink-0 flex-col gap-3">
+                  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
+                    {photoThumbs()}
+                    {contexteNc()}
+                    {!isNc && (
+                      <p className="rounded-xl border border-dashed border-ink/15 px-3 py-4 text-center text-[12px] leading-snug text-gris">
+                        {!hasConstat
+                          ? 'Choisis un constat à gauche, puis prends une photo.'
+                          : hasPhoto
+                            ? 'Point validé. Tu peux passer au suivant.'
+                            : 'Prends une photo pour valider ce point.'}
+                      </p>
+                    )}
+                  </div>
+                  {/* Bouton photo épinglé en bas-droite : à portée du pouce */}
+                  <div className="shrink-0">{photoButton()}</div>
                 </div>
               </div>
             </>
