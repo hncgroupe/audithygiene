@@ -18,5 +18,7 @@ export async function POST(request: NextRequest) {
     });
     await supabase.auth.signOut();
   }
-  return NextResponse.redirect(new URL('/login', request.url), 303);
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? request.nextUrl.host;
+  const proto = request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol.replace(':', '') ?? 'http';
+  return NextResponse.redirect(new URL('/login', `${proto}://${host}`), 303);
 }

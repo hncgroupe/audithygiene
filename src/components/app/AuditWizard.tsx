@@ -537,7 +537,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                       setStep(idx);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-vert-50/50 ${
+                    className={`flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-vert-50/50 lg:py-1.5 ${
                       idx === step ? 'bg-vert-50' : ''
                     }`}
                   >
@@ -571,11 +571,11 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Suivant cliquable uniquement si photo + constat + note (le constat remplit la note).
+  // Suivant cliquable si constat + photo (obligatoires sur chaque point). Note/motif optionnels.
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
   const hasPhoto = !!current && current.photos.length > 0;
-  const hasNote = !!current?.commentaire?.trim();
-  const canAdvance = !current || (hasConstat && hasPhoto && hasNote);
+  const isNc = !!current && (current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE');
+  const canAdvance = !current || (hasConstat && hasPhoto);
 
   // Tap = avancer si complet. Sinon, maintenir 3 s pour passer la question.
   const HOLD_MS = 3000;
@@ -594,6 +594,204 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     if (holdTimer.current) clearTimeout(holdTimer.current);
     setHoldingNext(false);
   };
+
+  // ---- Blocs réutilisés (mobile empilé + tablette 3 colonnes) ----
+
+  // Repère compact + titre + aide repliée
+  const repereTitre = () =>
+    current && (
+      <>
+        <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gris">
+          <span className={`h-2 w-2 rounded-full ${CONF_STYLE[current.conformite].dot}`} />
+          <span className="uppercase tracking-wide text-vert-700">{current.theme}</span>
+          <span>·</span>
+          <span className="tabular-nums">
+            {step + 1}/{total}
+          </span>
+          <span>·</span>
+          <span
+            className="tabular-nums font-semibold"
+            style={{ color: evalues === 0 ? undefined : bandColor(notation.scoreGlobal) }}
+          >
+            {evalues === 0 ? '-' : Math.round(notation.scoreGlobal)}/100
+          </span>
+        </div>
+
+        <h1 className="mt-1.5 text-center text-lg font-bold leading-tight tracking-tight text-ink lg:text-xl">
+          {current.intitule}
+        </h1>
+
+        {(current.explication || current.pedagogie) && (
+          <>
+            <div className="mt-1.5 text-center">
+              <button
+                type="button"
+                onClick={() => setInfoOpen((v) => !v)}
+                className="inline-flex items-center gap-1 text-[12px] font-medium text-vert-700"
+              >
+                {infoOpen ? 'Masquer l’aide' : 'Aide & à expliquer au client'}
+                <span className="text-[9px]">{infoOpen ? '▲' : '▼'}</span>
+              </button>
+            </div>
+            {infoOpen && (
+              <div className="mt-2 space-y-2 rounded-xl border border-ink/10 bg-white p-3 text-left">
+                <p className="text-[13px] leading-snug text-ink/70">{current.explication}</p>
+                <div className="rounded-lg border border-vert-200 bg-vert-50/70 p-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-vert-800">
+                    À expliquer au client
+                  </div>
+                  <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{current.pedagogie}</p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </>
+    );
+
+  // 3 gros boutons constat empilés
+  const constatButtons = () =>
+    current && (
+      <div className="mt-5 space-y-3 lg:mt-4">
+        {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
+          const on = current.conformite === lvl;
+          const cfg = {
+            CONFORME: {
+              label: 'Conforme',
+              on: 'border-transparent bg-vert text-white shadow-[0_6px_18px_-6px_rgba(16,185,129,0.6)]',
+              off: 'border-vert/40 bg-white text-vert-800 hover:bg-vert-50',
+            },
+            NC_MINEURE: {
+              label: 'Non-conformité mineure',
+              on: 'border-transparent bg-amber-500 text-white shadow-[0_6px_18px_-6px_rgba(245,158,11,0.6)]',
+              off: 'border-amber-400/60 bg-white text-amber-700 hover:bg-amber-50',
+            },
+            NC_MAJEURE: {
+              label: 'Cas critique',
+              on: 'border-transparent bg-red-600 text-white shadow-[0_6px_18px_-6px_rgba(220,38,38,0.6)]',
+              off: 'border-red-400/60 bg-white text-red-700 hover:bg-red-50',
+            },
+          }[lvl];
+          const c =
+            current.constats.find((x) => x.conformite === lvl) ?? { label: cfg.label, conformite: lvl };
+          return (
+            <button
+              key={lvl}
+              onClick={() => onPickConstat(c)}
+              className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] ${
+                on ? cfg.on : cfg.off
+              }`}
+            >
+              {cfg.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+
+  // Synthèse NC + motifs + note libre (contexte non-conformité)
+  const contexteNc = () =>
+    current && isNc ? (
+      <div className="text-left">
+        {activeNc && (
+          <div className="overflow-hidden rounded-xl border border-red-200">
+            <div className="bg-red-50 px-3 py-2">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
+                {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
+              </div>
+              <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.pourquoi}</p>
+            </div>
+            {activeNc.correctif && (
+              <div className="border-t border-red-100 bg-white px-3 py-2">
+                <div className="text-[11px] font-bold uppercase tracking-wide text-vert-700">Correctif</div>
+                <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.correctif}</p>
+              </div>
+            )}
+          </div>
+        )}
+        <label className="mt-3 mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink/60">
+          Motifs
+        </label>
+        {current.motifs.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {current.motifs.map((m) => {
+              const on = (current.commentaire ?? '').includes(m);
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => toggleMotif(m)}
+                  className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                    on
+                      ? 'border-transparent bg-ink text-white'
+                      : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
+                  }`}
+                >
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <textarea
+          value={current.commentaire ?? ''}
+          onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
+          rows={2}
+          placeholder="Détail libre (optionnel)…"
+          className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+        />
+      </div>
+    ) : null;
+
+  // Vignettes photos
+  const photoThumbs = () =>
+    current && current.photos.length > 0 ? (
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-3">
+        {current.photos.map((p, idx) => (
+          <div
+            key={p.localId ?? p.path ?? idx}
+            className="group relative aspect-square overflow-hidden rounded-xl border border-ink/10 bg-ink/5"
+          >
+            {p.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full place-items-center text-xs text-gris">photo</div>
+            )}
+            <span
+              className={`absolute bottom-1 left-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                p.status === 'done' ? 'bg-vert text-white' : 'bg-amber-400 text-ink'
+              }`}
+            >
+              {p.status === 'done' ? '✓' : '⏳'}
+            </span>
+            <button
+              onClick={() => onDeletePhoto(p)}
+              className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+              aria-label="Supprimer"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    ) : null;
+
+  // Bouton capture photo (tablette : dans la colonne contexte)
+  const photoButton = () =>
+    current && (
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading}
+        className={`w-full rounded-full py-3 text-sm font-semibold transition-all active:scale-[0.99] disabled:opacity-60 ${
+          hasPhoto
+            ? 'border-2 border-vert/40 bg-white text-vert-800 hover:bg-vert-50'
+            : 'bg-vert text-white hover:bg-vert-600'
+        }`}
+      >
+        {uploading ? 'Ajout…' : hasPhoto ? '+ Ajouter une photo' : '📷 Prendre une photo (obligatoire)'}
+      </button>
+    );
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
@@ -620,228 +818,88 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       {/* Contenu : barre latérale checklist (tablette) + point courant */}
       <div className="min-h-0 flex-1 overflow-hidden">
         <div className="container-ah flex h-full gap-6 py-4">
-          <aside className="hidden w-80 shrink-0 flex-col overflow-y-auto pr-1 lg:flex">
+          <aside className="hidden w-56 shrink-0 flex-col overflow-y-auto pr-1 lg:flex xl:w-72">
             <div className="mb-3">{renderAdd()}</div>
             {renderChecklist()}
           </aside>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-        {!isRecap && current && (
-          <div className="mx-auto max-w-2xl">
-            {/* Repère compact : thème · point · score */}
-            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gris">
-              <span className={`h-2 w-2 rounded-full ${CONF_STYLE[current.conformite].dot}`} />
-              <span className="uppercase tracking-wide text-vert-700">{current.theme}</span>
-              <span>·</span>
-              <span className="tabular-nums">
-                {step + 1}/{total}
-              </span>
-              <span>·</span>
-              <span
-                className="tabular-nums font-semibold"
-                style={{ color: evalues === 0 ? undefined : bandColor(notation.scoreGlobal) }}
-              >
-                {evalues === 0 ? '-' : Math.round(notation.scoreGlobal)}/100
-              </span>
-            </div>
+          {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            onChange={(e) => onUpload(e.target.files)}
+            className="hidden"
+          />
 
-            <h1 className="mt-1.5 text-center text-lg font-bold leading-tight tracking-tight text-ink">
-              {current.intitule}
-            </h1>
-
-            {/* Aide repliée par défaut : explication + à expliquer au client */}
-            {(current.explication || current.pedagogie) && (
+          {!isRecap && current && (
             <>
-            <div className="mt-1.5 text-center">
-              <button
-                type="button"
-                onClick={() => setInfoOpen((v) => !v)}
-                className="inline-flex items-center gap-1 text-[12px] font-medium text-vert-700"
-              >
-                {infoOpen ? 'Masquer l’aide' : 'Aide & à expliquer au client'}
-                <span className="text-[9px]">{infoOpen ? '▲' : '▼'}</span>
-              </button>
-            </div>
-            {infoOpen && (
-              <div className="mt-2 space-y-2 rounded-xl border border-ink/10 bg-white p-3 text-left">
-                <p className="text-[13px] leading-snug text-ink/70">{current.explication}</p>
-                <div className="rounded-lg border border-vert-200 bg-vert-50/70 p-2.5">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-vert-800">
-                    À expliquer au client
-                  </div>
-                  <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{current.pedagogie}</p>
+              {/* Mobile / portrait : une seule colonne scrollable */}
+              <div className="min-h-0 flex-1 overflow-y-auto lg:hidden">
+                <div className="mx-auto max-w-2xl">
+                  {repereTitre()}
+                  {constatButtons()}
+                  {isNc && <div className="mt-3">{contexteNc()}</div>}
+                  {photoThumbs() && <div className="mt-3">{photoThumbs()}</div>}
                 </div>
               </div>
-            )}
-            </>
-            )}
 
-            {/* Constat : 3 gros boutons empilés, code couleur vert / jaune / rouge */}
-            <div className="mt-5 space-y-3">
-              {(['CONFORME', 'NC_MINEURE', 'NC_MAJEURE'] as const).map((lvl) => {
-                const on = current.conformite === lvl;
-                const cfg = {
-                  CONFORME: {
-                    label: 'Conforme',
-                    on: 'border-transparent bg-vert text-white shadow-[0_6px_18px_-6px_rgba(16,185,129,0.6)]',
-                    off: 'border-vert/40 bg-white text-vert-800 hover:bg-vert-50',
-                  },
-                  NC_MINEURE: {
-                    label: 'Non-conformité mineure',
-                    on: 'border-transparent bg-amber-500 text-white shadow-[0_6px_18px_-6px_rgba(245,158,11,0.6)]',
-                    off: 'border-amber-400/60 bg-white text-amber-700 hover:bg-amber-50',
-                  },
-                  NC_MAJEURE: {
-                    label: 'Cas critique',
-                    on: 'border-transparent bg-red-600 text-white shadow-[0_6px_18px_-6px_rgba(220,38,38,0.6)]',
-                    off: 'border-red-400/60 bg-white text-red-700 hover:bg-red-50',
-                  },
-                }[lvl];
-                const c =
-                  current.constats.find((x) => x.conformite === lvl) ?? { label: cfg.label, conformite: lvl };
-                return (
-                  <button
-                    key={lvl}
-                    onClick={() => onPickConstat(c)}
-                    className={`w-full rounded-2xl border-2 py-5 text-base font-bold transition-all active:scale-[0.99] ${
-                      on ? cfg.on : cfg.off
-                    }`}
-                  >
-                    {cfg.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Synthèse NC : pourquoi + correctif */}
-            {activeNc && (
-              <div className="mt-3 overflow-hidden rounded-xl border border-red-200 text-left">
-                <div className="bg-red-50 px-3 py-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-red-700">
-                    {current.conformite === 'NC_MAJEURE' ? 'Cas critique : pourquoi' : 'Non-conformité : pourquoi'}
+              {/* Tablette paysage : centre (constat) + colonne contexte, zéro scroll */}
+              <div className="hidden min-h-0 flex-1 gap-6 lg:flex">
+                <div className="flex min-h-0 flex-1 flex-col justify-center overflow-hidden">
+                  <div className="mx-auto w-full max-w-md">
+                    {repereTitre()}
+                    {constatButtons()}
                   </div>
-                  <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.pourquoi}</p>
                 </div>
-                {activeNc.correctif && (
-                  <div className="border-t border-red-100 bg-white px-3 py-2">
-                    <div className="text-[11px] font-bold uppercase tracking-wide text-vert-700">Correctif</div>
-                    <p className="mt-0.5 text-[13px] leading-snug text-ink/80">{activeNc.correctif}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Motifs + note libre quand non conforme */}
-            {(current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE') && (
-              <div className="mt-3 text-left">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink/60">
-                  Motifs
-                </label>
-                {current.motifs.length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-1.5">
-                    {current.motifs.map((m) => {
-                      const on = (current.commentaire ?? '').includes(m);
-                      return (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => toggleMotif(m)}
-                          className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
-                            on
-                              ? 'border-transparent bg-ink text-white'
-                              : 'border-ink/15 bg-white text-ink/70 hover:border-ink/30'
-                          }`}
-                        >
-                          {m}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                <textarea
-                  value={current.commentaire ?? ''}
-                  onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
-                  rows={2}
-                  placeholder="Détail libre (optionnel)…"
-                  className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
-                />
-              </div>
-            )}
-
-            {/* Photos (optionnel) : vignettes si présentes */}
-            {current.photos.length > 0 && (
-              <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6">
-                {current.photos.map((p, idx) => (
-                  <div
-                    key={p.localId ?? p.path ?? idx}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-ink/10 bg-ink/5"
-                  >
-                    {p.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full place-items-center text-xs text-gris">photo</div>
-                    )}
-                    <span
-                      className={`absolute bottom-1 left-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                        p.status === 'done' ? 'bg-vert text-white' : 'bg-amber-400 text-ink'
-                      }`}
-                    >
-                      {p.status === 'done' ? '✓' : '⏳'}
-                    </span>
-                    <button
-                      onClick={() => onDeletePhoto(p)}
-                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
-                      aria-label="Supprimer"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              multiple
-              onChange={(e) => onUpload(e.target.files)}
-              className="hidden"
-            />
-
-          </div>
-        )}
-
-        {/* Récapitulatif */}
-        {isRecap && (
-          <div className="mx-auto max-w-2xl">
-            <div className="flex flex-col items-center gap-5 rounded-2xl border border-ink/10 bg-white p-6 text-center shadow-card sm:flex-row sm:text-left">
-              <ScoreRing score={notation.scoreGlobal} evalues={evalues} size={88} />
-              <div>
-                <div className="text-sm text-gris">Score global</div>
-                <div className="text-3xl font-bold tabular-nums text-ink">
-                  {evalues === 0 ? '-' : Math.round(notation.scoreGlobal)}
-                  <span className="text-lg text-gris">/100</span>
-                </div>
-                <div className="mt-1 text-sm text-gris">
-                  {evalues}/{total} points évalués
-                  {notation.nbCasCritiques > 0 && (
-                    <span className="ml-2 font-semibold text-red-700">
-                      · {notation.nbCasCritiques} cas critique{notation.nbCasCritiques > 1 ? 's' : ''}
-                    </span>
+                <div className="flex w-80 shrink-0 flex-col gap-3 overflow-y-auto pb-1">
+                  {photoButton()}
+                  {photoThumbs()}
+                  {contexteNc()}
+                  {!isNc && (
+                    <p className="rounded-xl border border-dashed border-ink/15 px-3 py-4 text-center text-[12px] leading-snug text-gris">
+                      {!hasConstat
+                        ? 'Choisis un constat à gauche, puis prends une photo.'
+                        : hasPhoto
+                          ? 'Point validé. Tu peux passer au suivant.'
+                          : 'Prends une photo pour valider ce point.'}
+                    </p>
                   )}
                 </div>
               </div>
+            </>
+          )}
+
+          {/* Récapitulatif */}
+          {isRecap && (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-2xl">
+                <div className="flex flex-col items-center gap-5 rounded-2xl border border-ink/10 bg-white p-6 text-center shadow-card sm:flex-row sm:text-left">
+                  <ScoreRing score={notation.scoreGlobal} evalues={evalues} size={88} />
+                  <div>
+                    <div className="text-sm text-gris">Score global</div>
+                    <div className="text-3xl font-bold tabular-nums text-ink">
+                      {evalues === 0 ? '-' : Math.round(notation.scoreGlobal)}
+                      <span className="text-lg text-gris">/100</span>
+                    </div>
+                    <div className="mt-1 text-sm text-gris">
+                      {evalues}/{total} points évalués
+                      {notation.nbCasCritiques > 0 && (
+                        <span className="ml-2 font-semibold text-red-700">
+                          · {notation.nbCasCritiques} cas critique{notation.nbCasCritiques > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sur mobile : ajout + checklist sous le score (sur tablette : barre latérale) */}
+                <div className="mt-5 lg:hidden">{renderAdd()}</div>
+                <div className="mt-6 lg:hidden">{renderChecklist()}</div>
+              </div>
             </div>
-
-            {/* Sur mobile : ajout + checklist sous le score (sur tablette : barre latérale) */}
-            <div className="mt-5 lg:hidden">{renderAdd()}</div>
-            <div className="mt-6 lg:hidden">{renderChecklist()}</div>
-
-          </div>
-        )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -850,11 +908,11 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         <div className="container-ah py-2.5">
           {!isRecap ? (
             <>
-              {/* Gros bouton photo, pleine largeur, juste au-dessus de la navigation */}
+              {/* Gros bouton photo (mobile seulement : sur tablette il est en colonne contexte) */}
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
+                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60 lg:hidden"
               >
                 {uploading
                   ? 'Ajout…'
