@@ -565,57 +565,72 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   const saveLabel = { idle: '', saving: 'Enregistrement…', saved: '✓ Enregistré', error: 'Échec' }[save];
 
-  // Bloc « Ajouter un point » (réutilisé sur le récap mobile et la barre latérale tablette)
-  const renderAdd = () =>
-    !addOpen ? (
-      <button onClick={() => setAddOpen(true)} className="btn-primary w-full">
-        + Ajouter un point
-      </button>
-    ) : (
-      <div className="rounded-xl border border-ink/10 bg-white p-3 text-left">
-        <input
-          autoFocus
-          value={addQuery}
-          onChange={(e) => setAddQuery(e.target.value)}
-          placeholder="Rechercher ou créer un point…"
-          className="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
-        />
-        {suggestions.length > 0 && (
-          <ul className="mt-2 overflow-hidden rounded-lg border border-ink/10">
-            {suggestions.map((s) => (
-              <li key={s.code} className="border-b border-ink/5 last:border-0">
-                <button
-                  disabled={adding}
-                  onClick={() => addFromLibrary(s)}
-                  className="block w-full px-3 py-2 text-left text-sm hover:bg-vert-50 disabled:opacity-50"
-                >
-                  <span className="font-medium text-ink">{s.intitule}</span>
-                  <span className="text-gris"> · {s.theme}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {addQuery.trim().length >= 2 && (
-          <button
-            disabled={adding}
-            onClick={() => addCustom(addQuery)}
-            className="mt-2 w-full rounded-lg border border-dashed border-ink/25 px-3 py-2 text-sm font-medium text-ink/70 hover:border-vert hover:text-vert-700 disabled:opacity-50"
-          >
-            + Créer « {addQuery.trim()} » (sur mesure)
-          </button>
-        )}
-        <button
-          onClick={() => {
-            setAddOpen(false);
-            setAddQuery('');
-          }}
-          className="mt-2 w-full text-center text-xs text-gris hover:text-ink"
-        >
-          Annuler
+  const closeAdd = () => {
+    setAddOpen(false);
+    setAddQuery('');
+  };
+
+  // Déclencheur « Ajouter un point » plein largeur (récap mobile)
+  const renderAdd = () => (
+    <button onClick={() => setAddOpen(true)} className="btn-primary w-full">
+      + Ajouter un point
+    </button>
+  );
+
+  // Petit bouton rond « + » (footer, à gauche de Précédent)
+  const addPlusButton = () => (
+    <button
+      onClick={() => setAddOpen(true)}
+      aria-label="Ajouter un point"
+      className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-vert/40 bg-white text-2xl font-bold leading-none text-vert-700 transition-colors hover:bg-vert-50"
+    >
+      +
+    </button>
+  );
+
+  // Panneau recherche/ajout (affiché en modal quand addOpen)
+  const addPanel = () => (
+    <div className="rounded-2xl border border-ink/10 bg-white p-4 text-left shadow-card">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm font-bold text-ink">Ajouter un point</span>
+        <button onClick={closeAdd} aria-label="Fermer" className="text-xl leading-none text-gris hover:text-ink">
+          ×
         </button>
       </div>
-    );
+      <input
+        autoFocus
+        value={addQuery}
+        onChange={(e) => setAddQuery(e.target.value)}
+        placeholder="Rechercher ou créer un point…"
+        className="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+      />
+      {suggestions.length > 0 && (
+        <ul className="mt-2 overflow-hidden rounded-lg border border-ink/10">
+          {suggestions.map((s) => (
+            <li key={s.code} className="border-b border-ink/5 last:border-0">
+              <button
+                disabled={adding}
+                onClick={() => addFromLibrary(s)}
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-vert-50 disabled:opacity-50"
+              >
+                <span className="font-medium text-ink">{s.intitule}</span>
+                <span className="text-gris"> · {s.theme}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {addQuery.trim().length >= 2 && (
+        <button
+          disabled={adding}
+          onClick={() => addCustom(addQuery)}
+          className="mt-2 w-full rounded-lg border border-dashed border-ink/25 px-3 py-2 text-sm font-medium text-ink/70 hover:border-vert hover:text-vert-700 disabled:opacity-50"
+        >
+          + Créer « {addQuery.trim()} » (sur mesure)
+        </button>
+      )}
+    </div>
+  );
 
   // Checklist par thème (tap un point pour l'ouvrir)
   const renderChecklist = () => (
@@ -923,9 +938,10 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </button>
     );
 
-  // Navigation Précédent / Suivant (footer mobile + colonne droite tablette)
+  // Navigation : bouton + (ajout) à gauche, Précédent, Suivant
   const navButtons = () => (
     <div className="flex items-center gap-2">
+      {addPlusButton()}
       <button
         onClick={() => goto(step - 1)}
         disabled={step === 0}
@@ -957,6 +973,18 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-vert-50/30">
+      {/* Modal « Ajouter un point » (ouvert via le bouton rond + du footer) */}
+      {addOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-ink/40 p-4 pt-24"
+          onClick={closeAdd}
+        >
+          <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            {addPanel()}
+          </div>
+        </div>
+      )}
+
       {/* En-tête : retour + logo + nom du client (épinglé) */}
       <div className="shrink-0 border-b border-ink/10 bg-white">
         <div className="container-ah relative flex h-12 items-center">
@@ -985,7 +1013,6 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           {/* GAUCHE : liste des points (questions) par thème + ajout */}
           <aside className="hidden w-60 shrink-0 flex-col pr-1 lg:flex xl:w-72">
             <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">{renderChecklist()}</div>
-            <div className="mt-3 shrink-0">{renderAdd()}</div>
           </aside>
           {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
           <input
