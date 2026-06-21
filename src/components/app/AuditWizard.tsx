@@ -889,14 +889,14 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         onClick={() => fileRef.current?.click()}
         disabled={uploading}
         aria-label={hasPhoto ? 'Ajouter une photo' : 'Prendre une photo'}
-        className={`grid h-16 w-16 shrink-0 place-items-center rounded-full shadow-lg transition-all active:scale-95 disabled:opacity-60 ${
+        className={`grid h-20 w-20 shrink-0 place-items-center rounded-full shadow-lg transition-all active:scale-95 disabled:opacity-60 ${
           hasPhoto
             ? 'border-2 border-vert/50 bg-white text-vert-700'
             : 'bg-vert text-white hover:bg-vert-600'
         }`}
       >
         {uploading ? (
-          <span className="text-lg">…</span>
+          <span className="text-xl">…</span>
         ) : (
           <svg
             viewBox="0 0 24 24"
@@ -905,7 +905,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-7 w-7"
+            className="h-9 w-9"
             aria-hidden="true"
           >
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -1008,44 +1008,47 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
               </div>
 
-              {/* Tablette paysage : CENTRE = énoncé + constat, DROITE = contexte (motifs + photo) */}
-              <div className="hidden min-h-0 flex-1 gap-5 pt-1 lg:flex">
-                {/* CENTRE : énoncé puis constat */}
-                <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
-                  <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-card">
-                    {repereTitre()}
-                  </div>
-                  <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
-                    <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">Constat</div>
-                    {constatButtons()}
-                  </div>
+              {/* Tablette paysage : TITRE partagé en haut, puis CENTRE (lecture) + DROITE (actions) */}
+              <div className="hidden min-h-0 flex-1 flex-col pt-1 lg:flex">
+                {/* Titre sur toute la largeur (colonnes 2 + 3) */}
+                <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-card">
+                  {repereTitre()}
                 </div>
 
-                {/* DROITE : contexte de la non-conformité + photo */}
-                <div className="flex w-[24rem] shrink-0 flex-col gap-3 overflow-y-auto pr-0.5">
-                  {isNc && syntheseNc()}
-                  {isNc && (
-                    <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                      {motifsNote()}
-                    </div>
-                  )}
-                  <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-[13px] font-semibold text-ink">
-                          Photo {hasPhoto ? '' : '(obligatoire)'}
+                <div className="mt-3 flex min-h-0 flex-1 gap-5">
+                  {/* CENTRE : lecture (synthèse non-conformité + photos) */}
+                  <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
+                    {isNc && syntheseNc()}
+                    {photoThumbs() && (
+                      <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+                        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gris">
+                          Photos
                         </div>
-                        <div className="truncate text-[12px] text-gris">
-                          {!hasConstat
-                            ? 'Choisis un constat'
-                            : hasPhoto
-                              ? `${current.photos.length} photo${current.photos.length > 1 ? 's' : ''} ✓`
-                              : 'À prendre →'}
-                        </div>
+                        {photoThumbs()}
                       </div>
-                      {photoButton()}
+                    )}
+                  </div>
+
+                  {/* DROITE : constat → motifs ; icône photo seule en bas-droite */}
+                  <div className="flex w-[24rem] shrink-0 flex-col">
+                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
+                      {constatButtons()}
+                      {isNc && (
+                        <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+                          {motifsNote()}
+                        </div>
+                      )}
                     </div>
-                    {photoThumbs() && <div className="mt-3">{photoThumbs()}</div>}
+                    <div className="mt-3 flex shrink-0 justify-end">
+                      <div className="relative">
+                        {photoButton()}
+                        {hasPhoto && (
+                          <span className="absolute -right-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-vert text-[11px] font-bold text-white shadow">
+                            {current.photos.length}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
