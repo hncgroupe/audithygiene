@@ -804,7 +804,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     ) : null;
 
   // Motifs (chips) + note libre (colonne droite, sous les constats)
-  const motifsNote = () =>
+  // Motifs : chips cliquables (colonne droite, sous les constats)
+  const motifsChips = () =>
     current && isNc && current.motifs.length > 0 ? (
       <div className="text-left">
         <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gris">Motifs</div>
@@ -830,12 +831,28 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </div>
     ) : null;
 
+  // Note libre : zone de saisie (colonne centre)
+  const noteField = () =>
+    current && isNc ? (
+      <div className="text-left">
+        <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gris">Note</div>
+        <textarea
+          value={current.commentaire ?? ''}
+          onChange={(e) => patchItem(current.code, { commentaire: e.target.value })}
+          rows={3}
+          placeholder="Détail libre (optionnel)…"
+          className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+        />
+      </div>
+    ) : null;
+
   // Composé : synthèse + motifs + note empilés (utilisé en mobile/portrait)
   const contexteNc = () =>
     current && isNc ? (
       <div className="space-y-3">
         {syntheseNc()}
-        {motifsNote()}
+        {motifsChips()}
+        {noteField()}
       </div>
     ) : null;
 
@@ -1007,12 +1024,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 </div>
 
                 <div className="mt-2 flex min-h-0 flex-1 gap-4">
-                  {/* CENTRE : explication de la (non-)conformité + motifs juste dessous + photos */}
+                  {/* CENTRE : explication de la (non-)conformité + note (zone d'écriture) + photos */}
                   <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
                     {isNc && syntheseNc()}
                     {isNc && (
                       <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
-                        {motifsNote()}
+                        {noteField()}
                       </div>
                     )}
                     {photoThumbs() && (
@@ -1022,9 +1039,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     )}
                   </div>
 
-                  {/* DROITE : Conforme / NC, icône photo seule en bas-droite */}
+                  {/* DROITE : Conforme / NC → motifs dessous ; icône photo seule en bas-droite */}
                   <div className="flex w-[22rem] shrink-0 flex-col">
-                    <div className="min-h-0 flex-1">{constatButtons()}</div>
+                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
+                      {constatButtons()}
+                      {motifsChips()}
+                    </div>
                     <div className="mt-2 flex shrink-0 justify-end">
                       <div className="relative">
                         {photoButton()}
