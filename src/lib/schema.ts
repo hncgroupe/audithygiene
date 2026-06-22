@@ -18,6 +18,41 @@ export function localBusinessSchema(opts?: { areaServed?: string; name?: string;
   };
 }
 
+export function organizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: MARQUE.nom,
+    url: siteUrl,
+    email: MARQUE.email,
+    logo: { '@type': 'ImageObject', url: `${siteUrl}/logo.png` },
+    description:
+      "Cabinet d'audit hygiène et HACCP pour restaurants et CHR. Label privé indépendant : notation, cas critiques, plan correctif.",
+    areaServed: { '@type': 'Country', name: 'France' },
+    knowsAbout: [
+      'HACCP',
+      'Plan de Maîtrise Sanitaire',
+      'Hygiène alimentaire',
+      'Réglementation hygiène en restauration',
+      'Allergènes alimentaires',
+      'Chaîne du froid',
+    ],
+  };
+}
+
+export function websiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+    name: MARQUE.nom,
+    url: siteUrl,
+    inLanguage: 'fr-FR',
+    publisher: { '@id': `${siteUrl}/#organization` },
+  };
+}
+
 export function serviceSchema() {
   return {
     '@context': 'https://schema.org',
@@ -39,6 +74,33 @@ export function faqSchema(items: { q: string; a: string }[]) {
       name: it.q,
       acceptedAnswer: { '@type': 'Answer', text: it.a },
     })),
+  };
+}
+
+export function articleSchema(opts: {
+  headline: string;
+  description: string;
+  url: string;
+  datePublished: string;
+  dateModified: string;
+  section?: string;
+  image?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: opts.headline,
+    description: opts.description,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': opts.url },
+    url: opts.url,
+    image: opts.image ?? `${siteUrl}/opengraph-image`,
+    datePublished: opts.datePublished,
+    dateModified: opts.dateModified,
+    inLanguage: 'fr-FR',
+    articleSection: opts.section,
+    isPartOf: { '@id': `${siteUrl}/#website` },
+    author: { '@id': `${siteUrl}/#organization` },
+    publisher: { '@id': `${siteUrl}/#organization` },
   };
 }
 

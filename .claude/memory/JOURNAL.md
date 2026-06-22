@@ -75,3 +75,13 @@ Journal chronologique des jalons. Entrée datée après chaque étape (voir rule
 - Brevo : records DKIM/DMARC/TXT déjà présents dans Cloudflare (domaine vérifié).
 - Note : accès R2 fournis (clé S3 + endpoint `0f46...r2.cloudflarestorage.com`) -> option future pour stocker les PDF au lieu de Supabase Storage. Non branché.
 - ⏸️ Reste (contenu, pas technique) : formules + prix réels ; validation grille d'audit.
+
+## 2026-06-22 — Blog (10 articles) + passe SEO/GEO
+- Fait : infrastructure blog data-driven (src/content/blog/types.ts + index.ts), pages /blog et /blog/[slug] (sommaire, answer-first, FAQ, sources, maillage, articles liés), composant ArticleBody.
+- 10 articles FR sourcés écrits (réglementation/méthode/pratique) : controle-sanitaire-restaurant, haccp-restauration-guide, plan-maitrise-sanitaire-pms, chaine-du-froid-restauration, tracabilite-dlc-restaurant, allergenes-restaurant-obligations, fermeture-administrative-restaurant, nettoyage-desinfection-cuisine, ouvrir-restaurant-obligations-hygiene, note-alim-confiance.
+- SEO/GEO : schema BlogPosting + ItemList + Organization + WebSite (graphe lié par @id) ; articleSchema avec image + isPartOf ; robots.ts autorise explicitement 18 crawlers IA ; verification Google/Bing branchée sur env (NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION / _BING_) ; sitemap inclut blog + lastModified ; llms.txt enrichi (liens blog) ; breadcrumb sur /faq ; manifest icônes 192/512 + maskable ; OG image runtime nodejs + coche dessinée (SVG) ; metadata enrichie (keywords, authors, publisher, googleBot).
+- Header + Footer : lien Blog ajouté.
+- Fichiers : src/content/blog/*, src/app/(marketing)/blog/*, src/components/marketing/ArticleBody.tsx, src/lib/schema.ts, src/app/{layout,robots,sitemap,manifest,opengraph-image}.ts(x), src/lib/env.ts, .env.example, public/llms.txt, src/components/site/{Header,Footer}.tsx, src/app/(marketing)/faq/page.tsx.
+- Vérifs : tsc --noEmit OK ; next build OK (39 pages statiques, dont 10 articles prerender) ; 0 tiret long/demi-cadratin ; corrigé note-alim-confiance.ts (réécrit avec accents) + nettoyage (titres/étapes).
+- Audits indépendants : GEO 82/100 (geo agent), SEO technique 96/100 (validator), conformité label privé/no-fake/no-tiret/RGPD = PASS.
+- Suivant / à valider humain : (1) coller les jetons Search Console + Bing Webmaster dans .env (puis soumettre sitemap aux 2). (2) déployer en prod (audithygiene.fr est live, auto-deploy sur commit) = ⏸️ go-live public. (3) page /methode + /a-propos avec auteur réel qualifié (E-E-A-T) -> demander la vraie bio/qualif. (4) trancher périmètre France vs Île-de-France (incohérence layout/schema "France" vs CLAUDE.md "IDF").

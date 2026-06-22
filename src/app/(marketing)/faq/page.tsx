@@ -2,19 +2,27 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FAQ_ITEMS } from '@/lib/content';
 import { JsonLd } from '@/components/site/JsonLd';
-import { faqSchema } from '@/lib/schema';
+import { faqSchema, breadcrumbSchema } from '@/lib/schema';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
 export const metadata: Metadata = {
   title: 'FAQ audit hygiène restaurant : toutes vos questions',
   description:
     "Audit hygiène, durée, prix, déroulé, rapport, contrôle sanitaire, HACCP, PMS, urgence : toutes les réponses pour préparer et réussir votre mise en conformité.",
-  alternates: { canonical: 'https://audithygiene.fr/faq' },
+  alternates: { canonical: '/faq' },
 };
 
 export default function FaqPage() {
   return (
     <>
       <JsonLd data={faqSchema(FAQ_ITEMS)} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Accueil', url: siteUrl },
+          { name: 'FAQ', url: `${siteUrl}/faq` },
+        ])}
+      />
       <section className="container-ah py-20">
         <div className="max-w-3xl">
           <h1 className="section-title">Questions fréquentes</h1>

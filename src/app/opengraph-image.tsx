@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+// Fluid Compute (Node.js) plutôt qu'Edge : recommandation plateforme Vercel.
+export const runtime = 'nodejs';
 export const alt = 'audit hygiène - audit HACCP pour restaurants en France';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -22,6 +23,7 @@ export default function OgImage() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          {/* Coche dessinée (pas de glyphe : évite le téléchargement de police emoji). */}
           <div
             style={{
               width: 72,
@@ -31,11 +33,17 @@ export default function OgImage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 44,
-              color: 'white',
             }}
           >
-            ✓
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 13l4 4L19 7"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
           <div style={{ fontSize: 40, fontWeight: 700, color: 'white', display: 'flex' }}>
             audit <span style={{ color: '#10B981', marginLeft: 12 }}>hygiène</span>

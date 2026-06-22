@@ -46,6 +46,10 @@ export const env = {
 
   cronSecret: opt('CRON_SECRET'),
 
+  // Vérification moteurs de recherche (à coller depuis Search Console / Bing Webmaster Tools)
+  googleSiteVerification: opt('NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION'),
+  bingSiteVerification: opt('NEXT_PUBLIC_BING_SITE_VERIFICATION'),
+
   /** true si la config minimale (DB) est présente */
   get isDatabaseConfigured() {
     return Boolean(opt('DATABASE_URL'));

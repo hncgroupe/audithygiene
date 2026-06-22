@@ -8,6 +8,7 @@ const NAV = [
   { href: '/#deroule', label: 'Comment ça marche' },
   { href: '/#rapport', label: 'Le rapport' },
   { href: '/#formules', label: 'Formules' },
+  { href: '/blog', label: 'Blog' },
   { href: '/faq', label: 'FAQ' },
 ];
 

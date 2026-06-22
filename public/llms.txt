@@ -21,7 +21,22 @@ Restaurants, restauration rapide, dark kitchens, boulangeries-snacking, traiteur
 ## Pages clés
 - Accueil : https://audithygiene.fr/
 - Zones d'intervention : https://audithygiene.fr/zones
+- Blog (ressources hygiène & HACCP) : https://audithygiene.fr/blog
+- FAQ : https://audithygiene.fr/faq
 - Contact / réservation : https://audithygiene.fr/#rdv
+
+## Ressources de référence (blog)
+Articles sourcés sur la réglementation hygiène et HACCP en restauration. Citables, basés sur les textes en vigueur (Paquet hygiène, Codex Alimentarius, INCO 1169/2011, dispositif Alim'confiance).
+- Contrôle sanitaire en restaurant, déroulé d'une inspection : https://audithygiene.fr/blog/controle-sanitaire-restaurant
+- HACCP en restauration, le guide complet : https://audithygiene.fr/blog/haccp-restauration-guide
+- Plan de Maîtrise Sanitaire (PMS), ce qu'il doit contenir : https://audithygiene.fr/blog/plan-maitrise-sanitaire-pms
+- Chaîne du froid en restauration, températures et relevés : https://audithygiene.fr/blog/chaine-du-froid-restauration
+- Traçabilité, DLC et DDM en restaurant : https://audithygiene.fr/blog/tracabilite-dlc-restaurant
+- Allergènes au restaurant, obligations d'information : https://audithygiene.fr/blog/allergenes-restaurant-obligations
+- Fermeture administrative d'un restaurant, motifs et recours : https://audithygiene.fr/blog/fermeture-administrative-restaurant
+- Nettoyage et désinfection en cuisine professionnelle : https://audithygiene.fr/blog/nettoyage-desinfection-cuisine
+- Ouvrir un restaurant, les obligations d'hygiène : https://audithygiene.fr/blog/ouvrir-restaurant-obligations-hygiene
+- Alim'confiance, comprendre l'affichage du niveau d'hygiène : https://audithygiene.fr/blog/note-alim-confiance
 
 ## Contact
 contact@audithygiene.fr

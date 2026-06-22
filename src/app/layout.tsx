@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Hanken_Grotesk } from 'next/font/google';
 import '@/styles/globals.css';
+import { env } from '@/lib/env';
+import { JsonLd } from '@/components/site/JsonLd';
+import { organizationSchema, websiteSchema } from '@/lib/schema';
 
 // Style Stripe : grotesk propre, identique sur tous les appareils (une seule webfont).
 const display = Hanken_Grotesk({
@@ -20,6 +23,19 @@ export const metadata: Metadata = {
   description:
     "Cabinet d'audit hygiène et HACCP pour restaurants et CHR en France. Un auditeur contrôle votre établissement et vous remet un rapport complet : notation, cas critiques, plan correctif. Label privé indépendant.",
   applicationName: 'audit hygiène',
+  authors: [{ name: 'audit hygiène' }],
+  creator: 'audit hygiène',
+  publisher: 'audit hygiène',
+  category: 'Hygiène alimentaire et HACCP en restauration',
+  keywords: [
+    'audit hygiène restaurant',
+    'audit HACCP',
+    'contrôle sanitaire restaurant',
+    'plan de maîtrise sanitaire',
+    'hygiène alimentaire restauration',
+    'mise en conformité restaurant',
+  ],
+  formatDetection: { telephone: false, email: false, address: false },
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
@@ -36,7 +52,17 @@ export const metadata: Metadata = {
     description:
       "Audit hygiène et HACCP pour restaurants en France. Notation, cas critiques, plan correctif.",
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
+  verification: {
+    google: env.googleSiteVerification,
+    other: env.bingSiteVerification
+      ? { 'msvalidate.01': env.bingSiteVerification }
+      : {},
+  },
 };
 
 export const viewport: Viewport = {
@@ -48,7 +74,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={display.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
+        {children}
+      </body>
     </html>
   );
 }

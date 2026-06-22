@@ -19,6 +19,7 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-white/60">
             <li><Link href="/#deroule" className="hover:text-vert">Comment ça marche</Link></li>
             <li><Link href="/#formules" className="hover:text-vert">Formules</Link></li>
+            <li><Link href="/blog" className="hover:text-vert">Blog</Link></li>
             <li><Link href="/#faq" className="hover:text-vert">FAQ</Link></li>
             <li><Link href="/#rdv" className="hover:text-vert">Réserver un audit</Link></li>
           </ul>
