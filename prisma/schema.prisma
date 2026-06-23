@@ -174,6 +174,12 @@ enum AuditStatus {
   RAPPORT_ENVOYE
 }
 
+// Marque sous laquelle l'audit est réalisé (détermine grille, logo, rapport).
+enum Marque {
+  AUDIT_HYGIENE  // audit hygiène & HACCP (moteur conformité)
+  AUDITRESTO360  // audit 360 du restaurant (moteur 10 piliers notés /100)
+}
+
 model Audit {
   id              String        @id @default(cuid())
   establishment   Establishment @relation(fields: [establishmentId], references: [id])
@@ -181,6 +187,8 @@ model Audit {
   auditeur        User          @relation(fields: [auditeurId], references: [id])
   auditeurId      String
 
+  // Marque de l'audit (grille + logo + rapport)
+  marque          Marque        @default(AUDIT_HYGIENE)
   // Version de la grille utilisée (traçabilité — rule methodology-guard)
   grilleVersion   String        @default("v0-draft")
   statut          AuditStatus   @default(PLANIFIE)
@@ -193,6 +201,9 @@ model Audit {
   scoreGlobal     Float?        // /100
   nbCasCritiques  Int           @default(0)
   prochainAuditLe DateTime?     // date du prochain audit recommandé
+
+  // Restitution IA (auditresto360) : synthèse, points forts/axes, roadmap, gains, risques
+  syntheseIA      Json?
 
   items           AuditItem[]
   scoresParTheme  Score[]
@@ -225,9 +236,14 @@ model AuditItem {
   intitule       String
   referenceRegl  String?        // point de réglementation (à valider)
   conformite     ItemConformity @default(NON_EVALUE)
+  // Moteur resto360 : note de 1 à 5 et sous-groupe du pilier (theme = pilier).
+  note           Int?           // 1 à 5 (auditresto360)
+  groupe         String?        // sous-groupe du pilier (auditresto360)
   ponderation    Int            @default(1)
   commentaire    String?
   photoUrls      String[]       @default([])
+  // État libre lié à l'item : checklists cochées, flag « sur mesure », etc.
+  meta           Json?
   createdAt      DateTime       @default(now())
 
   @@index([auditId])

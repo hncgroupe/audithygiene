@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentDbUser } from '@/lib/auth';
 import { flattenGrille, GRILLE_VERSION } from '@/lib/grille-audit';
+import { GRILLE_RESTO360, GRILLE_RESTO360_VERSION, critereId, critereLabel } from '@/lib/grille-resto360';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,34 @@ interface Body {
   dateHeure?: string; // ISO datetime-local
   emailRapport?: string; // compat : email unique
   emails?: string[]; // destinataires multiples du rapport
+  marque?: string; // AUDIT_HYGIENE | AUDITRESTO360
+}
+
+/** Items instanciés pour un audit resto360 (un par critère + questions ouvertes). */
+function itemsResto360() {
+  const items: { theme: string; groupe: string; code: string; intitule: string }[] = [];
+  for (const pilier of GRILLE_RESTO360) {
+    pilier.groupes.forEach((g, gi) => {
+      g.criteres.forEach((crit, ci) => {
+        items.push({
+          theme: pilier.nom,
+          groupe: g.nom,
+          code: critereId(pilier.code, gi, ci),
+          intitule: critereLabel(crit),
+        });
+      });
+    });
+    // Questions ouvertes (pilier Dirigeant) : persistées via le commentaire.
+    (pilier.questionsOuvertes ?? []).forEach((q, qi) => {
+      items.push({
+        theme: pilier.nom,
+        groupe: 'Questions ouvertes',
+        code: `${pilier.code}-Q${qi + 1}`,
+        intitule: q,
+      });
+    });
+  }
+  return items;
 }
 
 const TYPES = [
@@ -89,15 +118,42 @@ export async function POST(request: Request) {
   }
 
   const dateAudit = body.dateHeure ? new Date(body.dateHeure) : new Date();
-  const items = flattenGrille();
+  const dateOk = isNaN(dateAudit.getTime()) ? new Date() : dateAudit;
+  const marque = body.marque === 'AUDITRESTO360' ? 'AUDITRESTO360' : 'AUDIT_HYGIENE';
 
+  if (marque === 'AUDITRESTO360') {
+    const audit = await prisma.audit.create({
+      data: {
+        establishmentId,
+        auditeurId: user.id,
+        marque: 'AUDITRESTO360',
+        grilleVersion: GRILLE_RESTO360_VERSION,
+        statut: 'EN_COURS',
+        dateAudit: dateOk,
+        emailsRapport,
+        items: {
+          create: itemsResto360().map((i) => ({
+            theme: i.theme,
+            groupe: i.groupe,
+            code: i.code,
+            intitule: i.intitule,
+            conformite: 'NON_EVALUE',
+          })),
+        },
+      },
+    });
+    return NextResponse.json({ id: audit.id });
+  }
+
+  const items = flattenGrille();
   const audit = await prisma.audit.create({
     data: {
       establishmentId,
       auditeurId: user.id,
+      marque: 'AUDIT_HYGIENE',
       grilleVersion: GRILLE_VERSION,
       statut: 'EN_COURS',
-      dateAudit: isNaN(dateAudit.getTime()) ? new Date() : dateAudit,
+      dateAudit: dateOk,
       emailsRapport,
       items: {
         create: items.map((i) => ({

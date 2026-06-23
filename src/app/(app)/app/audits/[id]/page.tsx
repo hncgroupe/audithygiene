@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getCurrentDbUser } from '@/lib/auth';
 import { AuditWizard, type WizardItem } from '@/components/app/AuditWizard';
+import { Resto360Wizard, type Resto360Item } from '@/components/app/Resto360Wizard';
 import { grilleByCode, flattenGrille, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
 import { getSignedUrl } from '@/lib/supabase';
 import type { Conformite } from '@/lib/notation';
@@ -19,6 +20,41 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
     include: { establishment: true, items: true },
   });
   if (!audit) notFound();
+
+  // Moteur resto360 : wizard 10 piliers (notation 1 à 5).
+  if (audit.marque === 'AUDITRESTO360') {
+    const r360Items: Resto360Item[] = await Promise.all(
+      audit.items
+        .slice()
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map(async (it) => ({
+          code: it.code,
+          theme: it.theme,
+          groupe: it.groupe,
+          intitule: it.intitule,
+          note: it.note,
+          commentaire: it.commentaire,
+          meta: (it.meta ?? null) as Record<string, unknown> | null,
+          photos: (
+            await Promise.all(
+              it.photoUrls.map(async (path) => ({ path, url: await getSignedUrl(path, 60 * 60 * 8) }))
+            )
+          ).filter((p): p is { path: string; url: string } => Boolean(p.url)),
+        }))
+    );
+    return (
+      <Resto360Wizard
+        auditId={audit.id}
+        etablissement={{
+          nom: audit.establishment.nom,
+          ville: audit.establishment.ville,
+          type: audit.establishment.type,
+        }}
+        items={r360Items}
+        statutInitial={audit.statut}
+      />
+    );
+  }
 
   const grille = grilleByCode();
 

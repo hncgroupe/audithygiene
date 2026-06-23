@@ -2,6 +2,16 @@
 
 Journal chronologique des jalons. Entrée datée après chaque étape (voir rule `reports`).
 
+## 2026-06-23 — Resto360 wizard : notes, checklists, photos par question, ajout libre
+- Fait : grille resto360 enrichie (`grille-resto360.ts` v2). Chaque critère = objet `{label, aide, checklist?}` ; abréviations expansées partout (PMS, DLC, DDM, FIFO, HACCP, KPI, DPAE, Food Cost, upselling, PMR). Helpers `critereLabel/Aide/Checklist`, type `CritereInput` (compat string).
+- Fait : explication 1 ligne (`aide`) affichée sous chaque intitulé dans le wizard.
+- Fait : checklists cochables au fil de l'eau. P4 « Affichages obligatoires » (interdiction fumer/vapoter, allergènes, origine viandes, prix, fait maison, licence, sécurité, réclamation) + nouveau groupe RH « Cadre social & terrain » (planning, tenue, vestiaire, nettoyage tenue, pause, contrat, DPAE, journée test). Bouton « Reporter les manquants dans la note ».
+- Fait : bouton `note` (libre) + bouton `photo` (avec badge compteur) à droite de la rangée de notation, sur chaque question.
+- Fait : « Ajouter une question » en bas du corps (point sur mesure par pilier, code `CUSTOM-…`) + suppression. Endpoint `item` étendu (groupe + DELETE).
+- Fait : persistance — colonne `AuditItem.meta Json?` (état checklist) via `prisma db push`. PATCH `resto360` enregistre `meta`. Page passe `meta` au wizard.
+- Vérifié : `tsc --noEmit` OK, `npm run build` OK, aucun tiret long.
+- Suivant : intégrer photos + checklists dans le rapport PDF resto360 ; valider grille avec le client.
+
 ## 2026-06-19 — Auth auditeurs + outil d'audit terrain (vision auditeur)
 - Fait : auth Supabase branchée. Routes `/api/auth/login` + `/api/auth/logout` (session cookies httpOnly), form `/login` avec messages d'erreur, bouton déconnexion dans le shell app. Helper `getCurrentDbUser()` (mapping authId/email ↔ Prisma User).
 - Fait : compte ADMIN `younes@crispysoul.fr` (Supabase Auth + record Prisma, role ADMIN). Script idempotent réutilisable `scripts/create-admin.ts`.
@@ -85,3 +95,23 @@ Journal chronologique des jalons. Entrée datée après chaque étape (voir rule
 - Vérifs : tsc --noEmit OK ; next build OK (39 pages statiques, dont 10 articles prerender) ; 0 tiret long/demi-cadratin ; corrigé note-alim-confiance.ts (réécrit avec accents) + nettoyage (titres/étapes).
 - Audits indépendants : GEO 82/100 (geo agent), SEO technique 96/100 (validator), conformité label privé/no-fake/no-tiret/RGPD = PASS.
 - Suivant / à valider humain : (1) coller les jetons Search Console + Bing Webmaster dans .env (puis soumettre sitemap aux 2). (2) déployer en prod (audithygiene.fr est live, auto-deploy sur commit) = ⏸️ go-live public. (3) page /methode + /a-propos avec auteur réel qualifié (E-E-A-T) -> demander la vraie bio/qualif. (4) trancher périmètre France vs Île-de-France (incohérence layout/schema "France" vs CLAUDE.md "IDF").
+
+## 2026-06-23 — Blog x30 + pages E-E-A-T + page contact (déployé prod)
+- Blog : 30 articles au standard (≥2500 mots, ton expert, voix humaine, 0 tiret long, 6-9 sources officielles avec URL canoniques EUR-Lex/Legifrance/gouv). 3 lots : national/réglementaire (10), Île-de-France (10), Audit avant/après contrôle (10). Schema BlogPosting+FAQ+Breadcrumb, sommaire, maillage, llms.txt.
+- Pages E-E-A-T : /methode (déroulé, thèmes, notation, 3 niveaux d'écart, plan correctif) et /a-propos (label privé, engagements, Qualiopi). TODO laissé : bio nominative de l'auditeur à fournir (no-fake-content).
+- Page /contact : ContactForm (nom, email, tel, type, message, consentement RGPD, honeypot) -> POST /api/lead source:'contact' -> Telegram (+ DB + Brevo). Testé en prod : POST 200, notif Telegram OK.
+- Câblage : nav (Méthode, Formules, Blog, À propos, Contact), footer, sitemap (+/methode /a-propos /contact), llms.txt.
+- Build : 62 pages statiques, typecheck OK, 0 tiret long. Déployé prod (vercel --prod), aliasé audithygiene.fr, pages live 200.
+- Vérif moteurs : GSC + Bing déjà vérifiés par le client (méthode DNS). Jetons env meta non utilisés (laissés vides). Reste : soumettre sitemap.xml dans les 2 consoles.
+- ⏸️ À fournir par client : bio/qualif nominative auditeur (E-E-A-T) ; trancher périmètre France vs IDF (copy accueil/schema disent "France").
+
+## 2026-06-23 — Outil auditeur multi-marque : auditresto360 (4 phases)
+- Multi-marque : au démarrage d'un audit, choix audit hygiène (vert, moteur conformité) ou auditresto360 (orange, moteur 10 piliers /100). DB additive : enum Marque + Audit.marque ; AuditItem.note(1-5)+groupe ; Audit.syntheseIA(Json). prisma db push (non destructif).
+- Phase 1 : logo public/logo-auditresto360.png ; src/lib/marques.ts (charte vert/orange) ; src/lib/grille-resto360.ts (10 piliers, sous-groupes, 58 critères, notation 1-5, scorePilier/scoreGlobal/radar) - fidèle au cadrage client.
+- Phase 2 : NewAuditForm choix marque ; /api/audits branche selon marque (instancie items resto360 + questions dirigeant) ; page [id] route vers Resto360Wizard ; Resto360Wizard.tsx (plein écran tablette, stepper 10 piliers, notation 1-5 couleur, commentaire, autosave PATCH /resto360, score live) ; /api/audits/[id]/resto360 (save notes + scores piliers + global).
+- Phase 3 : src/lib/rapport-resto360.ts (urgences/quick wins/plan Urgence-Important-Confort/dirigeant/étoiles) ; RadarResto.tsx (SVG) ; page [id]/rapport (score+étoiles, radar, urgences, quick wins, plan, dirigeant, photos, Imprimer/PDF) ; wizard "Terminer" redirige vers rapport.
+- Phase 3.5 : capture photo par critère dans le wizard (route /photo réutilisée), affichée dans le rapport.
+- Phase 4 : src/lib/restitution.ts (appel Claude Messages API, JSON parsé) ; /api/audits/[id]/restitution (génère + stocke syntheseIA) ; RestitutionPanel.tsx dans le rapport (synthèse consultant, points forts/axes, roadmap 30/60/90, gains, risques, régénérer). Clé Anthropic directe : env ANTHROPIC_API_KEY (+ ANTHROPIC_MODEL, défaut claude-sonnet-4-6).
+- Build OK 62 pages, typecheck OK, 0 tiret long. Non déployé (app derrière login, testé en local).
+- ⏸️ À fournir : ANTHROPIC_API_KEY dans .env.local (+ sur Vercel pour la prod) pour activer la restitution IA.
+- TODO produit : la grille resto360 est structurelle (validée par le client) ; les critères restent qualitatifs (pas de barème détaillé par note) - à affiner si besoin.
