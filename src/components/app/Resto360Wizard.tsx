@@ -167,6 +167,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   const photoTargetCode = useRef<string>('');
   const pressStart = useRef(0);
   const armTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchHandled = useRef(false);
   const [pressArmed, setPressArmed] = useState<string | null>(null);
 
   function onPhotoDown(code: string) {
@@ -175,10 +176,11 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     if (armTimer.current) clearTimeout(armTimer.current);
     armTimer.current = setTimeout(() => setPressArmed(code), 2000);
   }
-  // Le sélecteur de fichier doit être ouvert depuis un VRAI clic (geste utilisateur) :
-  // sur tablette, l'ouvrir depuis pointerup/un timer est bloqué. On mesure la durée
-  // d'appui (pointerdown -> click) et on choisit caméra (court) ou galerie (long).
-  function onPhotoClick(code: string) {
+
+  // Ouvre le bon sélecteur selon la durée d'appui. DOIT être appelé depuis un
+  // geste utilisateur (touchend en tactile, click à la souris) sinon le navigateur
+  // bloque l'ouverture du sélecteur de fichier.
+  function openPhotoPicker(code: string) {
     if (armTimer.current) {
       clearTimeout(armTimer.current);
       armTimer.current = null;
@@ -189,6 +191,20 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     photoTargetCode.current = code;
     if (held >= 2000) galleryInputRef.current?.click();
     else cameraInputRef.current?.click();
+  }
+  // Tactile : un appui long ne déclenche PAS de "click", donc on agit sur touchend.
+  function onPhotoTouchEnd(code: string, e: { preventDefault: () => void }) {
+    e.preventDefault(); // évite le click simulé en double
+    touchHandled.current = true;
+    openPhotoPicker(code);
+  }
+  // Souris / clavier : on ignore si le tactile vient de gérer l'appui.
+  function onPhotoClick(code: string) {
+    if (touchHandled.current) {
+      touchHandled.current = false;
+      return;
+    }
+    openPhotoPicker(code);
   }
   function onPhotoCancel() {
     if (armTimer.current) {
@@ -764,8 +780,8 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
             <button
               type="button"
               onPointerDown={() => onPhotoDown(code)}
+              onTouchEnd={(e) => onPhotoTouchEnd(code, e)}
               onClick={() => onPhotoClick(code)}
-              onPointerLeave={onPhotoCancel}
               onPointerCancel={onPhotoCancel}
               onContextMenu={(e) => e.preventDefault()}
               title="Appui court : appareil photo. Appui long (2 s) : téléverser une image de la tablette."
