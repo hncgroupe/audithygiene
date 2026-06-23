@@ -2,6 +2,15 @@
 
 Journal chronologique des jalons. Entrée datée après chaque étape (voir rule `reports`).
 
+## 2026-06-23 — Resto360 : info conformité, notation sévère, hors-ligne, envoi PDF
+- Fait : icône (i) par critère réglementaire (conforme / non conforme + base de règle). Nouvelles questions : rangement du froid, stockage viande-volaille, poisson, fiches recettes, optimisation plateformes livraison, caisse/clôtures/encaissements.
+- Fait : notation sévère. Critères critiques (ceux avec info) comptent double dans le pilier ; malus global (note 1 = -6, note 2 = -3) et plafond à 49 si un critique est noté 1. `casCritiquesResto`, `CRITIQUE_IDS`, section « Cas critiques » en tête de rapport. Méthode documentée dans `grille-resto360.ts`.
+- Fait : reprise + hors-ligne. Cache local complet (localStorage) des réponses, file d'envoi persistée, flush à la sortie + passage arrière-plan (keepalive) + retour de connexion + filet 20 s, indicateur « Hors ligne / à synchroniser », pilier mémorisé, upsert des critères ajoutés après démarrage. Purge du cache à la finalisation.
+- Fait : PDF resto360 (`Resto360Document.tsx`, react-pdf) — récap 1re page (score, cas critiques, plan, quick wins), page 2 dirigeant + photos. Route `POST /rapport/send` + bouton « Envoyer le rapport (PDF) ». Brevo étendu (pièces jointes + destinataires multiples). Copie interne younes@/oumeima@.
+- Vérifié : `tsc` OK, `next build` OK. Test réel `scripts/test-rapport-send.ts` (remplissage aléatoire) : PDF 14 Ko + email envoyé aux 2 adresses, score 49/100 (plafonné par 1 cas critique). 4 déploiements prod sur audithygiene.fr.
+- Note : tsx exige `--tsconfig scripts/tsconfig.json` (jsx react-jsx) pour rendre react-pdf hors Next.
+- Suivant : Google Doc (⏸️ nécessite identifiants API Google) ; brancher l'envoi sur les vrais destinataires client ; valider la grille avec le client.
+
 ## 2026-06-23 — Resto360 wizard : notes, checklists, photos par question, ajout libre
 - Fait : grille resto360 enrichie (`grille-resto360.ts` v2). Chaque critère = objet `{label, aide, checklist?}` ; abréviations expansées partout (PMS, DLC, DDM, FIFO, HACCP, KPI, DPAE, Food Cost, upselling, PMR). Helpers `critereLabel/Aide/Checklist`, type `CritereInput` (compat string).
 - Fait : explication 1 ligne (`aide`) affichée sous chaque intitulé dans le wizard.
