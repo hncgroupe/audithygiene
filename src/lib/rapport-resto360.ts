@@ -107,11 +107,16 @@ export interface PilierDetail {
 export function detailPiliers(items: ItemNote[]): PilierDetail[] {
   const byCode = new Map(items.map((i) => [i.code, i]));
   const notes = notesMap(items);
-  return GRILLE_RESTO360.filter((p) => p.noteAuRadar).map((p) => {
+  // Codes consommés par la grille standard : tout le reste (points "Sur mesure",
+  // doublons type CUSTOM-xxxx ou <codeGrille>-RAND) est ajouté à part, sinon les
+  // commentaires saisis sur ces points n'apparaîtraient jamais dans le rapport.
+  const codesGrille = new Set<string>();
+  const piliers = GRILLE_RESTO360.filter((p) => p.noteAuRadar).map((p) => {
     const groupes = p.groupes.map((g, gi) => ({
       nom: g.nom,
       criteres: g.criteres.map((crit, ci) => {
         const id = critereId(p.code, gi, ci);
+        codesGrille.add(id);
         const it = byCode.get(id);
         const info = critereInfo(crit);
         return {
@@ -127,7 +132,6 @@ export function detailPiliers(items: ItemNote[]): PilierDetail[] {
         };
       }),
     }));
-    const tous = groupes.flatMap((g) => g.criteres);
     return {
       code: p.code,
       numero: p.numero,
@@ -135,6 +139,39 @@ export function detailPiliers(items: ItemNote[]): PilierDetail[] {
       radar: p.radar,
       score: scorePilier(notes, p),
       groupes,
+    };
+  });
+
+  // Points ajoutés sur le terrain (hors grille, hors questions ouvertes) :
+  // rattachés à leur pilier par le thème, pour que leurs commentaires sortent.
+  for (const p of piliers) {
+    const extras = items.filter(
+      (it) =>
+        !codesGrille.has(it.code) &&
+        it.theme === p.nom &&
+        it.groupe !== 'Questions ouvertes'
+    );
+    if (extras.length === 0) continue;
+    p.groupes.push({
+      nom: 'Points ajoutés sur l’audit',
+      criteres: extras.map((it) => ({
+        intitule: it.intitule,
+        note: it.note ?? null,
+        commentaire: it.commentaire ?? null,
+        photos: it.photos ?? [],
+        description: null,
+        regle: null,
+        conforme: null,
+        nonConforme: null,
+        critique: false,
+      })),
+    });
+  }
+
+  return piliers.map((p) => {
+    const tous = p.groupes.flatMap((g) => g.criteres);
+    return {
+      ...p,
       risques: tous.filter((c) => typeof c.note === 'number' && c.note <= 2),
       forts: tous.filter((c) => typeof c.note === 'number' && c.note >= 4),
     };

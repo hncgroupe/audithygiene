@@ -55,50 +55,45 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
   const byCode = new Map(patches.map((p) => [p.code, p]));
   const existingCodes = new Set(audit.items.map((it) => it.code));
 
-  // 1. Mise à jour des critères existants
-  await Promise.all(
-    audit.items
-      .filter((it) => byCode.has(it.code))
-      .map((it) => {
-        const p = byCode.get(it.code)!;
-        const note = typeof p.note === 'number' && p.note >= 1 && p.note <= 5 ? p.note : null;
-        return prisma.auditItem.update({
-          where: { id: it.id },
-          data: {
-            note,
-            commentaire: p.commentaire?.trim() || null,
-            ...('meta' in p ? { meta: (p.meta ?? undefined) as never } : {}),
-          },
-        });
-      })
-  );
+  // Critères à mettre à jour / à créer, préparés EN MÉMOIRE avant toute écriture.
+  const aMettreAJour = audit.items
+    .filter((it) => byCode.has(it.code))
+    .map((it) => {
+      const p = byCode.get(it.code)!;
+      const note = typeof p.note === 'number' && p.note >= 1 && p.note <= 5 ? p.note : null;
+      return {
+        id: it.id,
+        data: {
+          note,
+          commentaire: p.commentaire?.trim() || null,
+          ...('meta' in p ? { meta: (p.meta ?? undefined) as never } : {}),
+        },
+      };
+    });
 
-  // 1bis. Création des critères de grille absents (audit démarré avant l'ajout
-  // de la question), pour que rien ne soit perdu.
-  await Promise.all(
-    patches
-      .filter((p) => !existingCodes.has(p.code))
-      .map((p) => {
-        const g = resolveCritere(p.code);
-        if (!g) return Promise.resolve(null);
-        const note = typeof p.note === 'number' && p.note >= 1 && p.note <= 5 ? p.note : null;
-        return prisma.auditItem.create({
-          data: {
-            auditId: id,
-            theme: g.theme,
-            groupe: g.groupe,
-            code: p.code,
-            intitule: g.intitule,
-            conformite: 'NON_EVALUE',
-            note,
-            commentaire: p.commentaire?.trim() || null,
-            ...('meta' in p ? { meta: (p.meta ?? undefined) as never } : {}),
-          },
-        });
-      })
-  );
+  // Création des critères de grille absents (audit démarré avant l'ajout de la
+  // question), pour que rien ne soit perdu.
+  const aCreer = patches
+    .filter((p) => !existingCodes.has(p.code))
+    .map((p) => {
+      const g = resolveCritere(p.code);
+      if (!g) return null;
+      const note = typeof p.note === 'number' && p.note >= 1 && p.note <= 5 ? p.note : null;
+      return {
+        auditId: id,
+        theme: g.theme,
+        groupe: g.groupe,
+        code: p.code,
+        intitule: g.intitule,
+        conformite: 'NON_EVALUE' as const,
+        note,
+        commentaire: p.commentaire?.trim() || null,
+        ...('meta' in p ? { meta: (p.meta ?? undefined) as never } : {}),
+      };
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null);
 
-  // 2. Carte des notes à jour (code -> note), items existants + nouveaux patchés
+  // Carte des notes à jour (code -> note), items existants + nouveaux patchés
   const notes: Record<string, NoteResto | undefined> = {};
   for (const it of audit.items) {
     const p = byCode.get(it.code);
@@ -110,7 +105,7 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
     if (typeof p.note === 'number' && p.note >= 1 && p.note <= 5) notes[p.code] = p.note as NoteResto;
   }
 
-  // 3. Scores par pilier (theme = nom du pilier)
+  // Scores par pilier (theme = nom du pilier)
   const scoresData = GRILLE_RESTO360.filter((p) => p.noteAuRadar)
     .map((p) => ({ pilier: p, valeur: scorePilier(notes, p) }))
     .filter((s) => s.valeur !== null)
@@ -118,19 +113,31 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
 
   const scoreGlobal = scoreGlobalResto(notes);
 
-  // 4. Scores + en-tête dans une seule transaction : on ne peut pas se retrouver
-  // avec les scores supprimés mais non recréés si la requête échoue en cours.
-  await prisma.$transaction([
-    prisma.score.deleteMany({ where: { auditId: id } }),
-    ...(scoresData.length > 0 ? [prisma.score.createMany({ data: scoresData })] : []),
-    prisma.audit.update({
-      where: { id },
-      data: {
-        scoreGlobal: scoreGlobal ?? null,
-        ...(finalize ? { statut: 'TERMINE' } : {}),
-      },
-    }),
-  ]);
+  // ÉCRITURE : tout dans UNE seule transaction = UNE seule connexion par requête.
+  // L'ancienne version lançait une requête par critère en parallèle (Promise.all) :
+  // avec ~50 critères + uploads photo simultanés, le pool de connexions Postgres
+  // (limite 5) saturait et l'autosave renvoyait 500 (P2024). Ici, les écritures
+  // sont séquentielles sur une connexion unique : aucune saturation possible.
+  await prisma.$transaction(
+    async (tx) => {
+      for (const u of aMettreAJour) {
+        await tx.auditItem.update({ where: { id: u.id }, data: u.data });
+      }
+      for (const c of aCreer) {
+        await tx.auditItem.create({ data: c });
+      }
+      await tx.score.deleteMany({ where: { auditId: id } });
+      if (scoresData.length > 0) await tx.score.createMany({ data: scoresData });
+      await tx.audit.update({
+        where: { id },
+        data: {
+          scoreGlobal: scoreGlobal ?? null,
+          ...(finalize ? { statut: 'TERMINE' } : {}),
+        },
+      });
+    },
+    { timeout: 20000, maxWait: 15000 }
+  );
 
   return NextResponse.json({
     ok: true,
