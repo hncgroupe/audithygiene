@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { Logo } from './Logo';
 
 const NAV = [
-  { href: '/#deroule', label: 'Comment ça marche' },
-  { href: '/#rapport', label: 'Le rapport' },
+  { href: '/methode', label: 'Méthode' },
   { href: '/#formules', label: 'Formules' },
   { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
+  { href: '/a-propos', label: 'À propos' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export function Header() {

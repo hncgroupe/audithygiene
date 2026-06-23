@@ -47,6 +47,9 @@ export function leadConfirmationEmail(nom: string): { subject: string; htmlConte
     subject: 'Votre demande d’audit hygiène a bien été reçue',
     htmlContent: `
       <div style="font-family: Poppins, Arial, sans-serif; color: #0C1B17; max-width: 560px; margin: auto;">
+        <div style="text-align: center; padding: 8px 0 20px;">
+          <img src="${env.siteUrl}/logo-wordmark.png" alt="audit hygiène" width="190" style="display: inline-block; width: 190px; max-width: 70%; height: auto; border: 0;" />
+        </div>
         <h2 style="color: #10B981;">Merci ${escapeHtml(nom)} 👋</h2>
         <p>Votre demande auprès d'<strong>audit hygiène</strong> a bien été enregistrée.
         Un membre de notre équipe vous recontacte rapidement pour convenir d'un créneau.</p>

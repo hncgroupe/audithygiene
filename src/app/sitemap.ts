@@ -7,12 +7,17 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const staticPages = ['', '/faq', '/blog', '/zones', '/mentions-legales', '/confidentialite', '/cgv'].map(
+  const staticPages = ['', '/methode', '/a-propos', '/contact', '/faq', '/blog', '/zones', '/mentions-legales', '/confidentialite', '/cgv'].map(
     (path) => ({
       url: `${siteUrl}${path}`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
-      priority: path === '' ? 1 : path === '/faq' || path === '/blog' ? 0.8 : 0.6,
+      priority:
+        path === ''
+          ? 1
+          : path === '/methode' || path === '/faq' || path === '/blog' || path === '/a-propos'
+            ? 0.8
+            : 0.6,
     })
   );
 

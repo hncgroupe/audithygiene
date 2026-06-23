@@ -17,10 +17,11 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-semibold text-white">Le service</h3>
           <ul className="mt-3 space-y-2 text-sm text-white/60">
-            <li><Link href="/#deroule" className="hover:text-vert">Comment ça marche</Link></li>
+            <li><Link href="/methode" className="hover:text-vert">Notre méthode</Link></li>
             <li><Link href="/#formules" className="hover:text-vert">Formules</Link></li>
             <li><Link href="/blog" className="hover:text-vert">Blog</Link></li>
-            <li><Link href="/#faq" className="hover:text-vert">FAQ</Link></li>
+            <li><Link href="/a-propos" className="hover:text-vert">À propos</Link></li>
+            <li><Link href="/faq" className="hover:text-vert">FAQ</Link></li>
             <li><Link href="/#rdv" className="hover:text-vert">Réserver un audit</Link></li>
           </ul>
         </div>
@@ -28,10 +29,10 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-semibold text-white">Contact</h3>
           <ul className="mt-3 space-y-2 text-sm text-white/60">
+            <li><Link href="/contact" className="hover:text-vert">Nous contacter</Link></li>
             <li><a href="mailto:contact@audithygiene.fr" className="hover:text-vert">contact@audithygiene.fr</a></li>
             <li><Link href="/#configurateur" className="hover:text-vert">Configurer mon audit</Link></li>
             <li><Link href="/#rdv" className="hover:text-vert">Demande express 48 h</Link></li>
-            <li className="text-white/40">Intervention partout en France</li>
           </ul>
         </div>
 

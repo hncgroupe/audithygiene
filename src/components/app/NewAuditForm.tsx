@@ -24,6 +24,7 @@ interface BanFeature {
 
 export function NewAuditForm() {
   const router = useRouter();
+  const [marque, setMarque] = useState<'AUDIT_HYGIENE' | 'AUDITRESTO360'>('AUDIT_HYGIENE');
   const [f, setF] = useState({
     nom: '',
     adresse: '',
@@ -98,7 +99,7 @@ export function NewAuditForm() {
       const res = await fetch('/api/audits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...f, emails: emails.map((e) => e.trim()).filter(Boolean) }),
+        body: JSON.stringify({ ...f, marque, emails: emails.map((e) => e.trim()).filter(Boolean) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erreur');
@@ -127,6 +128,36 @@ export function NewAuditForm() {
       {/* Champs (page fixe, bouton toujours visible en bas) */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="container-ah mx-auto max-w-lg space-y-3 py-4">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink/80">Type d&apos;audit</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMarque('AUDIT_HYGIENE')}
+              className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                marque === 'AUDIT_HYGIENE'
+                  ? 'border-vert bg-vert-50 ring-1 ring-vert/30'
+                  : 'border-ink/12 bg-white hover:border-vert/40'
+              }`}
+            >
+              <span className="block text-sm font-bold text-ink">audit hygiène</span>
+              <span className="mt-0.5 block text-xs text-ink/70">Hygiène &amp; HACCP, notation conformité</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMarque('AUDITRESTO360')}
+              className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                marque === 'AUDITRESTO360'
+                  ? 'border-[#F97316] bg-orange-50 ring-1 ring-[#F97316]/30'
+                  : 'border-ink/12 bg-white hover:border-[#F97316]/40'
+              }`}
+            >
+              <span className="block text-sm font-bold text-ink">auditresto360</span>
+              <span className="mt-0.5 block text-xs text-ink/70">Audit 360, 10 piliers notés /100</span>
+            </button>
+          </div>
+        </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink/80">Nom du restaurant</label>
           <input

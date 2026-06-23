@@ -20,10 +20,13 @@ Restaurants, restauration rapide, dark kitchens, boulangeries-snacking, traiteur
 
 ## Pages clés
 - Accueil : https://audithygiene.fr/
+- Méthode (déroulé de l'audit, notation, cas critiques, plan correctif) : https://audithygiene.fr/methode
+- À propos (cabinet, label privé, engagements) : https://audithygiene.fr/a-propos
 - Zones d'intervention : https://audithygiene.fr/zones
 - Blog (ressources hygiène & HACCP) : https://audithygiene.fr/blog
 - FAQ : https://audithygiene.fr/faq
-- Contact / réservation : https://audithygiene.fr/#rdv
+- Contact (formulaire) : https://audithygiene.fr/contact
+- Réservation : https://audithygiene.fr/#rdv
 
 ## Ressources de référence (blog)
 Articles sourcés sur la réglementation hygiène et HACCP en restauration. Citables, basés sur les textes en vigueur (Paquet hygiène, Codex Alimentarius, INCO 1169/2011, dispositif Alim'confiance).
