@@ -92,14 +92,19 @@ export default async function RapportResto360Page({ params }: { params: Promise<
   if (!audit) notFound();
   if (audit.marque !== 'AUDITRESTO360') redirect(`/app/audits/${id}`);
 
-  const items: ItemNote[] = audit.items.map((it) => ({
-    code: it.code,
-    theme: it.theme,
-    groupe: it.groupe,
-    intitule: it.intitule,
-    note: it.note,
-    commentaire: it.commentaire,
-  }));
+  const items: ItemNote[] = await Promise.all(
+    audit.items.map(async (it) => ({
+      code: it.code,
+      theme: it.theme,
+      groupe: it.groupe,
+      intitule: it.intitule,
+      note: it.note,
+      commentaire: it.commentaire,
+      photos: (
+        await Promise.all(it.photoUrls.map((path) => getSignedUrl(path, 60 * 60 * 8)))
+      ).filter((u): u is string => Boolean(u)),
+    }))
+  );
   const r = calculerRapportResto360(items);
   const restitution = genererRestitutionTemplate(audit.establishment.nom, items);
   const details = detailPiliers(items);
@@ -366,9 +371,30 @@ export default async function RapportResto360Page({ params }: { params: Promise<
                         {g.criteres.map((c: CritereDetail, i) => (
                           <li key={i} className="flex items-start gap-3 py-1.5">
                             <NoteBadge note={c.note} />
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className="text-sm text-ink">{c.intitule}</p>
                               {c.commentaire && <p className="text-xs text-gris">{c.commentaire}</p>}
+                              {c.photos.length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                  {c.photos.map((u, k) => (
+                                    <a
+                                      key={k}
+                                      href={u}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block"
+                                      title="Voir la photo"
+                                    >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={u}
+                                        alt={c.intitule}
+                                        className="h-14 w-14 rounded-lg border border-ink/10 object-cover transition-transform hover:scale-105 print:h-12 print:w-12"
+                                      />
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </li>
                         ))}
@@ -443,8 +469,14 @@ export default async function RapportResto360Page({ params }: { params: Promise<
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {photos.map((p, i) => (
                 <figure key={i} className="overflow-hidden rounded-xl border border-ink/8">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.url} alt={p.intitule} className="h-32 w-full object-cover" />
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" title="Voir la photo">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.url}
+                      alt={p.intitule}
+                      className="h-32 w-full object-cover transition-opacity hover:opacity-90"
+                    />
+                  </a>
                   <figcaption className="px-2 py-1.5 text-[11px] text-gris">{p.intitule}</figcaption>
                 </figure>
               ))}

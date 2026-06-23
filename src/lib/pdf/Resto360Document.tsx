@@ -17,6 +17,12 @@ export interface Resto360ReportData {
   quickWins: { intitule: string; pilier: string }[];
   dirigeant: { question: string; reponse: string }[];
   photos: { intitule: string; url: string }[];
+  details: {
+    nom: string;
+    numero: number;
+    score: number | null;
+    criteres: { intitule: string; note: number | null; commentaire: string | null; photos: string[] }[];
+  }[];
 }
 
 const ORANGE = '#F97316';
@@ -45,6 +51,12 @@ const s = StyleSheet.create({
   photo: { width: '32%', marginRight: '1%', marginBottom: 8 },
   photoImg: { width: '100%', height: 90, objectFit: 'cover', borderRadius: 4 },
   photoCap: { fontSize: 7, color: GRIS, marginTop: 2 },
+  pilierTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', marginTop: 10, marginBottom: 2, color: INK },
+  critRow: { paddingVertical: 3, borderBottomWidth: 0.5, borderBottomColor: '#F1F1F1' },
+  critHead: { flexDirection: 'row', alignItems: 'flex-start' },
+  noteBadge: { width: 16, height: 16, borderRadius: 3, color: '#fff', fontSize: 9, fontFamily: 'Helvetica-Bold', textAlign: 'center', marginRight: 6, paddingTop: 2 },
+  critPhotos: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 3, marginLeft: 22 },
+  critPhoto: { width: 64, height: 64, borderRadius: 4, marginRight: 4, marginBottom: 4, objectFit: 'cover' },
   footer: { position: 'absolute', bottom: 24, left: 36, right: 36, fontSize: 7, color: GRIS, borderTopWidth: 0.5, borderTopColor: '#E5E7EB', paddingTop: 6, textAlign: 'center' },
 });
 
@@ -53,6 +65,23 @@ const MENTION =
 
 function tagColor(p: string): string {
   return p === 'Urgence' ? '#DC2626' : p === 'Important' ? ORANGE : '#EAB308';
+}
+
+function noteColor(n: number | null): string {
+  switch (n) {
+    case 5:
+      return '#16A34A';
+    case 4:
+      return '#22C55E';
+    case 3:
+      return '#EAB308';
+    case 2:
+      return '#F97316';
+    case 1:
+      return '#DC2626';
+    default:
+      return GRIS;
+  }
 }
 
 export function Resto360Document({ data }: { data: Resto360ReportData }) {
@@ -159,41 +188,57 @@ export function Resto360Document({ data }: { data: Resto360ReportData }) {
         </Text>
       </Page>
 
-      {/* Page 2 : dirigeant + photos (si présents) */}
-      {(data.dirigeant.length > 0 || data.photos.length > 0) && (
-        <Page size="A4" style={s.page}>
-          {data.dirigeant.length > 0 && (
-            <View style={s.section}>
-              <Text style={s.sectionTitle}>Échanges avec le dirigeant</Text>
-              {data.dirigeant.map((d, i) => (
-                <View key={i} style={{ marginBottom: 6 }}>
-                  <Text style={{ fontFamily: 'Helvetica-Bold' }}>{d.question}</Text>
-                  <Text style={{ color: GRIS }}>{d.reponse}</Text>
+      {/* Page 2+ : détail par pilier, photos collées à chaque question */}
+      <Page size="A4" style={s.page}>
+        <Text style={s.sectionTitle}>Détail par pilier &amp; photos</Text>
+        {data.details
+          .filter((pil) => pil.criteres.length > 0)
+          .map((pil) => (
+            <View key={pil.numero} wrap={false}>
+              <Text style={s.pilierTitle}>
+                {pil.numero}. {pil.nom}
+                {pil.score !== null ? ` — ${pil.score}/100` : ''}
+              </Text>
+              {pil.criteres.map((c, i) => (
+                <View key={i} style={s.critRow}>
+                  <View style={s.critHead}>
+                    <Text style={{ ...s.noteBadge, backgroundColor: noteColor(c.note) }}>
+                      {c.note ?? '-'}
+                    </Text>
+                    <Text style={{ flexGrow: 1 }}>
+                      {c.intitule}
+                      {c.commentaire ? <Text style={{ color: GRIS }}> · {c.commentaire}</Text> : null}
+                    </Text>
+                  </View>
+                  {c.photos.length > 0 && (
+                    <View style={s.critPhotos}>
+                      {c.photos.map((u, j) => (
+                        // eslint-disable-next-line jsx-a11y/alt-text
+                        <Image key={j} src={u} style={s.critPhoto} />
+                      ))}
+                    </View>
+                  )}
                 </View>
               ))}
             </View>
-          )}
+          ))}
 
-          {data.photos.length > 0 && (
-            <View style={s.section}>
-              <Text style={s.sectionTitle}>Annexe : photos</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {data.photos.map((p, i) => (
-                  <View key={i} style={s.photo}>
-                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                    <Image src={p.url} style={s.photoImg} />
-                    <Text style={s.photoCap}>{p.intitule}</Text>
-                  </View>
-                ))}
+        {data.dirigeant.length > 0 && (
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>Échanges avec le dirigeant</Text>
+            {data.dirigeant.map((d, i) => (
+              <View key={i} style={{ marginBottom: 6 }}>
+                <Text style={{ fontFamily: 'Helvetica-Bold' }}>{d.question}</Text>
+                <Text style={{ color: GRIS }}>{d.reponse}</Text>
               </View>
-            </View>
-          )}
+            ))}
+          </View>
+        )}
 
-          <Text style={s.footer} fixed>
-            {MENTION}
-          </Text>
-        </Page>
-      )}
+        <Text style={s.footer} fixed>
+          {MENTION}
+        </Text>
+      </Page>
     </Document>
   );
 }

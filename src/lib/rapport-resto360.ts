@@ -21,6 +21,7 @@ export interface ItemNote {
   intitule: string;
   note: number | null; // 1 à 5
   commentaire: string | null;
+  photos?: string[]; // URLs (signées) des photos du critère
 }
 
 export interface LigneRapport {
@@ -77,6 +78,7 @@ export interface CritereDetail {
   intitule: string;
   note: number | null;
   commentaire: string | null;
+  photos: string[];
 }
 export interface PilierDetail {
   code: string;
@@ -102,6 +104,7 @@ export function detailPiliers(items: ItemNote[]): PilierDetail[] {
           intitule: critereLabel(crit),
           note: it?.note ?? null,
           commentaire: it?.commentaire ?? null,
+          photos: it?.photos ?? [],
         };
       }),
     }));
@@ -147,6 +150,21 @@ export function assembleResto360Report(args: {
 }) {
   const r = calculerRapportResto360(args.items);
   const score = r.scoreGlobal ?? 0;
+  // Détail par pilier : on ne garde que les critères réellement notés, avec leurs photos.
+  const details = detailPiliers(args.items).map((d) => ({
+    nom: d.nom,
+    numero: d.numero,
+    score: d.score,
+    criteres: d.groupes
+      .flatMap((g) => g.criteres)
+      .filter((cdt) => typeof cdt.note === 'number' || cdt.photos.length > 0)
+      .map((cdt) => ({
+        intitule: cdt.intitule,
+        note: cdt.note,
+        commentaire: cdt.commentaire,
+        photos: cdt.photos,
+      })),
+  }));
   const plan = [
     ...r.plan.urgence.map((l) => ({ priorite: 'Urgence', l })),
     ...r.plan.important.map((l) => ({ priorite: 'Important', l })),
@@ -178,6 +196,7 @@ export function assembleResto360Report(args: {
     })),
     plan,
     quickWins: r.quickWins.map((q) => ({ intitule: q.intitule, pilier: q.pilier })),
+    details,
     dirigeant: r.dirigeant
       .filter((d) => d.reponse)
       .map((d) => ({ question: d.question, reponse: d.reponse as string })),

@@ -30,26 +30,21 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
     return NextResponse.json({ error: 'Rapport indisponible pour cette marque.' }, { status: 400 });
   }
 
-  const items: ItemNote[] = audit.items.map((it) => ({
-    code: it.code,
-    theme: it.theme,
-    groupe: it.groupe,
-    intitule: it.intitule,
-    note: it.note,
-    commentaire: it.commentaire,
-  }));
-
-  // Photos (URL signées, courte durée — le temps de la génération)
-  const photos = (
-    await Promise.all(
-      audit.items.flatMap((it) =>
-        it.photoUrls.map(async (path) => ({
-          intitule: it.intitule,
-          url: await getSignedUrl(path, 60 * 30),
-        }))
-      )
-    )
-  ).filter((p): p is { intitule: string; url: string } => Boolean(p.url));
+  // Items + photos (URL signées, courte durée — le temps de la génération),
+  // les photos restent rattachées à chaque critère pour le PDF.
+  const items: ItemNote[] = await Promise.all(
+    audit.items.map(async (it) => ({
+      code: it.code,
+      theme: it.theme,
+      groupe: it.groupe,
+      intitule: it.intitule,
+      note: it.note,
+      commentaire: it.commentaire,
+      photos: (
+        await Promise.all(it.photoUrls.map((path) => getSignedUrl(path, 60 * 30)))
+      ).filter((u): u is string => Boolean(u)),
+    }))
+  );
 
   const dateStr = audit.dateAudit
     ? new Date(audit.dateAudit).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -62,7 +57,7 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
     date: dateStr,
     ref,
     items,
-    photos,
+    photos: [],
   });
 
   let pdf: Buffer;
