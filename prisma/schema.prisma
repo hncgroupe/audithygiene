@@ -205,6 +205,10 @@ model Audit {
   // Restitution IA (auditresto360) : synthèse, points forts/axes, roadmap, gains, risques
   syntheseIA      Json?
 
+  // Sauvegarde Google Drive : id du dossier "photos" de l'audit (Shared Drive).
+  // Null tant que la sauvegarde Drive n'est pas configurée ou pour les anciens audits.
+  driveFolderId   String?
+
   items           AuditItem[]
   scoresParTheme  Score[]
   nonConformites  NonConformity[]

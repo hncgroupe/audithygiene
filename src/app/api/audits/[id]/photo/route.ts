@@ -1,9 +1,48 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { getCurrentDbUser, assertAuditAccess } from '@/lib/auth';
 import { getSupabaseAdmin, getSignedUrl } from '@/lib/supabase';
 import { env } from '@/lib/env';
+import {
+  isDriveEnabled,
+  auditFolderLabel,
+  createAuditDriveFolder,
+  uploadPhotoToDrive,
+} from '@/lib/drive';
 
 export const runtime = 'nodejs';
+
+/**
+ * Sauvegarde best-effort d'une photo sur le Shared Drive, APRÈS la réponse
+ * (via after()) : aucun impact sur la vitesse d'affichage du ✓ côté auditeur.
+ * Crée le dossier de l'audit à la volée s'il n'existe pas encore.
+ */
+async function backupPhotoToDrive(
+  auditId: string,
+  fileName: string,
+  buffer: Buffer,
+  mimeType: string
+) {
+  if (!isDriveEnabled()) return;
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    const audit = await prisma.audit.findUnique({
+      where: { id: auditId },
+      select: { driveFolderId: true, dateAudit: true, establishment: { select: { nom: true } } },
+    });
+    if (!audit) return;
+    let folderId = audit.driveFolderId;
+    if (!folderId) {
+      const label = auditFolderLabel(audit.establishment.nom, audit.dateAudit ?? new Date());
+      folderId = await createAuditDriveFolder(label);
+      if (folderId) {
+        await prisma.audit.update({ where: { id: auditId }, data: { driveFolderId: folderId } });
+      }
+    }
+    if (folderId) await uploadPhotoToDrive(folderId, fileName, buffer, mimeType);
+  } catch (e) {
+    console.error('[photo] backup Drive', e);
+  }
+}
 
 /**
  * Ajoute une photo à un item d'audit : upload dans le bucket privé puis
@@ -48,6 +87,12 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   // Ajout ATOMIQUE au tableau : deux photos uploadées en parallèle ne s'écrasent
   // plus (le read-modify-write précédent perdait l'une des deux).
   await prisma.$executeRaw`UPDATE "audit_items" SET "photoUrls" = array_append("photoUrls", ${path}) WHERE "id" = ${item.id}`;
+
+  // Sauvegarde Drive APRÈS la réponse (ne ralentit pas l'auditeur).
+  if (isDriveEnabled()) {
+    const fileName = `${code}-${path.split('/').pop()}`;
+    after(() => backupPhotoToDrive(id, fileName, buffer, file.type || 'image/jpeg'));
+  }
 
   const url = await getSignedUrl(path, 60 * 60 * 8);
   return NextResponse.json({ path, url });

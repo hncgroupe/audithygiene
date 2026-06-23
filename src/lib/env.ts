@@ -54,9 +54,22 @@ export const env = {
   anthropicApiKey: opt('ANTHROPIC_API_KEY'),
   anthropicModel: opt('ANTHROPIC_MODEL') ?? 'claude-sonnet-4-6',
 
+  // Sauvegarde Google Drive (Shared Drive Workspace) - dormant tant que non configuré.
+  // GOOGLE_SERVICE_ACCOUNT_B64 : la clé JSON du compte de service encodée en base64.
+  // GOOGLE_DRIVE_ID : id du Shared Drive. GOOGLE_DRIVE_PARENT_ID (option) : dossier
+  // parent dans ce Drive sous lequel ranger les audits (sinon racine du Shared Drive).
+  googleServiceAccountB64: opt('GOOGLE_SERVICE_ACCOUNT_B64'),
+  googleDriveId: opt('GOOGLE_DRIVE_ID'),
+  googleDriveParentId: opt('GOOGLE_DRIVE_PARENT_ID'),
+
   /** true si la config minimale (DB) est présente */
   get isDatabaseConfigured() {
     return Boolean(opt('DATABASE_URL'));
+  },
+
+  /** true si la sauvegarde Drive est configurée (sinon fonctionnalité dormante). */
+  get isDriveBackupEnabled() {
+    return Boolean(opt('GOOGLE_SERVICE_ACCOUNT_B64') && opt('GOOGLE_DRIVE_ID'));
   },
 };
 

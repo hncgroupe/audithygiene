@@ -1,9 +1,30 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { getCurrentDbUser } from '@/lib/auth';
 import { flattenGrille, GRILLE_VERSION } from '@/lib/grille-audit';
 import { GRILLE_RESTO360, GRILLE_RESTO360_VERSION, critereId, critereLabel } from '@/lib/grille-resto360';
+import { isDriveEnabled, auditFolderLabel, createAuditDriveFolder } from '@/lib/drive';
 
 export const runtime = 'nodejs';
+
+/**
+ * Crée le dossier Drive "audit - NOM - DATE" / "photos" pour un nouvel audit et
+ * stocke son id. APRÈS la réponse (after) : ne ralentit jamais le démarrage d'un
+ * audit, et reste sans effet si la sauvegarde Drive n'est pas configurée.
+ */
+function scheduleAuditDriveFolder(auditId: string, nom: string, date: Date) {
+  if (!isDriveEnabled()) return;
+  after(async () => {
+    try {
+      const folderId = await createAuditDriveFolder(auditFolderLabel(nom, date));
+      if (folderId) {
+        const { prisma } = await import('@/lib/prisma');
+        await prisma.audit.update({ where: { id: auditId }, data: { driveFolderId: folderId } });
+      }
+    } catch (e) {
+      console.error('[audits] dossier Drive', e);
+    }
+  });
+}
 
 interface Body {
   // Soit un établissement existant…
@@ -78,10 +99,12 @@ export async function POST(request: Request) {
 
   let establishmentId = body.establishmentId;
   let emailsRapport: string[] = [];
+  let etabNom = ''; // nom de l'établissement, pour nommer le dossier Drive
 
   if (!establishmentId) {
     const nom = (body.nom ?? '').trim();
     if (!nom) return NextResponse.json({ error: 'Nom du restaurant requis.' }, { status: 400 });
+    etabNom = nom;
 
     const type = TYPES.includes(body.type ?? '') ? (body.type as string) : 'RESTAURANT';
 
@@ -115,6 +138,7 @@ export async function POST(request: Request) {
   } else {
     const etab = await prisma.establishment.findUnique({ where: { id: establishmentId } });
     if (!etab) return NextResponse.json({ error: 'Établissement introuvable.' }, { status: 404 });
+    etabNom = etab.nom;
   }
 
   const dateAudit = body.dateHeure ? new Date(body.dateHeure) : new Date();
@@ -142,6 +166,7 @@ export async function POST(request: Request) {
         },
       },
     });
+    scheduleAuditDriveFolder(audit.id, etabNom, dateOk);
     return NextResponse.json({ id: audit.id });
   }
 
@@ -168,5 +193,6 @@ export async function POST(request: Request) {
     },
   });
 
+  scheduleAuditDriveFolder(audit.id, etabNom, dateOk);
   return NextResponse.json({ id: audit.id });
 }
