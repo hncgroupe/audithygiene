@@ -7,6 +7,7 @@ import {
   auditFolderLabel,
   createAuditDriveFolder,
   uploadPhotoToDrive,
+  drivePhotoName,
 } from '@/lib/drive';
 
 export const runtime = 'nodejs';
@@ -33,9 +34,23 @@ async function backupPhotoToDrive(
     let folderId = audit.driveFolderId;
     if (!folderId) {
       const label = auditFolderLabel(audit.establishment.nom, audit.dateAudit ?? new Date());
-      folderId = await createAuditDriveFolder(label);
-      if (folderId) {
-        await prisma.audit.update({ where: { id: auditId }, data: { driveFolderId: folderId } });
+      const created = await createAuditDriveFolder(label);
+      if (created) {
+        // Anti-course : on ne pose l'id que si aucun autre n'a déjà créé le dossier.
+        const upd = await prisma.audit.updateMany({
+          where: { id: auditId, driveFolderId: null },
+          data: { driveFolderId: created },
+        });
+        if (upd.count === 0) {
+          // Un autre upload a gagné : on réutilise son dossier (le nôtre restera vide).
+          const fresh = await prisma.audit.findUnique({
+            where: { id: auditId },
+            select: { driveFolderId: true },
+          });
+          folderId = fresh?.driveFolderId ?? created;
+        } else {
+          folderId = created;
+        }
       }
     }
     if (folderId) await uploadPhotoToDrive(folderId, fileName, buffer, mimeType);
@@ -88,9 +103,10 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   // plus (le read-modify-write précédent perdait l'une des deux).
   await prisma.$executeRaw`UPDATE "audit_items" SET "photoUrls" = array_append("photoUrls", ${path}) WHERE "id" = ${item.id}`;
 
-  // Sauvegarde Drive APRÈS la réponse (ne ralentit pas l'auditeur).
+  // Sauvegarde Drive APRÈS la réponse (ne ralentit pas l'auditeur). Le fichier
+  // est nommé d'après la question, avec un numéro à partir de la 2e photo.
   if (isDriveEnabled()) {
-    const fileName = `${code}-${path.split('/').pop()}`;
+    const fileName = drivePhotoName(item.intitule, item.photoUrls.length);
     after(() => backupPhotoToDrive(id, fileName, buffer, file.type || 'image/jpeg'));
   }
 

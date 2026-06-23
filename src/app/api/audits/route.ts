@@ -1,4 +1,4 @@
-import { NextResponse, after } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getCurrentDbUser } from '@/lib/auth';
 import { flattenGrille, GRILLE_VERSION } from '@/lib/grille-audit';
 import { GRILLE_RESTO360, GRILLE_RESTO360_VERSION, critereId, critereLabel } from '@/lib/grille-resto360';
@@ -7,23 +7,23 @@ import { isDriveEnabled, auditFolderLabel, createAuditDriveFolder } from '@/lib/
 export const runtime = 'nodejs';
 
 /**
- * Crée le dossier Drive "audit - NOM - DATE" / "photos" pour un nouvel audit et
- * stocke son id. APRÈS la réponse (after) : ne ralentit jamais le démarrage d'un
- * audit, et reste sans effet si la sauvegarde Drive n'est pas configurée.
+ * Crée le dossier Drive "audit - NOM - DATE" / "photos" et stocke son id, AVANT
+ * de répondre : ainsi `driveFolderId` est déjà posé quand l'auditeur prend ses
+ * premières photos. Évite la course qui créait deux dossiers pour un même audit.
+ * Sans effet si la sauvegarde Drive n'est pas configurée ; un échec ne casse pas
+ * la création de l'audit (la photo recréera le dossier à la volée si besoin).
  */
-function scheduleAuditDriveFolder(auditId: string, nom: string, date: Date) {
+async function createDriveFolderForAudit(auditId: string, nom: string, date: Date) {
   if (!isDriveEnabled()) return;
-  after(async () => {
-    try {
-      const folderId = await createAuditDriveFolder(auditFolderLabel(nom, date));
-      if (folderId) {
-        const { prisma } = await import('@/lib/prisma');
-        await prisma.audit.update({ where: { id: auditId }, data: { driveFolderId: folderId } });
-      }
-    } catch (e) {
-      console.error('[audits] dossier Drive', e);
+  try {
+    const folderId = await createAuditDriveFolder(auditFolderLabel(nom, date));
+    if (folderId) {
+      const { prisma } = await import('@/lib/prisma');
+      await prisma.audit.update({ where: { id: auditId }, data: { driveFolderId: folderId } });
     }
-  });
+  } catch (e) {
+    console.error('[audits] dossier Drive', e);
+  }
 }
 
 interface Body {
@@ -166,7 +166,7 @@ export async function POST(request: Request) {
         },
       },
     });
-    scheduleAuditDriveFolder(audit.id, etabNom, dateOk);
+    await createDriveFolderForAudit(audit.id, etabNom, dateOk);
     return NextResponse.json({ id: audit.id });
   }
 
@@ -193,6 +193,6 @@ export async function POST(request: Request) {
     },
   });
 
-  scheduleAuditDriveFolder(audit.id, etabNom, dateOk);
+  await createDriveFolderForAudit(audit.id, etabNom, dateOk);
   return NextResponse.json({ id: audit.id });
 }

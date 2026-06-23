@@ -60,6 +60,21 @@ export function auditFolderLabel(nomEtablissement: string, date: Date): string {
 }
 
 /**
+ * Nom de fichier d'une photo : l'intitulé de la question à laquelle elle est
+ * rattachée. On ajoute un numéro à partir de la 2e photo de la même question
+ * (index 0 = pas de numéro, 1 = " - 2", etc.). Caractères interdits nettoyés.
+ */
+export function drivePhotoName(intitule: string, index: number): string {
+  const base = (intitule || 'photo')
+    .replace(/[\\/:*?"<>|\n\r\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 90) || 'photo';
+  const suffix = index > 0 ? ` - ${index + 1}` : '';
+  return `${base}${suffix}.jpg`;
+}
+
+/**
  * Crée le dossier "audit - NOM - DATE" puis le sous-dossier "photos".
  * Renvoie l'id du sous-dossier "photos" (où les photos seront déposées), ou null.
  */
