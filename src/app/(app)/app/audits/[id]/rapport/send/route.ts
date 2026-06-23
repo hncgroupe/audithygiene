@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentDbUser } from '@/lib/auth';
-import { getSignedUrl } from '@/lib/supabase';
+import { getDataUri } from '@/lib/supabase';
 import { assembleResto360Report, type ItemNote } from '@/lib/rapport-resto360';
 import { renderResto360Report } from '@/lib/pdf/generate';
 import { sendTransactionalEmail } from '@/lib/brevo';
@@ -30,8 +30,8 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
     return NextResponse.json({ error: 'Rapport indisponible pour cette marque.' }, { status: 400 });
   }
 
-  // Items + photos (URL signées, courte durée — le temps de la génération),
-  // les photos restent rattachées à chaque critère pour le PDF.
+  // Items + photos embarquées (data URI base64) : l'image est intégrée au PDF,
+  // jamais un lien — elle reste visible même hors connexion / après expiration.
   const items: ItemNote[] = await Promise.all(
     audit.items.map(async (it) => ({
       code: it.code,
@@ -41,7 +41,7 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
       note: it.note,
       commentaire: it.commentaire,
       photos: (
-        await Promise.all(it.photoUrls.map((path) => getSignedUrl(path, 60 * 30)))
+        await Promise.all(it.photoUrls.map((path) => getDataUri(path)))
       ).filter((u): u is string => Boolean(u)),
     }))
   );

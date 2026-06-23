@@ -17,7 +17,7 @@ const DESTINATAIRES = ['younes@crispysoul.fr', 'oumeima@crispysoul.fr'];
 
 // Petite image de test (PNG orange en data URI) pour vérifier le rendu des photos.
 const SAMPLE_PHOTO =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAH0lEQVR42mP8z/C/noEIwDiqkL4Kh1pAjBoYTQ0A0sUUBQyJ1nUAAAAASUVORK5CYII=';
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC';
 
 function noteAleatoire(): 1 | 2 | 3 | 4 | 5 {
   const r = Math.random();
