@@ -2,6 +2,24 @@
 
 Journal chronologique des jalons. Entrée datée après chaque étape (voir rule `reports`).
 
+## 2026-06-23 — Photo iOS fiable, SW neutralisé, sauvegarde Google Drive (dormante)
+- Photo iOS : le `.click()` programmatique est bloqué sur iPhone/iPad. Remplacé par deux `<label>` natifs (ouverture fiable) : « téléverser » (galerie/fichiers, placé avant la note) + « appareil photo ». Testé en navigateur sur le vrai wizard (caméra vs galerie OK).
+- Service worker neutralisé : il servait l'ancien code en cache (déploiements invisibles sur iOS, cause des « ça ne marche pas »). `public/sw.js` devient un kill-switch auto-désinstallant + `ServiceWorkerCleanup` côté client. Mode hors-ligne retiré pour l'instant.
+- Sauvegarde Google Drive (Shared Drive Workspace), **dormante** tant que `GOOGLE_SERVICE_ACCOUNT_B64` + `GOOGLE_DRIVE_ID` absents. `lib/drive.ts` (compte de service, googleapis). À la création d'un audit : dossier « audit - NOM - DATE » + sous-dossier « photos », id stocké sur `Audit.driveFolderId` (migration `20260623150000`, colonne nullable, appliquée en prod). À chaque photo : upload Drive best-effort via `after()` (zéro impact vitesse, échec sans effet sur l'audit, dossier créé à la volée si absent).
+- Vérifié : `tsc` OK, `next build` OK, migration prod appliquée, déploiements prod successifs Ready. Compte ADMIN de test créé puis supprimé.
+- Drive ACTIVÉ et validé en prod (2026-06-23) : compte de service `audithygiene-drive@audit-hygiene-500311.iam.gserviceaccount.com` membre du Shared Drive « AUDIT HYGIENE » (id `0AAc1t_rFcSw_Uk9PVA`). Variables `GOOGLE_SERVICE_ACCOUNT_B64` + `GOOGLE_DRIVE_ID` ajoutées dans Vercel Production. Test e2e sur le site live : création d'audit → dossier « audit - NOM - DATE » / « photos » créé ; upload photo via le bouton téléverser → fichier retrouvé dans le dossier « photos ». Données de test nettoyées (audit, compte, dossiers Drive à la corbeille).
+- Note : pour ajouter une variable sensible dans Vercel en CLI, le pipe PowerShell stocke vide ; utiliser `cmd /c "vercel env add NOM production < fichier"`. `vercel env pull` masque les valeurs sensibles (affiche vide), normal.
+- ⏸️ À décider : retrait du bouton « téléverser » après l'audit en cours.
+
+## 2026-06-23 — Audit complet app terrain : sécurité, intégrité, hors-ligne, PWA
+- Audit 3 agents (fiabilité saisie/hors-ligne, intégrité/authz API, UX terrain). Tous les blocages corrigés.
+- Sécurité : `auth.ts` identifie par `authId` (lien Supabase fort), email seulement pour lier un compte non relié, exige `active`. Helpers `auditAccessWhere`/`assertAuditAccess`. Propriété appliquée aux 8 routes audit + page + liste : un AUDITEUR ne voit que ses audits, un ADMIN voit tout. (Avant : tout compte connecté pouvait lire/modifier/envoyer le rapport de n'importe quel audit.)
+- Intégrité : `photoUrls` ajout/retrait atomique (`array_append`/`array_remove`, fini le lost-update sur photos parallèles) ; scores + NC en `$transaction` ; verrou statut RAPPORT_ENVOYE ; validation enum conformité.
+- Wizard : navigation non bloquante + timeouts fetch (8s/20s) ; `flush` sérialisé + refs anti stale-closure + beacon sans vidage avant confirmation ; un seul chemin d'upload photo (garde in-flight, plus de doublon) ; hydratation des photos hors-ligne au rechargement ; `terminer()` draine les photos avant purge ; cache local prudent (prime seulement sur saisie non synchro) ; bandeau d'état coloré.
+- PWA : `public/sw.js` (réseau d'abord pour les pages = jamais de code périmé, cache assets hachés, secours hors-ligne) + `ServiceWorkerRegister` monté dans `/app`.
+- Vérifié : `tsc` OK, `next build` OK. Lecture DB : 2 comptes (younes@ ADMIN 8 audits, younes+1 AUDITEUR 6 audits), tous `active`+`authId` → pas de verrouillage. Déployé prod (commit f835104).
+- Suivant : valider que l'auditeur se connecte avec le bon compte (ADMIN = accès total) ; tester PWA hors-ligne en cuisine ; (option) contrainte `@@unique([auditId, code])` + rate-limit envoi rapport/restitution.
+
 ## 2026-06-23 — Resto360 wizard : photos instantanées + saisie note corrigée
 - Fait : photos quasi instantanées. `addPhoto` compresse côté client (`compressImage`), affiche l'aperçu tout de suite (object URL), upload en arrière-plan sans bloquer. Filet IndexedDB (`enqueuePhoto`) + drainer `drainPhotos` qui renvoie les photos échouées au montage et à chaque retour de connexion. Plus de verrou `uploading` global. Règle « doit reprendre 3-4 fois » : la photo apparaît immédiatement et reste en file tant qu'elle n'est pas confirmée.
 - Fait : indicateur d'enregistrement par vignette. Coche verte `✓` (#10B981) quand le serveur confirme, spinner orange pendant l'envoi, `↻` ambre si à renvoyer. Libellé « Photos (n) » sous chaque question.
