@@ -17,10 +17,20 @@ import {
   type NoteResto,
   type CritereInfo,
 } from '@/lib/grille-resto360';
+import {
+  compressImage,
+  enqueuePhoto,
+  removePhoto as dequeuePhoto,
+  pendingForAudit,
+} from '@/lib/photo-queue';
 
 export interface Resto360Photo {
   path: string;
   url: string;
+  /** true dès que le serveur a confirmé l'enregistrement (coche verte). */
+  saved?: boolean;
+  /** upload échoué : la photo reste en file locale et sera renvoyée. */
+  error?: boolean;
 }
 
 export interface Resto360Item {
@@ -90,7 +100,9 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   });
   const [photos, setPhotos] = useState<Record<string, Resto360Photo[]>>(() => {
     const o: Record<string, Resto360Photo[]> = {};
-    for (const it of items) if (it.photos?.length) o[it.code] = it.photos;
+    // Photos déjà en base = déjà enregistrées (coche verte, pas de sablier).
+    for (const it of items)
+      if (it.photos?.length) o[it.code] = it.photos.map((ph) => ({ ...ph, saved: true }));
     return o;
   });
   const [customItems, setCustomItems] = useState<CustomItem[]>(() =>
@@ -109,7 +121,6 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   const [openCheck, setOpenCheck] = useState<string | null>(null);
   const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [pending, setPending] = useState(0);
   const [online, setOnline] = useState(true);
@@ -118,6 +129,42 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
 
   const dirty = useRef<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draining = useRef(false);
+
+  /**
+   * Vide la file de photos locale (IndexedDB) : renvoie au serveur toute photo
+   * dont l'upload avait échoué (hors-ligne, coupure). Appelé au montage et à
+   * chaque retour de connexion. Une photo confirmée passe en "enregistré".
+   */
+  async function drainPhotos() {
+    if (draining.current) return;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    draining.current = true;
+    try {
+      const queued = await pendingForAudit(auditId);
+      for (const q of queued) {
+        try {
+          const fd = new FormData();
+          fd.append('file', q.blob, 'photo.jpg');
+          fd.append('code', q.code);
+          const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.url) continue;
+          setPhotos((p) => ({
+            ...p,
+            [q.code]: (p[q.code] ?? []).map((ph) =>
+              ph.path === q.localId ? { path: data.path, url: data.url, saved: true } : ph
+            ),
+          }));
+          void dequeuePhoto(q.localId);
+        } catch {
+          /* connexion encore instable : on réessaiera au prochain passage */
+        }
+      }
+    } finally {
+      draining.current = false;
+    }
+  }
 
   const pilier = GRILLE_RESTO360[step];
   const isDirigeant = (pilier.questionsOuvertes?.length ?? 0) > 0;
@@ -162,6 +209,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       setOnline(window.navigator.onLine);
       setPending(dirty.current.size);
       if (dirty.current.size > 0) void flushRef.current?.();
+      void drainPhotos();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -171,6 +219,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     const retry = () => {
       setOnline(typeof navigator === 'undefined' ? true : navigator.onLine);
       if (dirty.current.size > 0) void flushRef.current?.();
+      void drainPhotos();
     };
     const onOnline = () => {
       setOnline(true);
@@ -278,24 +327,67 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     setOpenComment(code);
   }
 
+  /**
+   * Prise de photo "instantanée" : on affiche tout de suite un aperçu (image
+   * compressée locale) et on dépose le blob dans IndexedDB. L'upload réseau se
+   * fait en arrière-plan sans bloquer l'auditeur. À la confirmation serveur, la
+   * vignette passe en "enregistré" (coche verte). En cas d'échec, la photo reste
+   * visible et en file locale : rien n'est perdu, pas besoin de la reprendre.
+   */
   async function addPhoto(code: string, file: File) {
-    setUploading(code);
+    const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // 1) Compression côté client (plusieurs Mo -> ~200-500 Ko) = upload rapide.
+    const blob = await compressImage(file).catch(() => file);
+    // 2) Aperçu immédiat, sans attendre le réseau.
+    const previewUrl = URL.createObjectURL(blob);
+    setPhotos((p) => ({
+      ...p,
+      [code]: [...(p[code] ?? []), { path: localId, url: previewUrl, saved: false }],
+    }));
+    // 3) Filet de sécurité : le blob survit au rechargement / hors-ligne.
+    void enqueuePhoto({
+      localId,
+      auditId,
+      code,
+      blob,
+      type: blob.type || 'image/jpeg',
+      createdAt: Date.now(),
+    });
+    // 4) Upload en arrière-plan.
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', blob, 'photo.jpg');
       fd.append('code', code);
       const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.url) {
-        setPhotos((p) => ({ ...p, [code]: [...(p[code] ?? []), { path: data.path, url: data.url }] }));
-      }
-    } finally {
-      setUploading(null);
+      if (!res.ok || !data.url) throw new Error('upload');
+      // Remplace l'entrée locale par la version serveur, marquée enregistrée.
+      setPhotos((p) => ({
+        ...p,
+        [code]: (p[code] ?? []).map((ph) =>
+          ph.path === localId ? { path: data.path, url: data.url, saved: true } : ph
+        ),
+      }));
+      URL.revokeObjectURL(previewUrl);
+      void dequeuePhoto(localId);
+    } catch {
+      // Hors-ligne ou erreur : on garde l'aperçu, marqué "à renvoyer".
+      setPhotos((p) => ({
+        ...p,
+        [code]: (p[code] ?? []).map((ph) =>
+          ph.path === localId ? { ...ph, saved: false, error: true } : ph
+        ),
+      }));
     }
   }
 
   async function removePhoto(code: string, path: string) {
     setPhotos((p) => ({ ...p, [code]: (p[code] ?? []).filter((x) => x.path !== path) }));
+    // Photo pas encore montée sur le serveur : on la retire juste de la file locale.
+    if (path.startsWith('local-')) {
+      void dequeuePhoto(path);
+      return;
+    }
     await fetch(`/api/audits/${auditId}/photo`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -372,8 +464,16 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     router.push(`/app/audits/${auditId}/rapport`);
   }
 
-  /** Bloc d'un critère notable (grille ou sur mesure). */
-  function CritereRow(props: {
+  /**
+   * Bloc d'un critère notable (grille ou sur mesure).
+   * IMPORTANT : c'est une fonction de rendu appelée en ligne `renderCritere({...})`,
+   * et NON un composant `<CritereRow/>`. Déclaré dans le corps du wizard, un
+   * composant imbriqué changerait d'identité à chaque rendu : React démonterait
+   * puis remonterait le sous-arbre à chaque frappe, le curseur du textarea
+   * reviendrait au début et la saisie partirait à l'envers. En appelant la
+   * fonction, on produit directement des éléments hôtes stables (réconciliés).
+   */
+  function renderCritere(props: {
     code: string;
     label: string;
     aide?: string;
@@ -390,7 +490,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     const manquants = checklist ? checklist.filter((l) => !done.includes(l)).length : 0;
 
     return (
-      <div className="border-b border-ink/5 pb-3 last:border-0 last:pb-0">
+      <div key={code} className="border-b border-ink/5 pb-3 last:border-0 last:pb-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-[15px] font-medium text-ink">
@@ -493,29 +593,25 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
               className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]"
               title="Ajouter une photo"
             >
-              {uploading === code ? (
-                <span className="text-[10px]">…</span>
-              ) : (
-                <span className="relative">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinejoin="round"
-                    />
-                    <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
-                  </svg>
-                  {(photos[code]?.length ?? 0) > 0 && (
-                    <span
-                      className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
-                      style={{ backgroundColor: ORANGE }}
-                    >
-                      {photos[code]!.length}
-                    </span>
-                  )}
-                </span>
-              )}
+              <span className="relative">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+                {(photos[code]?.length ?? 0) > 0 && (
+                  <span
+                    className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
+                    style={{ backgroundColor: ORANGE }}
+                  >
+                    {photos[code]!.length}
+                  </span>
+                )}
+              </span>
               <input
                 type="file"
                 accept="image/*"
@@ -591,23 +687,61 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           />
         )}
 
-        {/* Photos */}
+        {/* Liste des photos du critère */}
         {(photos[code]?.length ?? 0) > 0 && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {photos[code]!.map((ph) => (
-              <span key={ph.path} className="relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={ph.url} alt="" className="h-12 w-12 rounded-lg object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(code, ph.path)}
-                  className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-ink text-[10px] leading-none text-white"
-                  aria-label="Retirer la photo"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
+          <div className="mt-2">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-gris">
+              Photos ({photos[code]!.length})
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {photos[code]!.map((ph) => {
+                const pending = !ph.saved && !ph.error;
+                return (
+                  <span key={ph.path} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={ph.url}
+                      alt=""
+                      className={`h-14 w-14 rounded-lg object-cover ${pending ? 'opacity-70' : ''}`}
+                    />
+                    {/* Statut d'enregistrement, en bas à gauche de la vignette */}
+                    {ph.saved ? (
+                      <span
+                        className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-[#10B981] text-[9px] font-bold leading-none text-white"
+                        title="Photo enregistrée"
+                        aria-label="Photo enregistrée"
+                      >
+                        ✓
+                      </span>
+                    ) : ph.error ? (
+                      <span
+                        className="absolute -bottom-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-amber-500 px-1 text-[8px] font-bold leading-none text-white"
+                        title="En attente de connexion, renvoi automatique"
+                        aria-label="Photo en attente d'envoi"
+                      >
+                        ↻
+                      </span>
+                    ) : (
+                      <span
+                        className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-white/90 text-[9px] leading-none"
+                        title="Enregistrement en cours"
+                        aria-label="Enregistrement en cours"
+                      >
+                        <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-[#F97316] border-t-transparent" />
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(code, ph.path)}
+                      className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-ink text-[10px] leading-none text-white"
+                      aria-label="Retirer la photo"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -743,16 +877,13 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
                   <div className="space-y-3">
                     {g.criteres.map((crit, ci) => {
                       const code = critereId(pilier.code, gi, ci);
-                      return (
-                        <CritereRow
-                          key={code}
-                          code={code}
-                          label={critereLabel(crit)}
-                          aide={critereAide(crit)}
-                          checklist={critereChecklist(crit)}
-                          info={critereInfo(crit)}
-                        />
-                      );
+                      return renderCritere({
+                        code,
+                        label: critereLabel(crit),
+                        aide: critereAide(crit),
+                        checklist: critereChecklist(crit),
+                        info: critereInfo(crit),
+                      });
                     })}
                   </div>
                 </section>
@@ -767,14 +898,13 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
                 Points ajoutés
               </h2>
               <div className="space-y-3">
-                {customForPilier.map((ci) => (
-                  <CritereRow
-                    key={ci.code}
-                    code={ci.code}
-                    label={ci.intitule}
-                    onRemove={() => removeCustom(ci.code)}
-                  />
-                ))}
+                {customForPilier.map((ci) =>
+                  renderCritere({
+                    code: ci.code,
+                    label: ci.intitule,
+                    onRemove: () => removeCustom(ci.code),
+                  })
+                )}
               </div>
             </section>
           )}

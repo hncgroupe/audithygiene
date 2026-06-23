@@ -2,6 +2,14 @@
 
 Journal chronologique des jalons. Entrée datée après chaque étape (voir rule `reports`).
 
+## 2026-06-23 — Resto360 wizard : photos instantanées + saisie note corrigée
+- Fait : photos quasi instantanées. `addPhoto` compresse côté client (`compressImage`), affiche l'aperçu tout de suite (object URL), upload en arrière-plan sans bloquer. Filet IndexedDB (`enqueuePhoto`) + drainer `drainPhotos` qui renvoie les photos échouées au montage et à chaque retour de connexion. Plus de verrou `uploading` global. Règle « doit reprendre 3-4 fois » : la photo apparaît immédiatement et reste en file tant qu'elle n'est pas confirmée.
+- Fait : indicateur d'enregistrement par vignette. Coche verte `✓` (#10B981) quand le serveur confirme, spinner orange pendant l'envoi, `↻` ambre si à renvoyer. Libellé « Photos (n) » sous chaque question.
+- Fix : saisie de note qui partait « à l'envers ». Cause racine : `CritereRow` était un composant imbriqué (`<CritereRow/>`) redéfini à chaque rendu, donc React remontait le sous-arbre à chaque frappe → curseur du textarea remis à 0. Converti en fonction de rendu appelée en ligne `renderCritere({...})` (clé sur le `<div>` racine) → éléments hôtes stables, réconciliés, plus de remount.
+- Fichiers : `src/components/app/Resto360Wizard.tsx` (photo-queue branché), `src/lib/photo-queue.ts` (déjà présent, désormais utilisé).
+- Vérifié : `tsc --noEmit` OK, `next build` OK. Test UI live non joué (wizard derrière auth Supabase + Storage, pas de session dispo dans l'env).
+- Suivant : test manuel sur tablette connectée (login auditeur) ; valider l'aperçu hors-ligne après rechargement.
+
 ## 2026-06-23 — Resto360 : info conformité, notation sévère, hors-ligne, envoi PDF
 - Fait : icône (i) par critère réglementaire (conforme / non conforme + base de règle). Nouvelles questions : rangement du froid, stockage viande-volaille, poisson, fiches recettes, optimisation plateformes livraison, caisse/clôtures/encaissements.
 - Fait : notation sévère. Critères critiques (ceux avec info) comptent double dans le pilier ; malus global (note 1 = -6, note 2 = -3) et plafond à 49 si un critique est noté 1. `casCritiquesResto`, `CRITIQUE_IDS`, section « Cas critiques » en tête de rapport. Méthode documentée dans `grille-resto360.ts`.
