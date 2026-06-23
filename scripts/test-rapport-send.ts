@@ -10,14 +10,32 @@ import { createElement } from 'react';
 import { writeFileSync } from 'fs';
 import { GRILLE_RESTO360, critereId, critereLabel } from '../src/lib/grille-resto360';
 import { assembleResto360Report, type ItemNote } from '../src/lib/rapport-resto360';
+import { genererRestitutionTemplate } from '../src/lib/restitution-template';
 import { Resto360Document } from '../src/lib/pdf/Resto360Document';
 import { sendTransactionalEmail } from '../src/lib/brevo';
 
 const DESTINATAIRES = ['younes@crispysoul.fr', 'oumeima@crispysoul.fr'];
 
-// Petite image de test (PNG orange en data URI) pour vérifier le rendu des photos.
-const SAMPLE_PHOTO =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC';
+let PHOTOS: string[] = [];
+
+/** Récupère 2 vraies photos (JPEG) en data URI pour un rendu réaliste. */
+async function chargerPhotos() {
+  const urls = ['https://picsum.photos/seed/cuisine/400/300', 'https://picsum.photos/seed/frigo/400/300'];
+  PHOTOS = (
+    await Promise.all(
+      urls.map(async (u) => {
+        try {
+          const r = await fetch(u);
+          const buf = Buffer.from(await r.arrayBuffer());
+          const type = r.headers.get('content-type') || 'image/jpeg';
+          return `data:${type};base64,${buf.toString('base64')}`;
+        } catch {
+          return null;
+        }
+      })
+    )
+  ).filter((x): x is string => Boolean(x));
+}
 
 function noteAleatoire(): 1 | 2 | 3 | 4 | 5 {
   const r = Math.random();
@@ -52,7 +70,7 @@ function buildItems(): ItemNote[] {
           intitule: critereLabel(cr),
           note,
           commentaire: note <= 2 ? 'Écart constaté lors de la visite (donnée de test).' : null,
-          photos: note <= 2 ? [SAMPLE_PHOTO, SAMPLE_PHOTO] : [],
+          photos: note <= 2 ? PHOTOS : [],
         });
       })
     );
@@ -61,14 +79,18 @@ function buildItems(): ItemNote[] {
 }
 
 async function main() {
+  await chargerPhotos();
+  console.log(`${PHOTOS.length} photo(s) de test chargée(s).`);
   const items = buildItems();
   const data = assembleResto360Report({
     etablissement: 'Le Bistrot Démo (TEST)',
     ville: 'Paris 11e',
+    type: 'RESTAURANT',
     date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
     ref: 'R360-TEST01',
     items,
     photos: [],
+    restitution: genererRestitutionTemplate('Le Bistrot Démo (TEST)', items),
   });
 
   console.log(

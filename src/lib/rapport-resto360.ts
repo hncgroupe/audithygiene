@@ -143,15 +143,26 @@ const DELAI_RESTO: Record<string, string> = {
 export function assembleResto360Report(args: {
   etablissement: string;
   ville?: string | null;
+  type?: string | null;
   date: string;
   ref: string;
   items: ItemNote[];
   photos: { intitule: string; url: string }[];
+  restitution?: {
+    synthese: string;
+    pointsForts: string[];
+    axes: string[];
+    roadmap: { j30: string[]; j60: string[]; j90: string[] };
+    gains: string;
+    risques: string;
+  };
 }) {
   const r = calculerRapportResto360(args.items);
   const score = r.scoreGlobal ?? 0;
-  // Détail par pilier : on ne garde que les critères réellement notés, avec leurs photos.
-  const details = detailPiliers(args.items).map((d) => ({
+  // Détail complet par pilier (groupes, critères + photos, risques, points forts).
+  const piliers = detailPiliers(args.items);
+  // Détail compact (critères notés ou avec photos) — usage interne éventuel.
+  const details = piliers.map((d) => ({
     nom: d.nom,
     numero: d.numero,
     score: d.score,
@@ -180,6 +191,7 @@ export function assembleResto360Report(args: {
   return {
     etablissement: args.etablissement,
     ville: args.ville ?? undefined,
+    type: args.type ?? undefined,
     date: args.date,
     ref: args.ref,
     scoreGlobal: score,
@@ -197,6 +209,8 @@ export function assembleResto360Report(args: {
     plan,
     quickWins: r.quickWins.map((q) => ({ intitule: q.intitule, pilier: q.pilier })),
     details,
+    piliers,
+    restitution: args.restitution ?? null,
     dirigeant: r.dirigeant
       .filter((d) => d.reponse)
       .map((d) => ({ question: d.question, reponse: d.reponse as string })),
