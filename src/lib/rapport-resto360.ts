@@ -119,6 +119,72 @@ export function detailPiliers(items: ItemNote[]): PilierDetail[] {
   });
 }
 
+/** Libellé de maturité à partir du score global. */
+export function maturiteResto(score: number): string {
+  if (score >= 85) return 'Maîtrisé';
+  if (score >= 70) return 'Satisfaisant';
+  if (score >= 50) return 'À consolider';
+  return 'Sous surveillance';
+}
+
+const DELAI_RESTO: Record<string, string> = {
+  Urgence: 'sous 7 jours',
+  Important: 'sous 30 jours',
+  Confort: 'sous 90 jours',
+};
+
+/**
+ * Assemble les données du PDF auditresto360 (récap première page).
+ * Type de retour aligné sur Resto360ReportData (import type only).
+ */
+export function assembleResto360Report(args: {
+  etablissement: string;
+  ville?: string | null;
+  date: string;
+  ref: string;
+  items: ItemNote[];
+  photos: { intitule: string; url: string }[];
+}) {
+  const r = calculerRapportResto360(args.items);
+  const score = r.scoreGlobal ?? 0;
+  const plan = [
+    ...r.plan.urgence.map((l) => ({ priorite: 'Urgence', l })),
+    ...r.plan.important.map((l) => ({ priorite: 'Important', l })),
+    ...r.plan.confort.map((l) => ({ priorite: 'Confort', l })),
+  ].map(({ priorite, l }) => ({
+    priorite,
+    intitule: l.intitule,
+    pilier: l.pilier,
+    commentaire: l.commentaire,
+    delai: DELAI_RESTO[priorite],
+  }));
+
+  return {
+    etablissement: args.etablissement,
+    ville: args.ville ?? undefined,
+    date: args.date,
+    ref: args.ref,
+    scoreGlobal: score,
+    etoiles: r.etoiles,
+    maturite: maturiteResto(score),
+    nbCriteresNotes: r.nbCriteresNotes,
+    nbCriteresTotal: r.nbCriteresTotal,
+    radar: r.radar.map((p) => ({ radar: p.radar, score: p.score })),
+    casCritiques: r.casCritiques.map((c) => ({
+      intitule: c.intitule,
+      pilier: c.pilier,
+      note: c.note,
+      commentaire: c.commentaire,
+    })),
+    plan,
+    quickWins: r.quickWins.map((q) => ({ intitule: q.intitule, pilier: q.pilier })),
+    dirigeant: r.dirigeant
+      .filter((d) => d.reponse)
+      .map((d) => ({ question: d.question, reponse: d.reponse as string })),
+    photos: args.photos,
+  };
+}
+
 export function calculerRapportResto360(items: ItemNote[]): RapportResto360 {
   const notes = notesMap(items);
   const scoreGlobal = scoreGlobalResto(notes);

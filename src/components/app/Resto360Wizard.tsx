@@ -54,15 +54,31 @@ const CUSTOM_PREFIX = 'CUSTOM-';
 export function Resto360Wizard({ auditId, etablissement, items, statutInitial }: Props) {
   const router = useRouter();
 
+  // Clés de persistance locale (résilience hors-ligne).
+  const dataKey = `r360-data-${auditId}`;
+  const dirtyKey = `r360-dirty-${auditId}`;
+
+  // Cache local : ce qui a été saisi sur l'appareil (prime sur le serveur pour
+  // ne jamais perdre une saisie faite hors connexion).
+  const cached: { notes?: Record<string, number>; comments?: Record<string, string>; checks?: Record<string, string[]> } | null =
+    (() => {
+      if (typeof window === 'undefined') return null;
+      try {
+        return JSON.parse(window.localStorage.getItem(dataKey) ?? 'null');
+      } catch {
+        return null;
+      }
+    })();
+
   const [notes, setNotes] = useState<Record<string, number>>(() => {
     const o: Record<string, number> = {};
     for (const it of items) if (typeof it.note === 'number') o[it.code] = it.note;
-    return o;
+    return { ...o, ...(cached?.notes ?? {}) };
   });
   const [comments, setComments] = useState<Record<string, string>>(() => {
     const o: Record<string, string> = {};
     for (const it of items) if (it.commentaire) o[it.code] = it.commentaire;
-    return o;
+    return { ...o, ...(cached?.comments ?? {}) };
   });
   const [checks, setChecks] = useState<Record<string, string[]>>(() => {
     const o: Record<string, string[]> = {};
@@ -70,7 +86,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       const cl = (it.meta as { checklist?: unknown } | null)?.checklist;
       if (Array.isArray(cl)) o[it.code] = cl.filter((x): x is string => typeof x === 'string');
     }
-    return o;
+    return { ...o, ...(cached?.checks ?? {}) };
   });
   const [photos, setPhotos] = useState<Record<string, Resto360Photo[]>>(() => {
     const o: Record<string, Resto360Photo[]> = {};
@@ -95,6 +111,8 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [pending, setPending] = useState(0);
+  const [online, setOnline] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newQ, setNewQ] = useState('');
 
@@ -122,6 +140,53 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     if (typeof window !== 'undefined') window.localStorage.setItem(stepKey, String(step));
   }, [step, stepKey]);
 
+  // Cache local complet des réponses (survit à un rechargement hors-ligne).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(dataKey, JSON.stringify({ notes, comments, checks }));
+    } catch {
+      /* quota : ignore */
+    }
+  }, [notes, comments, checks, dataKey]);
+
+  // Au montage : reprend la file d'envoi en attente et tente une synchro.
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved: string[] = JSON.parse(window.localStorage.getItem(dirtyKey) ?? '[]');
+        saved.forEach((c) => dirty.current.add(c));
+      } catch {
+        /* ignore */
+      }
+      setOnline(window.navigator.onLine);
+      setPending(dirty.current.size);
+      if (dirty.current.size > 0) void flushRef.current?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-synchronise dès le retour de connexion + filet toutes les 20 s.
+  useEffect(() => {
+    const retry = () => {
+      setOnline(typeof navigator === 'undefined' ? true : navigator.onLine);
+      if (dirty.current.size > 0) void flushRef.current?.();
+    };
+    const onOnline = () => {
+      setOnline(true);
+      retry();
+    };
+    const onOffline = () => setOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    const iv = setInterval(retry, 20000);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      clearInterval(iv);
+    };
+  }, []);
+
   // Enregistre tout dès que l'onglet se ferme ou que l'app passe en arrière-plan.
   useEffect(() => {
     const onHide = () => {
@@ -136,8 +201,19 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     };
   }, []);
 
+  function persistDirty() {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(dirtyKey, JSON.stringify(Array.from(dirty.current)));
+    } catch {
+      /* quota : ignore */
+    }
+    setPending(dirty.current.size);
+  }
+
   function queueSave(code: string) {
     dirty.current.add(code);
+    persistDirty();
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => flush(), 900);
   }
@@ -154,16 +230,21 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     }));
     if (!beacon) setSaving(true);
     try {
-      await fetch(`/api/audits/${auditId}/resto360`, {
+      const res = await fetch(`/api/audits/${auditId}/resto360`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: payload, finalize }),
         // keepalive : permet l'envoi même si l'onglet se ferme / l'app passe en arrière-plan
         keepalive: beacon,
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setOnline(true);
     } catch {
+      // hors-ligne ou erreur : on remet les codes en file pour un prochain essai
       codes.forEach((c) => dirty.current.add(c));
+      setOnline(false);
     } finally {
+      persistDirty();
       if (!beacon) setSaving(false);
     }
   }
@@ -282,6 +363,12 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     items.forEach((i) => dirty.current.add(i.code));
     customItems.forEach((i) => dirty.current.add(i.code));
     await flush(true);
+    if (typeof window !== 'undefined' && dirty.current.size === 0) {
+      // tout est synchronisé : on purge le cache local de cet audit
+      window.localStorage.removeItem(dataKey);
+      window.localStorage.removeItem(dirtyKey);
+      window.localStorage.removeItem(stepKey);
+    }
     router.push(`/app/audits/${auditId}/rapport`);
   }
 
@@ -389,11 +476,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
               onClick={() => setOpenComment(commentOpen ? null : code)}
               title="Ajouter une note"
               aria-label="Ajouter une note"
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${
-                comments[code]
-                  ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
-                  : 'border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]'
-              }`}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
@@ -564,7 +647,15 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
             <div className="leading-tight">
               <p className="text-sm font-semibold text-ink">{etablissement.nom}</p>
               <p className="text-xs text-gris">
-                {saving ? 'Enregistrement…' : statutInitial === 'TERMINE' ? 'Terminé' : 'En cours'}
+                {!online
+                  ? `Hors ligne${pending ? ` · ${pending} à synchroniser` : ''}`
+                  : saving
+                    ? 'Enregistrement…'
+                    : pending
+                      ? `${pending} à synchroniser`
+                      : statutInitial === 'TERMINE'
+                        ? 'Terminé'
+                        : 'Enregistré'}
               </p>
             </div>
             <div

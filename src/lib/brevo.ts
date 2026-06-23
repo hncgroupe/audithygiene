@@ -4,10 +4,19 @@ import { env } from './env';
  * Email transactionnel via l'API Brevo. Échec non bloquant.
  * Voir skills lifecycle-email-transactional / email-deliverability-rgpd-fr.
  */
+interface EmailAttachment {
+  /** Contenu encodé en base64. */
+  content: string;
+  /** Nom du fichier (ex: rapport.pdf). */
+  name: string;
+}
+
 interface SendEmailParams {
-  to: { email: string; name?: string };
+  /** Un ou plusieurs destinataires. */
+  to: { email: string; name?: string } | { email: string; name?: string }[];
   subject: string;
   htmlContent: string;
+  attachments?: EmailAttachment[];
 }
 
 export async function sendTransactionalEmail(params: SendEmailParams): Promise<boolean> {
@@ -15,6 +24,7 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<b
     console.warn('[brevo] API key manquante - email ignoré.');
     return false;
   }
+  const to = Array.isArray(params.to) ? params.to : [params.to];
   try {
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -25,9 +35,12 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<b
       },
       body: JSON.stringify({
         sender: { email: env.brevoSenderEmail, name: env.brevoSenderName },
-        to: [params.to],
+        to,
         subject: params.subject,
         htmlContent: params.htmlContent,
+        ...(params.attachments?.length
+          ? { attachment: params.attachments.map((a) => ({ content: a.content, name: a.name })) }
+          : {}),
       }),
     });
     if (!res.ok) {

@@ -15,6 +15,7 @@ import { genererRestitutionTemplate } from '@/lib/restitution-template';
 import { RadarResto } from '@/components/app/RadarResto';
 import { RestitutionView } from '@/components/app/RestitutionView';
 import { PrintButton } from '@/components/app/PrintButton';
+import { SendReportButton } from '@/components/app/SendReportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,6 +134,10 @@ export default async function RapportResto360Page({ params }: { params: Promise<
             <Link href={`/app/audits/${id}`} className="btn-ghost text-sm">
               Modifier
             </Link>
+            <SendReportButton
+              auditId={id}
+              className="rounded-full border border-[#F97316] px-5 py-2.5 text-sm font-semibold text-[#F97316] transition-all hover:bg-orange-50 active:scale-[0.98] disabled:opacity-60"
+            />
             <PrintButton className="rounded-full bg-[#F97316] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]" />
           </div>
         </div>

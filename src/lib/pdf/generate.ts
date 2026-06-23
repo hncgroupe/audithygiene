@@ -1,6 +1,7 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { createElement } from 'react';
 import { ReportDocument, type ReportData } from './ReportDocument';
+import { Resto360Document, type Resto360ReportData } from './Resto360Document';
 import { uploadReport } from '@/lib/supabase';
 
 /**
@@ -10,6 +11,12 @@ export async function renderReport(data: ReportData): Promise<Buffer> {
   // createElement évite d'imposer le JSX dans un fichier .ts
   const element = createElement(ReportDocument, { data });
   // @react-pdf/renderer accepte un élément Document
+  return renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
+}
+
+/** Génère le PDF du rapport auditresto360 en mémoire (Buffer). */
+export async function renderResto360Report(data: Resto360ReportData): Promise<Buffer> {
+  const element = createElement(Resto360Document, { data });
   return renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
 }
 
