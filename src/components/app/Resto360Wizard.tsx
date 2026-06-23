@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -175,14 +175,17 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     if (armTimer.current) clearTimeout(armTimer.current);
     armTimer.current = setTimeout(() => setPressArmed(code), 2000);
   }
-  function onPhotoUp(code: string, e: ReactPointerEvent) {
-    e.preventDefault();
+  // Le sélecteur de fichier doit être ouvert depuis un VRAI clic (geste utilisateur) :
+  // sur tablette, l'ouvrir depuis pointerup/un timer est bloqué. On mesure la durée
+  // d'appui (pointerdown -> click) et on choisit caméra (court) ou galerie (long).
+  function onPhotoClick(code: string) {
     if (armTimer.current) {
       clearTimeout(armTimer.current);
       armTimer.current = null;
     }
-    const held = Date.now() - pressStart.current;
+    const held = pressStart.current ? Date.now() - pressStart.current : 0;
     setPressArmed(null);
+    pressStart.current = 0;
     photoTargetCode.current = code;
     if (held >= 2000) galleryInputRef.current?.click();
     else cameraInputRef.current?.click();
@@ -193,6 +196,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       armTimer.current = null;
     }
     setPressArmed(null);
+    pressStart.current = 0;
   }
 
   // Miroirs des saisies, lus par flush pour toujours envoyer la dernière valeur
@@ -760,9 +764,10 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
             <button
               type="button"
               onPointerDown={() => onPhotoDown(code)}
-              onPointerUp={(e) => onPhotoUp(code, e)}
+              onClick={() => onPhotoClick(code)}
               onPointerLeave={onPhotoCancel}
               onPointerCancel={onPhotoCancel}
+              onContextMenu={(e) => e.preventDefault()}
               title="Appui court : appareil photo. Appui long (2 s) : téléverser une image de la tablette."
               aria-label="Ajouter une photo. Appui long pour téléverser depuis la tablette."
               className={`grid h-10 w-10 shrink-0 cursor-pointer touch-none select-none place-items-center rounded-full border transition-colors ${
