@@ -277,82 +277,88 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           )}
         </div>
 
-        {/* Notation + actions (note / photo) à droite */}
+        {/* Notation + actions (note / photo) nettement séparées à droite */}
         <div className="mt-2 flex items-stretch gap-1.5">
-          {NOTATION_RESTO.slice()
-            .reverse()
-            .map((n) => {
-              const active = val === n.note;
-              return (
-                <button
-                  key={n.note}
-                  type="button"
-                  onClick={() => setNote(code, n.note)}
-                  title={n.label}
-                  className="flex h-10 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-all active:scale-95"
-                  style={{
-                    backgroundColor: active ? n.couleur : '#fff',
-                    color: active ? '#fff' : n.couleur,
-                    border: `1.5px solid ${n.couleur}`,
-                  }}
-                >
-                  {n.note}
-                </button>
-              );
-            })}
-          {/* Note libre */}
-          <button
-            type="button"
-            onClick={() => setOpenComment(commentOpen ? null : code)}
-            title="Ajouter une note"
-            className={`grid h-10 w-11 shrink-0 place-items-center rounded-lg border text-xs font-semibold ${
-              comments[code]
-                ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
-                : 'border-ink/15 text-gris hover:border-[#F97316] hover:text-[#F97316]'
-            }`}
-          >
-            note
-          </button>
-          {/* Photo */}
-          <label
-            className="grid h-10 w-11 shrink-0 cursor-pointer place-items-center rounded-lg border border-ink/15 text-gris hover:border-[#F97316] hover:text-[#F97316]"
-            title="Ajouter une photo"
-          >
-            {uploading === code ? (
-              <span className="text-[10px]">…</span>
-            ) : (
-              <span className="relative">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
-                </svg>
-                {(photos[code]?.length ?? 0) > 0 && (
-                  <span
-                    className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
-                    style={{ backgroundColor: ORANGE }}
+          {/* Boutons de notation 1 à 5 */}
+          <div className="flex flex-1 gap-1.5">
+            {NOTATION_RESTO.slice()
+              .reverse()
+              .map((n) => {
+                const active = val === n.note;
+                return (
+                  <button
+                    key={n.note}
+                    type="button"
+                    onClick={() => setNote(code, n.note)}
+                    title={n.label}
+                    className="flex h-10 flex-1 items-center justify-center rounded-lg text-sm font-bold transition-all active:scale-95"
+                    style={{
+                      backgroundColor: active ? n.couleur : '#fff',
+                      color: active ? '#fff' : n.couleur,
+                      border: `1.5px solid ${n.couleur}`,
+                    }}
                   >
-                    {photos[code]!.length}
-                  </span>
-                )}
-              </span>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) addPhoto(code, f);
-                e.target.value = '';
-              }}
-            />
-          </label>
+                    {n.note}
+                  </button>
+                );
+              })}
+          </div>
+          {/* Actions : ronds, décollés des notations */}
+          <div className="ml-2 flex shrink-0 items-center gap-2 border-l border-ink/10 pl-3">
+            {/* Note libre */}
+            <button
+              type="button"
+              onClick={() => setOpenComment(commentOpen ? null : code)}
+              title="Ajouter une note"
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border text-[11px] font-semibold ${
+                comments[code]
+                  ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
+                  : 'border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]'
+              }`}
+            >
+              note
+            </button>
+            {/* Photo */}
+            <label
+              className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]"
+              title="Ajouter une photo"
+            >
+              {uploading === code ? (
+                <span className="text-[10px]">…</span>
+              ) : (
+                <span className="relative">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
+                  </svg>
+                  {(photos[code]?.length ?? 0) > 0 && (
+                    <span
+                      className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
+                      style={{ backgroundColor: ORANGE }}
+                    >
+                      {photos[code]!.length}
+                    </span>
+                  )}
+                </span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) addPhoto(code, f);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+          </div>
         </div>
 
         {/* Checklist */}
@@ -459,6 +465,13 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
               className="h-7 w-auto"
               priority
             />
+          </div>
+          {/* Indicateur de pilier (déplacé du bas vers le header) */}
+          <div className="hidden flex-col items-center leading-tight sm:flex">
+            <span className="text-sm font-bold text-ink">
+              Pilier {step + 1} / {GRILLE_RESTO360.length}
+            </span>
+            <span className="text-xs text-gris">{pilier.nom}</span>
           </div>
           <div className="flex items-center gap-3 text-right">
             <div className="leading-tight">
@@ -587,56 +600,43 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
             </section>
           )}
 
-          {/* Ajouter une question librement */}
-          <div className="mt-4">
-            {adding ? (
-              <div className="flex items-center gap-2">
-                <input
-                  value={newQ}
-                  onChange={(e) => setNewQ(e.target.value)}
-                  autoFocus
-                  placeholder="Intitulé du point à ajouter…"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') addCustom();
-                    if (e.key === 'Escape') {
-                      setAdding(false);
-                      setNewQ('');
-                    }
-                  }}
-                  className="flex-1 rounded-xl border border-ink/15 px-3 py-2 text-sm focus:border-[#F97316] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20"
-                />
-                <button
-                  type="button"
-                  onClick={addCustom}
-                  className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
-                  style={{ backgroundColor: ORANGE }}
-                >
-                  Ajouter
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
+          {/* Saisie d'une question ajoutée (déclenchée depuis la barre du bas) */}
+          {adding && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#F97316]/40 bg-white p-2">
+              <input
+                value={newQ}
+                onChange={(e) => setNewQ(e.target.value)}
+                autoFocus
+                placeholder="Intitulé du point à ajouter…"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addCustom();
+                  if (e.key === 'Escape') {
                     setAdding(false);
                     setNewQ('');
-                  }}
-                  className="text-sm text-gris hover:text-ink"
-                >
-                  Annuler
-                </button>
-              </div>
-            ) : (
+                  }
+                }}
+                className="flex-1 rounded-lg border border-ink/15 px-3 py-2 text-sm focus:border-[#F97316] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20"
+              />
               <button
                 type="button"
-                onClick={() => setAdding(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-[#F97316]/40 px-4 py-2 text-sm font-semibold text-[#F97316] hover:bg-orange-50"
+                onClick={addCustom}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+                style={{ backgroundColor: ORANGE }}
               >
-                <span className="grid h-5 w-5 place-items-center rounded-full text-white" style={{ backgroundColor: ORANGE }}>
-                  +
-                </span>
-                Ajouter une question
+                Ajouter
               </button>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAdding(false);
+                  setNewQ('');
+                }}
+                className="text-sm text-gris hover:text-ink"
+              >
+                Annuler
+              </button>
+            </div>
+          )}
 
           {/* Légende notation */}
           {!isDirigeant && (
@@ -662,9 +662,24 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           >
             Précédent
           </button>
-          <span className="text-xs text-gris">
-            Pilier {step + 1} / {GRILLE_RESTO360.length}
-          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setAdding(true);
+              if (typeof window !== 'undefined')
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#F97316]/40 px-3 py-2 text-xs font-semibold text-[#F97316] hover:bg-orange-50 sm:text-sm"
+          >
+            <span
+              className="grid h-5 w-5 place-items-center rounded-full text-white"
+              style={{ backgroundColor: ORANGE }}
+            >
+              +
+            </span>
+            <span className="hidden sm:inline">Ajouter une question</span>
+            <span className="sm:hidden">Question</span>
+          </button>
           {step < GRILLE_RESTO360.length - 1 ? (
             <button
               onClick={() => goTo(step + 1)}
