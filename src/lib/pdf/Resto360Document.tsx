@@ -153,7 +153,7 @@ export function Resto360Document({ data }: { data: Resto360ReportData }) {
   const resti = data.restitution;
   return (
     <Document title={`Rapport auditresto360 - ${data.etablissement}`} author="auditresto360">
-      {/* PAGE 1 — Couverture + cas critiques + synthèse */}
+      {/* PAGE 1 : Couverture + cas critiques + synthèse */}
       <Page size="A4" style={s.page}>
         <View style={s.cover}>
           <View style={s.coverTop}>
@@ -244,7 +244,7 @@ export function Resto360Document({ data }: { data: Resto360ReportData }) {
         </Text>
       </Page>
 
-      {/* PAGE 2+ — Résultats détaillés par pilier (avec photos par question) */}
+      {/* PAGE 2+ : Résultats détaillés par pilier (avec photos par question) */}
       <Page size="A4" style={s.page}>
         <Text style={s.sectionTitle}>Résultats détaillés par pilier</Text>
         {data.piliers.map((p) => (
@@ -300,7 +300,7 @@ export function Resto360Document({ data }: { data: Resto360ReportData }) {
         </Text>
       </Page>
 
-      {/* PAGE 3+ — Recommandations + plan d'action + quick wins + dirigeant */}
+      {/* PAGE 3+ : Recommandations + plan d'action + quick wins + dirigeant */}
       <Page size="A4" style={s.page}>
         {resti && (
           <View style={s.section}>

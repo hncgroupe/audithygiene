@@ -7,6 +7,8 @@ import {
   GRILLE_RESTO360,
   critereId,
   critereLabel,
+  critereAide,
+  critereInfo,
   CRITIQUE_IDS,
   scorePilier,
   scoreGlobalResto,
@@ -79,6 +81,16 @@ export interface CritereDetail {
   note: number | null;
   commentaire: string | null;
   photos: string[];
+  /** Description « version client » de ce qui est évalué sur ce point (repère grille). */
+  description: string | null;
+  /** Base réglementaire du critère (points sanitaires/critiques), si renseignée. */
+  regle: string | null;
+  /** Ce qui rend le point conforme (repère grille, langage clair), si renseigné. */
+  conforme: string | null;
+  /** Ce qui rend le point non conforme (repère grille), si renseigné. */
+  nonConforme: string | null;
+  /** true si critère sanitaire/réglementaire (compte double). */
+  critique: boolean;
 }
 export interface PilierDetail {
   code: string;
@@ -99,12 +111,19 @@ export function detailPiliers(items: ItemNote[]): PilierDetail[] {
     const groupes = p.groupes.map((g, gi) => ({
       nom: g.nom,
       criteres: g.criteres.map((crit, ci) => {
-        const it = byCode.get(critereId(p.code, gi, ci));
+        const id = critereId(p.code, gi, ci);
+        const it = byCode.get(id);
+        const info = critereInfo(crit);
         return {
           intitule: critereLabel(crit),
           note: it?.note ?? null,
           commentaire: it?.commentaire ?? null,
           photos: it?.photos ?? [],
+          description: critereAide(crit) || null,
+          regle: info?.regle ?? null,
+          conforme: info?.conforme ?? null,
+          nonConforme: info?.nonConforme ?? null,
+          critique: CRITIQUE_IDS.has(id),
         };
       }),
     }));
@@ -161,7 +180,7 @@ export function assembleResto360Report(args: {
   const score = r.scoreGlobal ?? 0;
   // Détail complet par pilier (groupes, critères + photos, risques, points forts).
   const piliers = detailPiliers(args.items);
-  // Détail compact (critères notés ou avec photos) — usage interne éventuel.
+  // Détail compact (critères notés ou avec photos), usage interne éventuel.
   const details = piliers.map((d) => ({
     nom: d.nom,
     numero: d.numero,

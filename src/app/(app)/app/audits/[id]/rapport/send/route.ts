@@ -32,7 +32,7 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
   }
 
   // Items + photos embarquées (data URI base64) : l'image est intégrée au PDF,
-  // jamais un lien — elle reste visible même hors connexion / après expiration.
+  // jamais un lien : elle reste visible même hors connexion ou après expiration.
   const items: ItemNote[] = await Promise.all(
     audit.items.map(async (it) => ({
       code: it.code,

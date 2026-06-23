@@ -1,4 +1,9 @@
 /**
+ * Note : les textes conforme/nonConforme des critères opérationnels (sans base
+ * réglementaire `regle`) sont des repères terrain à faire valider par
+ * l'expert/client avant usage en production (rule methodology-guard). Seuls les
+ * critères portant une `regle` sourçable sont traités comme « critiques ».
+ *
  * Grille auditresto360 - audit 360 du restaurant.
  * 10 piliers, chacun noté sur 100. Chaque critère est noté de 1 à 5.
  * Score d'un pilier = (somme des notes / (nombre de critères notés x 5)) x 100.
@@ -101,7 +106,7 @@ export interface PilierResto {
   noteAuRadar: boolean;
 }
 
-export const GRILLE_RESTO360_VERSION = 'v2';
+export const GRILLE_RESTO360_VERSION = 'v3';
 
 const c = (
   label: string,
@@ -126,31 +131,76 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Extérieur',
         criteres: [
-          c('Enseigne propre', 'Enseigne lisible, allumée, sans saleté ni élément cassé.'),
-          c('Vitrine propre', 'Vitres nettoyées, sans traces, affichage à jour et ordonné.'),
-          c('Terrasse propre', 'Sol, tables et chaises propres, mobilier en bon état.'),
-          c('Accessibilité', 'Entrée dégagée, accès PMR (Personne à Mobilité Réduite) possible.'),
-          c('Signalétique', 'Horaires, menu et nom du restaurant visibles depuis la rue.'),
+          c('Enseigne propre', 'Enseigne lisible, allumée, sans saleté ni élément cassé.', undefined, {
+            conforme: 'Enseigne lisible et allumée, propre, sans lettre cassée ni partie qui pend.',
+            nonConforme: 'Enseigne sale, éteinte, partiellement illisible ou abîmée.',
+          }),
+          c('Vitrine propre', 'Vitres nettoyées, sans traces, affichage à jour et ordonné.', undefined, {
+            conforme: 'Vitres nettoyées sans traces, affichage rangé et à jour (horaires, menu).',
+            nonConforme: 'Vitres sales ou pleines de traces, affichage dépassé ou en désordre.',
+          }),
+          c('Terrasse propre', 'Sol, tables et chaises propres, mobilier en bon état.', undefined, {
+            conforme: 'Sol balayé, tables et chaises propres, mobilier stable et en bon état.',
+            nonConforme: 'Sol sale, mobilier taché, cassé ou bancal sur la terrasse.',
+          }),
+          c('Accessibilité', 'Entrée dégagée, accès PMR (Personne à Mobilité Réduite) possible.', undefined, {
+            conforme: 'Entrée dégagée et accès possible pour une personne à mobilité réduite.',
+            nonConforme: 'Entrée encombrée ou marche/obstacle qui bloque l\'accès PMR.',
+          }),
+          c('Signalétique', 'Horaires, menu et nom du restaurant visibles depuis la rue.', undefined, {
+            conforme: 'Nom, horaires et menu visibles et lisibles depuis la rue.',
+            nonConforme: 'Horaires, menu ou nom du restaurant absents ou illisibles depuis l\'extérieur.',
+          }),
         ],
       },
       {
         nom: 'Salle',
         criteres: [
-          c('Propreté générale', 'Sols, tables, banquettes et sanitaires propres.'),
-          c('Température', 'Salle ni trop chaude ni trop froide, confort thermique correct.'),
-          c('Ambiance sonore', 'Niveau sonore et musique adaptés au type de service.'),
-          c('Éclairage', 'Éclairage suffisant et homogène, aucune ampoule grillée.'),
-          c('Mobilier', 'Tables et chaises stables, propres, sans usure marquée.'),
+          c('Propreté générale', 'Sols, tables, banquettes et sanitaires propres.', undefined, {
+            conforme: 'Sols, tables, banquettes et sanitaires propres et entretenus.',
+            nonConforme: 'Sol collant, tables non essuyées, banquettes tachées ou sanitaires sales.',
+          }),
+          c('Température', 'Salle ni trop chaude ni trop froide, confort thermique correct.', undefined, {
+            conforme: 'Salle à une température agréable, ni étouffante ni glaciale.',
+            nonConforme: 'Salle trop chaude ou trop froide, inconfort thermique pour les clients.',
+          }),
+          c('Ambiance sonore', 'Niveau sonore et musique adaptés au type de service.', undefined, {
+            conforme: 'Niveau sonore et musique adaptés, on peut converser sans forcer la voix.',
+            nonConforme: 'Musique trop forte ou bruit ambiant qui gêne la conversation.',
+          }),
+          c('Éclairage', 'Éclairage suffisant et homogène, aucune ampoule grillée.', undefined, {
+            conforme: 'Éclairage suffisant et homogène, aucune ampoule grillée.',
+            nonConforme: 'Zones dans le noir, lumière inégale ou ampoules hors service.',
+          }),
+          c('Mobilier', 'Tables et chaises stables, propres, sans usure marquée.', undefined, {
+            conforme: 'Tables et chaises stables, propres et sans usure marquée.',
+            nonConforme: 'Mobilier bancal, abîmé ou visiblement usé.',
+          }),
         ],
       },
       {
         nom: 'Service',
         criteres: [
-          c('Accueil client', 'Client accueilli rapidement, salué, orienté vers une table.'),
-          c("Temps d'attente", 'Prise de commande et envoi des plats dans des délais raisonnables.'),
-          c('Présentation des équipes', 'Personnel identifiable, posture professionnelle.'),
-          c('Tenue vestimentaire', 'Tenue propre, adaptée, cohérente avec l\'image du lieu.'),
-          c('Qualité du service', 'Service attentif, conseils, suivi de table jusqu\'à l\'addition.'),
+          c('Accueil client', 'Client accueilli rapidement, salué, orienté vers une table.', undefined, {
+            conforme: 'Client salué et pris en charge rapidement, orienté vers une table.',
+            nonConforme: 'Client qui attend sans être accueilli, ni salué ni orienté.',
+          }),
+          c("Temps d'attente", 'Prise de commande et envoi des plats dans des délais raisonnables.', undefined, {
+            conforme: 'Prise de commande et envoi des plats dans des délais raisonnables.',
+            nonConforme: 'Attente excessive pour commander ou pour être servi.',
+          }),
+          c('Présentation des équipes', 'Personnel identifiable, posture professionnelle.', undefined, {
+            conforme: 'Personnel identifiable et posture professionnelle face au client.',
+            nonConforme: 'Personnel difficile à repérer ou attitude négligée en salle.',
+          }),
+          c('Tenue vestimentaire', 'Tenue propre, adaptée, cohérente avec l\'image du lieu.', undefined, {
+            conforme: 'Tenue propre, adaptée au service et cohérente avec l\'image du lieu.',
+            nonConforme: 'Tenue sale, négligée ou inadaptée au type de restaurant.',
+          }),
+          c('Qualité du service', 'Service attentif, conseils, suivi de table jusqu\'à l\'addition.', undefined, {
+            conforme: 'Service attentif : conseils, suivi de table et accompagnement jusqu\'à l\'addition.',
+            nonConforme: 'Service expédié, sans suivi de table ni attention au client.',
+          }),
         ],
       },
     ],
@@ -165,31 +215,76 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Organisation',
         criteres: [
-          c('Organisation des postes', 'Chaque poste est défini, équipé et tenu propre.'),
-          c('Ergonomie', 'Distances de travail courtes, matériel à portée de main.'),
-          c('Circulation', 'Marche en avant respectée, pas de croisement propre / sale.'),
-          c('Gestion des rushs', 'Mise en place suffisante pour absorber le coup de feu.'),
-          c('Répartition des tâches', 'Rôles clairs, personne en surcharge ou inactif.'),
+          c('Organisation des postes', 'Chaque poste est défini, équipé et tenu propre.', undefined, {
+            conforme: 'Chaque poste est défini, équipé du nécessaire et tenu propre.',
+            nonConforme: 'Postes mal délimités, matériel qui manque ou plan de travail en désordre.',
+          }),
+          c('Ergonomie', 'Distances de travail courtes, matériel à portée de main.', undefined, {
+            conforme: 'Matériel à portée de main, déplacements courts pour travailler.',
+            nonConforme: 'Trajets longs et répétés pour aller chercher le matériel.',
+          }),
+          c('Circulation', 'Marche en avant respectée, pas de croisement propre / sale.', undefined, {
+            conforme: 'Marche en avant respectée : le propre et le sale ne se croisent pas.',
+            nonConforme: 'Croisement des flux propre et sale, risque de contamination en cuisine.',
+          }),
+          c('Gestion des rushs', 'Mise en place suffisante pour absorber le coup de feu.', undefined, {
+            conforme: 'Mise en place suffisante pour tenir le coup de feu sans décrocher.',
+            nonConforme: 'Mise en place insuffisante, la cuisine est débordée au rush.',
+          }),
+          c('Répartition des tâches', 'Rôles clairs, personne en surcharge ou inactif.', undefined, {
+            conforme: 'Rôles clairs et charge équilibrée, personne surchargé ni inactif.',
+            nonConforme: 'Rôles flous, une personne débordée pendant qu\'une autre attend.',
+          }),
         ],
       },
       {
         nom: 'Production',
         criteres: [
-          c('Anticipation', 'Préparations lancées à l\'avance, pas de production à chaud.'),
-          c('Plan de préparation', 'Liste de mise en place suivie et à jour.'),
-          c('Respect des recettes', 'Plats conformes à la fiche technique du restaurant.'),
-          c('Respect des grammages', 'Portions pesées ou calibrées, régulières d\'une assiette à l\'autre.'),
-          c('Présentation des plats', 'Dressage soigné, conforme au standard de la maison.'),
-          c('Fiches recettes / fiches techniques', 'Existence de fiches recettes (grammages, étapes, coût) réellement utilisées.'),
+          c('Anticipation', 'Préparations lancées à l\'avance, pas de production à chaud.', undefined, {
+            conforme: 'Préparations lancées à l\'avance, pas de production faite dans l\'urgence.',
+            nonConforme: 'Tout préparé à la minute pendant le service, dans la précipitation.',
+          }),
+          c('Plan de préparation', 'Liste de mise en place suivie et à jour.', undefined, {
+            conforme: 'Liste de mise en place écrite, suivie et tenue à jour.',
+            nonConforme: 'Pas de liste de mise en place, organisation de mémoire.',
+          }),
+          c('Respect des recettes', 'Plats conformes à la fiche technique du restaurant.', undefined, {
+            conforme: 'Plats préparés conformément aux fiches techniques du restaurant.',
+            nonConforme: 'Recettes faites au jugé, résultat variable d\'une fois à l\'autre.',
+          }),
+          c('Respect des grammages', 'Portions pesées ou calibrées, régulières d\'une assiette à l\'autre.', undefined, {
+            conforme: 'Portions pesées ou calibrées, régulières d\'une assiette à l\'autre.',
+            nonConforme: 'Portions « à la louche », quantités qui varient selon qui dresse.',
+          }),
+          c('Présentation des plats', 'Dressage soigné, conforme au standard de la maison.', undefined, {
+            conforme: 'Dressage soigné et conforme au standard de présentation de la maison.',
+            nonConforme: 'Dressage négligé ou différent d\'une assiette à l\'autre.',
+          }),
+          c('Fiches recettes / fiches techniques', 'Existence de fiches recettes (grammages, étapes, coût) réellement utilisées.', undefined, {
+            conforme: 'Fiches recettes existantes (grammages, étapes, coût) et réellement utilisées.',
+            nonConforme: 'Aucune fiche recette, ou des fiches qui ne servent jamais.',
+          }),
         ],
       },
       {
         nom: 'Management',
         criteres: [
-          c('Leadership du chef', 'Le chef pilote le service, donne le tempo et corrige.'),
-          c('Communication', 'Annonces claires entre cuisine et salle (le « passe »).'),
-          c('Réactivité', 'Aléas (retour, erreur, rupture) traités vite et calmement.'),
-          c('Contrôle qualité', 'Goût et dressage vérifiés avant l\'envoi en salle.'),
+          c('Leadership du chef', 'Le chef pilote le service, donne le tempo et corrige.', undefined, {
+            conforme: 'Le chef pilote le service, donne le tempo et corrige au fil de l\'eau.',
+            nonConforme: 'Service sans pilote clair, chacun avance sans cadence commune.',
+          }),
+          c('Communication', 'Annonces claires entre cuisine et salle (le « passe »).', undefined, {
+            conforme: 'Annonces claires au passe entre cuisine et salle, tout le monde suit.',
+            nonConforme: 'Communication confuse au passe, plats oubliés ou envoyés en désordre.',
+          }),
+          c('Réactivité', 'Aléas (retour, erreur, rupture) traités vite et calmement.', undefined, {
+            conforme: 'Aléas (retour, erreur, rupture) traités vite et sans panique.',
+            nonConforme: 'Le moindre imprévu fait perdre le contrôle du service.',
+          }),
+          c('Contrôle qualité', 'Goût et dressage vérifiés avant l\'envoi en salle.', undefined, {
+            conforme: 'Goût et dressage vérifiés au passe avant l\'envoi en salle.',
+            nonConforme: 'Plats envoyés sans contrôle, défauts découverts par le client.',
+          }),
         ],
       },
     ],
@@ -204,33 +299,69 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Organisation',
         criteres: [
-          c('Stockage logique', 'Produits rangés par famille, faciles à retrouver.'),
-          c('Identification', 'Contenants étiquetés (nom + date), aucun produit anonyme.'),
-          c('Décartonnage', 'Cartons retirés avant entrée en zone de stockage.'),
-          c('Rotation FIFO (Premier Entré, Premier Sorti)', 'Les plus anciens devant, consommés en premier.'),
-          c('DLC (Date Limite de Consommation) visibles', 'Dates lisibles sans manipuler chaque produit, aucun produit périmé.'),
+          c('Stockage logique', 'Produits rangés par famille, faciles à retrouver.', undefined, {
+            conforme: 'Produits rangés par famille, faciles à localiser dans la réserve.',
+            nonConforme: 'Rangement au hasard, produits difficiles à retrouver.',
+          }),
+          c('Identification', 'Contenants étiquetés (nom + date), aucun produit anonyme.', undefined, {
+            conforme: 'Contenants étiquetés (nom et date), aucun produit anonyme.',
+            nonConforme: 'Contenants sans étiquette, impossible de savoir quoi et depuis quand.',
+          }),
+          c('Décartonnage', 'Cartons retirés avant entrée en zone de stockage.', undefined, {
+            conforme: 'Cartons retirés avant l\'entrée des produits en zone de stockage.',
+            nonConforme: 'Cartons de livraison gardés en réserve, risque de souillure et de nuisibles.',
+          }),
+          c('Rotation FIFO (Premier Entré, Premier Sorti)', 'Les plus anciens devant, consommés en premier.', undefined, {
+            conforme: 'Produits les plus anciens placés devant et consommés en premier.',
+            nonConforme: 'Nouveaux produits posés devant, les anciens oubliés au fond.',
+          }),
+          c('DLC (Date Limite de Consommation) visibles', 'Dates lisibles sans manipuler chaque produit, aucun produit périmé.', undefined, {
+            conforme: 'Dates lisibles d\'un coup d\'œil et aucun produit périmé en rayon.',
+            nonConforme: 'Dates cachées ou effacées, présence de produits périmés.',
+          }),
         ],
       },
       {
         nom: 'Sécurité',
         criteres: [
-          c('Produits au sol', 'Rien stocké à même le sol, tout sur étagère ou palette.'),
+          c('Produits au sol', 'Rien stocké à même le sol, tout sur étagère ou palette.', undefined, {
+            conforme: 'Tout est sur étagère ou palette, rien posé directement à même le sol.',
+            nonConforme: 'Denrées ou cartons stockés à même le sol.',
+          }),
           c('Produits chimiques séparés', 'Détergents isolés des denrées, zone dédiée et fermée.', undefined, {
             conforme: 'Détergents et désinfectants stockés à l\'écart des denrées, dans une zone ou un local dédié.',
             nonConforme: 'Produits chimiques au-dessus, à côté ou mélangés aux aliments.',
             regle: 'Règlement CE 852/2004, annexe II.',
           }),
-          c('Emballages bien rangés', 'Pas d\'encombrement, emballages vides évacués.'),
-          c('Circulation libre', 'Allées dégagées, accès aux étagères et aux issues possible.'),
+          c('Emballages bien rangés', 'Pas d\'encombrement, emballages vides évacués.', undefined, {
+            conforme: 'Réserve sans encombrement, emballages vides évacués régulièrement.',
+            nonConforme: 'Emballages vides entassés qui encombrent la réserve.',
+          }),
+          c('Circulation libre', 'Allées dégagées, accès aux étagères et aux issues possible.', undefined, {
+            conforme: 'Allées dégagées, accès aux étagères et aux issues de secours possible.',
+            nonConforme: 'Allées encombrées qui bloquent l\'accès aux étagères ou aux issues.',
+          }),
         ],
       },
       {
         nom: 'Hygiène',
         criteres: [
-          c('Sol propre', 'Sol balayé et lavé, sans déchet ni écoulement.'),
-          c('Murs propres', 'Murs et plinthes sans projection ni moisissure.'),
-          c('Rayonnages propres', 'Étagères nettoyées, sans résidu collant ni poussière.'),
-          c('Absence de nuisibles', 'Aucune trace (déjections, rongé), pièges en place.'),
+          c('Sol propre', 'Sol balayé et lavé, sans déchet ni écoulement.', undefined, {
+            conforme: 'Sol de réserve balayé et lavé, sans déchet ni écoulement.',
+            nonConforme: 'Sol sale, déchets au sol ou liquide qui stagne.',
+          }),
+          c('Murs propres', 'Murs et plinthes sans projection ni moisissure.', undefined, {
+            conforme: 'Murs et plinthes propres, sans projection ni moisissure.',
+            nonConforme: 'Murs tachés, traces de projections ou moisissure visible.',
+          }),
+          c('Rayonnages propres', 'Étagères nettoyées, sans résidu collant ni poussière.', undefined, {
+            conforme: 'Étagères nettoyées, sans résidu collant ni poussière.',
+            nonConforme: 'Étagères poussiéreuses ou avec des résidus collants.',
+          }),
+          c('Absence de nuisibles', 'Aucune trace (déjections, rongé), pièges en place.', undefined, {
+            conforme: 'Aucune trace de nuisibles (déjections, emballages rongés), pièges en place.',
+            nonConforme: 'Traces de rongeurs ou d\'insectes, dispositifs de lutte absents.',
+          }),
         ],
       },
     ],
@@ -290,9 +421,18 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Nettoyage',
         criteres: [
-          c('Plan de nettoyage', 'Plan affiché : quoi, qui, quand, avec quel produit.'),
-          c('Respect', 'Fréquences réellement tenues, fiches de suivi remplies.'),
-          c('Matériel', 'Produits homologués, dosés, matériel de nettoyage propre et rangé.'),
+          c('Plan de nettoyage', 'Plan affiché : quoi, qui, quand, avec quel produit.', undefined, {
+            conforme: 'Plan de nettoyage affiché et clair : quoi nettoyer, qui, quand et avec quel produit.',
+            nonConforme: 'Pas de plan de nettoyage, ou un plan jamais affiché ni suivi.',
+          }),
+          c('Respect', 'Fréquences réellement tenues, fiches de suivi remplies.', undefined, {
+            conforme: 'Fréquences de nettoyage réellement tenues, fiches de suivi remplies au fur et à mesure.',
+            nonConforme: 'Fréquences non tenues ou fiches de suivi vides, remplies après coup.',
+          }),
+          c('Matériel', 'Produits homologués, dosés, matériel de nettoyage propre et rangé.', undefined, {
+            conforme: 'Produits homologués et dosés correctement, matériel de nettoyage propre et rangé.',
+            nonConforme: 'Produits inadaptés ou mal dosés, matériel de nettoyage sale ou en vrac.',
+          }),
         ],
       },
       {
@@ -372,32 +512,65 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Organisation',
         criteres: [
-          c('Répartition des équipes', 'Effectif réparti selon les services, rôles attribués.'),
-          c('Effectifs adaptés', 'Nombre de personnes cohérent avec l\'activité réelle.'),
+          c('Répartition des équipes', 'Effectif réparti selon les services, rôles attribués.', undefined, {
+            conforme: 'Effectif réparti selon les services, chacun avec un rôle attribué.',
+            nonConforme: 'Répartition floue, personne ne sait clairement qui fait quoi.',
+          }),
+          c('Effectifs adaptés', 'Nombre de personnes cohérent avec l\'activité réelle.', undefined, {
+            conforme: 'Nombre de personnes cohérent avec l\'activité réelle du service.',
+            nonConforme: 'Trop ou pas assez de personnel par rapport à la charge réelle.',
+          }),
         ],
       },
       {
         nom: 'Management',
         criteres: [
-          c('Communication', 'Consignes passées clairement, équipe informée des priorités.'),
-          c('Briefs', 'Brief avant service (plats du jour, ruptures, objectifs).'),
-          c('Contrôle', 'Le responsable suit le travail et recadre si besoin.'),
+          c('Communication', 'Consignes passées clairement, équipe informée des priorités.', undefined, {
+            conforme: 'Consignes passées clairement, équipe informée des priorités du service.',
+            nonConforme: 'Consignes floues ou non transmises, équipe qui découvre au dernier moment.',
+          }),
+          c('Briefs', 'Brief avant service (plats du jour, ruptures, objectifs).', undefined, {
+            conforme: 'Brief tenu avant le service : plats du jour, ruptures et objectifs partagés.',
+            nonConforme: 'Aucun brief avant le service, chacun démarre sans les infos clés.',
+          }),
+          c('Contrôle', 'Le responsable suit le travail et recadre si besoin.', undefined, {
+            conforme: 'Le responsable suit le travail pendant le service et recadre si besoin.',
+            nonConforme: 'Aucun suivi du travail, les écarts ne sont jamais repris.',
+          }),
         ],
       },
       {
         nom: 'Formation',
         criteres: [
-          c('Intégration', 'Nouveaux accompagnés, parcours d\'arrivée structuré.'),
-          c('HACCP (méthode d\'analyse des dangers)', 'Au moins une personne formée hygiène alimentaire (attestation).'),
-          c('Polyvalence', 'Plusieurs personnes capables de tenir un même poste.'),
+          c('Intégration', 'Nouveaux accompagnés, parcours d\'arrivée structuré.', undefined, {
+            conforme: 'Nouveaux arrivants accompagnés avec un parcours d\'arrivée structuré.',
+            nonConforme: 'Nouveaux laissés livrés à eux-mêmes, sans accompagnement.',
+          }),
+          c('HACCP (méthode d\'analyse des dangers)', 'Au moins une personne formée hygiène alimentaire (attestation).', undefined, {
+            conforme: 'Au moins une personne formée à l\'hygiène alimentaire, attestation à l\'appui.',
+            nonConforme: 'Personne de formé à l\'hygiène alimentaire, aucune attestation disponible.',
+          }),
+          c('Polyvalence', 'Plusieurs personnes capables de tenir un même poste.', undefined, {
+            conforme: 'Plusieurs personnes capables de tenir un même poste en cas d\'absence.',
+            nonConforme: 'Un seul sachant par poste, tout s\'arrête s\'il est absent.',
+          }),
         ],
       },
       {
         nom: 'Climat',
         criteres: [
-          c('Cohésion', 'Entente d\'équipe visible, entraide pendant le service.'),
-          c('Motivation', 'Implication et énergie du personnel.'),
-          c('Implication', 'Initiative, soin du détail, appropriation du lieu.'),
+          c('Cohésion', 'Entente d\'équipe visible, entraide pendant le service.', undefined, {
+            conforme: 'Bonne entente visible et entraide réelle pendant le service.',
+            nonConforme: 'Tensions dans l\'équipe ou chacun pour soi pendant le service.',
+          }),
+          c('Motivation', 'Implication et énergie du personnel.', undefined, {
+            conforme: 'Personnel impliqué et énergique pendant le service.',
+            nonConforme: 'Personnel passif ou démotivé, énergie en berne.',
+          }),
+          c('Implication', 'Initiative, soin du détail, appropriation du lieu.', undefined, {
+            conforme: 'Équipe qui prend des initiatives, soigne les détails et s\'approprie le lieu.',
+            nonConforme: 'Aucune initiative, détails négligés, personne ne se sent concerné.',
+          }),
         ],
       },
       {
@@ -415,7 +588,11 @@ export const GRILLE_RESTO360: PilierResto[] = [
               'Contrats de travail signés',
               'DPAE (Déclaration Préalable À l\'Embauche) effectuée',
               'Journée test / procédure d\'essai cadrée',
-            ]
+            ],
+            {
+              conforme: 'Suivi RH en place : plannings communiqués à l\'avance, tenues fournies et entretenues, vestiaire dédié, pauses respectées, contrats signés (voir checklist).',
+              nonConforme: 'Plannings de dernière minute, tenues ou vestiaire manquants, ou contrats et déclarations d\'embauche non réglés.',
+            }
           ),
         ],
       },
@@ -431,24 +608,48 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Productivité',
         criteres: [
-          c('Temps de production', 'Délai d\'envoi des plats maîtrisé, sans goulot.'),
-          c('Temps morts', 'Peu d\'attente improductive entre les tâches.'),
-          c('Déplacements inutiles', 'Postes agencés pour limiter les allers-retours.'),
+          c('Temps de production', 'Délai d\'envoi des plats maîtrisé, sans goulot.', undefined, {
+            conforme: 'Délai d\'envoi des plats maîtrisé, sans goulot d\'étranglement.',
+            nonConforme: 'Plats qui tardent à sortir, un poste qui bloque toute la chaîne.',
+          }),
+          c('Temps morts', 'Peu d\'attente improductive entre les tâches.', undefined, {
+            conforme: 'Peu de temps morts, l\'activité s\'enchaîne sans attente inutile.',
+            nonConforme: 'Beaucoup d\'attente improductive entre les tâches.',
+          }),
+          c('Déplacements inutiles', 'Postes agencés pour limiter les allers-retours.', undefined, {
+            conforme: 'Postes agencés pour limiter les allers-retours pendant le service.',
+            nonConforme: 'Trajets répétés et inutiles à cause d\'un agencement mal pensé.',
+          }),
         ],
       },
       {
         nom: 'Organisation',
         criteres: [
-          c('Fluidité', 'Le service s\'enchaîne sans à-coups ni embouteillage.'),
-          c('Coordination', 'Cuisine et salle synchronisées sur le rythme des envois.'),
-          c('Anticipation', 'Mise en place et réassorts prévus avant le rush.'),
+          c('Fluidité', 'Le service s\'enchaîne sans à-coups ni embouteillage.', undefined, {
+            conforme: 'Service fluide qui s\'enchaîne sans à-coups ni embouteillage.',
+            nonConforme: 'Service haché, avec des embouteillages au passe ou en salle.',
+          }),
+          c('Coordination', 'Cuisine et salle synchronisées sur le rythme des envois.', undefined, {
+            conforme: 'Cuisine et salle synchronisées sur le rythme des envois.',
+            nonConforme: 'Cuisine et salle désynchronisées, plats prêts mais non servis (ou l\'inverse).',
+          }),
+          c('Anticipation', 'Mise en place et réassorts prévus avant le rush.', undefined, {
+            conforme: 'Mise en place et réassorts prévus avant le rush.',
+            nonConforme: 'Réassorts faits en pleine charge, mise en place prise de court.',
+          }),
         ],
       },
       {
         nom: 'Qualité',
         criteres: [
-          c('Contrôle avant envoi', 'Chaque assiette vérifiée au passe avant de partir.'),
-          c('Gestion des erreurs', 'Retours et erreurs traités vite, sans tension.'),
+          c('Contrôle avant envoi', 'Chaque assiette vérifiée au passe avant de partir.', undefined, {
+            conforme: 'Chaque assiette vérifiée au passe avant de partir en salle.',
+            nonConforme: 'Assiettes envoyées sans contrôle, défauts vus par le client.',
+          }),
+          c('Gestion des erreurs', 'Retours et erreurs traités vite, sans tension.', undefined, {
+            conforme: 'Retours et erreurs traités vite et sans tension.',
+            nonConforme: 'Erreurs mal gérées, qui s\'accumulent ou créent des tensions.',
+          }),
         ],
       },
     ],
@@ -463,33 +664,69 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Stocks',
         criteres: [
-          c('Inventaires', 'Inventaires réguliers, datés et exploités.'),
-          c('Fiabilité', 'Stock théorique proche du stock réel.'),
-          c('Ruptures', 'Peu de ruptures en service, réassort anticipé.'),
+          c('Inventaires', 'Inventaires réguliers, datés et exploités.', undefined, {
+            conforme: 'Inventaires réalisés régulièrement, datés et réellement exploités.',
+            nonConforme: 'Inventaires rares, non datés ou jamais utilisés pour décider.',
+          }),
+          c('Fiabilité', 'Stock théorique proche du stock réel.', undefined, {
+            conforme: 'Stock théorique proche du stock réellement compté.',
+            nonConforme: 'Gros écarts entre le stock affiché et le stock réel.',
+          }),
+          c('Ruptures', 'Peu de ruptures en service, réassort anticipé.', undefined, {
+            conforme: 'Peu de ruptures en service, réassort anticipé.',
+            nonConforme: 'Ruptures fréquentes en plein service faute d\'anticipation.',
+          }),
         ],
       },
       {
         nom: 'Achats',
         criteres: [
-          c('Fournisseurs', 'Fournisseurs identifiés, agréés, comparés sur le prix.'),
-          c('Commandes', 'Commandes calées sur les besoins réels, sans surstock.'),
-          c('Fréquence', 'Rythme de livraison adapté à la rotation des produits.'),
+          c('Fournisseurs', 'Fournisseurs identifiés, agréés, comparés sur le prix.', undefined, {
+            conforme: 'Fournisseurs identifiés et agréés, comparés sur les prix.',
+            nonConforme: 'Fournisseurs non identifiés ou jamais comparés, aucun suivi.',
+          }),
+          c('Commandes', 'Commandes calées sur les besoins réels, sans surstock.', undefined, {
+            conforme: 'Commandes calées sur les besoins réels, sans surstock.',
+            nonConforme: 'Commandes au jugé qui créent du surstock ou des manques.',
+          }),
+          c('Fréquence', 'Rythme de livraison adapté à la rotation des produits.', undefined, {
+            conforme: 'Rythme de livraison adapté à la rotation des produits.',
+            nonConforme: 'Livraisons mal cadencées, produits livrés trop tôt ou trop tard.',
+          }),
         ],
       },
       {
         nom: 'Food Cost (coût matière)',
         criteres: [
-          c('Respect des portions', 'Grammages tenus pour maîtriser le coût par plat.'),
-          c('Gaspillage', 'Pertes et jetés limités, restes valorisés.'),
-          c('Coût matière', 'Ratio coût matière / chiffre d\'affaires suivi et sous contrôle.'),
+          c('Respect des portions', 'Grammages tenus pour maîtriser le coût par plat.', undefined, {
+            conforme: 'Grammages tenus, ce qui maîtrise le coût matière par plat.',
+            nonConforme: 'Portions non tenues, coût par plat qui dérape.',
+          }),
+          c('Gaspillage', 'Pertes et jetés limités, restes valorisés.', undefined, {
+            conforme: 'Pertes et jetés limités, restes valorisés quand c\'est possible.',
+            nonConforme: 'Gaspillage important, produits jetés faute de gestion.',
+          }),
+          c('Coût matière', 'Ratio coût matière / chiffre d\'affaires suivi et sous contrôle.', undefined, {
+            conforme: 'Ratio coût matière sur chiffre d\'affaires suivi et sous contrôle.',
+            nonConforme: 'Coût matière non suivi, on ignore la marge réelle des plats.',
+          }),
         ],
       },
       {
         nom: 'Caisse & clôtures',
         criteres: [
-          c('Gestion du fond de caisse', 'Fond de caisse défini, compté en début et en fin de service.'),
-          c('Clôtures de caisse', 'Clôture quotidienne, écarts justifiés, ticket Z conservé.'),
-          c('Organisation des encaissements', 'Procédure claire : enveloppes préparées, remises en banque tracées.'),
+          c('Gestion du fond de caisse', 'Fond de caisse défini, compté en début et en fin de service.', undefined, {
+            conforme: 'Fond de caisse défini et compté en début et en fin de service.',
+            nonConforme: 'Fond de caisse jamais compté, montant flou d\'un service à l\'autre.',
+          }),
+          c('Clôtures de caisse', 'Clôture quotidienne, écarts justifiés, ticket Z conservé.', undefined, {
+            conforme: 'Clôture quotidienne, écarts justifiés et ticket Z conservé.',
+            nonConforme: 'Pas de clôture quotidienne, écarts non expliqués, tickets Z manquants.',
+          }),
+          c('Organisation des encaissements', 'Procédure claire : enveloppes préparées, remises en banque tracées.', undefined, {
+            conforme: 'Procédure claire d\'encaissement : enveloppes préparées, remises en banque tracées.',
+            nonConforme: 'Encaissements peu cadrés, remises en banque non tracées.',
+          }),
         ],
       },
     ],
@@ -504,27 +741,60 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Carte',
         criteres: [
-          c('Lisibilité', 'Carte claire, structurée, facile à lire pour le client.'),
-          c('Cohérence', 'Offre cohérente avec le positionnement et la cible.'),
-          c('Rentabilité', 'Plats à forte marge mis en avant, carte raisonnée.'),
+          c('Lisibilité', 'Carte claire, structurée, facile à lire pour le client.', undefined, {
+            conforme: 'Carte claire et structurée, facile à lire pour le client.',
+            nonConforme: 'Carte confuse, surchargée ou difficile à parcourir.',
+          }),
+          c('Cohérence', 'Offre cohérente avec le positionnement et la cible.', undefined, {
+            conforme: 'Offre cohérente avec le positionnement du restaurant et sa clientèle.',
+            nonConforme: 'Carte décalée du positionnement ou de la cible visée.',
+          }),
+          c('Rentabilité', 'Plats à forte marge mis en avant, carte raisonnée.', undefined, {
+            conforme: 'Plats à forte marge mis en avant, carte raisonnée.',
+            nonConforme: 'Carte non travaillée sur la marge, plats peu rentables en avant.',
+          }),
         ],
       },
       {
         nom: 'Plateformes (Uber Eats, Deliveroo, Just Eat)',
         criteres: [
-          c('Photos', 'Visuels nets, appétissants, à jour sur chaque plateforme.'),
-          c('Menus', 'Cartes en ligne complètes et synchronisées avec la salle.'),
-          c('Descriptions', 'Descriptifs vendeurs, allergènes et options indiqués.'),
-          c('Upselling (vente additionnelle)', 'Suppléments, menus et boissons proposés en ligne.'),
-          c('Optimisation en ligne', 'Fiches Uber Eats / Deliveroo optimisées : photos, prix, disponibilité, avis suivis.'),
+          c('Photos', 'Visuels nets, appétissants, à jour sur chaque plateforme.', undefined, {
+            conforme: 'Visuels nets, appétissants et à jour sur chaque plateforme.',
+            nonConforme: 'Photos floues, anciennes ou peu appétissantes en ligne.',
+          }),
+          c('Menus', 'Cartes en ligne complètes et synchronisées avec la salle.', undefined, {
+            conforme: 'Cartes en ligne complètes et synchronisées avec la carte en salle.',
+            nonConforme: 'Cartes en ligne incomplètes ou différentes de celle de la salle.',
+          }),
+          c('Descriptions', 'Descriptifs vendeurs, allergènes et options indiqués.', undefined, {
+            conforme: 'Descriptifs vendeurs avec allergènes et options clairement indiqués.',
+            nonConforme: 'Descriptions absentes ou pauvres, allergènes et options manquants.',
+          }),
+          c('Upselling (vente additionnelle)', 'Suppléments, menus et boissons proposés en ligne.', undefined, {
+            conforme: 'Suppléments, menus et boissons proposés en ligne pour augmenter le panier.',
+            nonConforme: 'Aucune vente additionnelle proposée en ligne.',
+          }),
+          c('Optimisation en ligne', 'Fiches Uber Eats / Deliveroo optimisées : photos, prix, disponibilité, avis suivis.', undefined, {
+            conforme: 'Fiches Uber Eats / Deliveroo optimisées : photos, prix, disponibilité à jour et avis suivis.',
+            nonConforme: 'Fiches plateformes négligées : prix ou disponibilités faux, avis sans réponse.',
+          }),
         ],
       },
       {
         nom: 'Expérience',
         criteres: [
-          c('Ticket moyen', 'Niveau de panier moyen suivi et travaillé.'),
-          c('Menus', 'Formules et menus qui augmentent le panier.'),
-          c('Offres', 'Offres et temps forts pour relancer la fréquentation.'),
+          c('Ticket moyen', 'Niveau de panier moyen suivi et travaillé.', undefined, {
+            conforme: 'Niveau de panier moyen suivi dans le temps et travaillé activement.',
+            nonConforme: 'Ticket moyen ni suivi ni travaillé, on subit le panier.',
+          }),
+          c('Menus', 'Formules et menus qui augmentent le panier.', undefined, {
+            conforme: 'Formules et menus pensés pour augmenter le panier moyen.',
+            nonConforme: 'Pas de formule ou de menu pour faire monter le panier.',
+          }),
+          c('Offres', 'Offres et temps forts pour relancer la fréquentation.', undefined, {
+            conforme: 'Offres et temps forts utilisés pour relancer la fréquentation.',
+            nonConforme: 'Aucune offre ni temps fort pour relancer la clientèle.',
+          }),
         ],
       },
     ],
@@ -539,18 +809,39 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Logiciels',
         criteres: [
-          c('Caisse', 'Système de caisse conforme et réellement utilisé.'),
-          c('Stocks', 'Outil de gestion de stock en place et tenu à jour.'),
-          c('HACCP (méthode d\'analyse des dangers)', 'Relevés hygiène digitalisés ou classeur tenu rigoureusement.'),
-          c('Planning', 'Outil de planning du personnel utilisé.'),
+          c('Caisse', 'Système de caisse conforme et réellement utilisé.', undefined, {
+            conforme: 'Système de caisse conforme et réellement utilisé au quotidien.',
+            nonConforme: 'Caisse non conforme ou contournée dans la pratique.',
+          }),
+          c('Stocks', 'Outil de gestion de stock en place et tenu à jour.', undefined, {
+            conforme: 'Outil de gestion de stock en place et tenu à jour.',
+            nonConforme: 'Aucun outil de stock, ou un outil installé mais jamais mis à jour.',
+          }),
+          c('HACCP (méthode d\'analyse des dangers)', 'Relevés hygiène digitalisés ou classeur tenu rigoureusement.', undefined, {
+            conforme: 'Relevés hygiène digitalisés ou classeur tenu avec rigueur.',
+            nonConforme: 'Relevés hygiène absents ou tenus de façon irrégulière.',
+          }),
+          c('Planning', 'Outil de planning du personnel utilisé.', undefined, {
+            conforme: 'Outil de planning du personnel en place et utilisé.',
+            nonConforme: 'Pas d\'outil de planning, organisation du personnel improvisée.',
+          }),
         ],
       },
       {
         nom: 'Pilotage',
         criteres: [
-          c('Tableaux de bord', 'Suivi d\'activité visible (CA, couverts, marge).'),
-          c('KPI (indicateurs clés de performance)', 'Indicateurs définis et suivis dans le temps.'),
-          c('Reporting', 'Points réguliers chiffrés pour décider.'),
+          c('Tableaux de bord', 'Suivi d\'activité visible (CA, couverts, marge).', undefined, {
+            conforme: 'Suivi d\'activité visible et tenu (chiffre d\'affaires, couverts, marge).',
+            nonConforme: 'Aucun tableau de bord, activité pilotée au ressenti.',
+          }),
+          c('KPI (indicateurs clés de performance)', 'Indicateurs définis et suivis dans le temps.', undefined, {
+            conforme: 'Indicateurs clés définis et suivis dans le temps.',
+            nonConforme: 'Aucun indicateur défini, rien à comparer d\'une période à l\'autre.',
+          }),
+          c('Reporting', 'Points réguliers chiffrés pour décider.', undefined, {
+            conforme: 'Points réguliers et chiffrés qui servent vraiment à décider.',
+            nonConforme: 'Pas de point chiffré régulier, décisions prises sans données.',
+          }),
         ],
       },
     ],
@@ -578,12 +869,15 @@ export function critereId(pilierCode: string, groupeIndex: number, critereIndex:
 }
 
 /**
- * Un critère est « critique » dès qu'il porte une info de conformité : ce sont
- * les points sanitaires/réglementaires (températures, traçabilité, PMS,
- * affichages, stockage cru, produits chimiques...). Ils sont notés plus sévèrement.
+ * Un critère est « critique » seulement s'il porte une base réglementaire
+ * sourçable (`regle`) : températures, traçabilité, PMS, affichages obligatoires,
+ * stockage du cru, produits chimiques... Ces points sont notés plus sévèrement
+ * et comptent double. Un critère opérationnel peut porter une explication
+ * conforme/nonConforme (sans `regle`) pour aider le restaurateur, sans pour
+ * autant devenir critique ni peser double dans la note.
  */
 export function critereEstCritique(c: CritereInput): boolean {
-  return critereInfo(c) !== undefined;
+  return critereInfo(c)?.regle != null;
 }
 
 /** Ensemble des identifiants de critères critiques (calculé une fois). */
