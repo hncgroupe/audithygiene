@@ -158,63 +158,6 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   // ré-uploade pas en parallèle (évite les doublons).
   const uploadingIds = useRef<Set<string>>(new Set());
 
-  // Prise de photo : appui court = appareil photo (capture), appui long (2 s) =
-  // téléverser depuis la tablette (galerie/fichiers). On ouvre le sélecteur au
-  // RELÂCHEMENT (un setTimeout n'est pas un "geste utilisateur" -> sélecteur bloqué
-  // sur mobile). Deux <input> cachés partagés, le code cible est mémorisé en ref.
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  const photoTargetCode = useRef<string>('');
-  const pressStart = useRef(0);
-  const armTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchHandled = useRef(false);
-  const [pressArmed, setPressArmed] = useState<string | null>(null);
-
-  function onPhotoDown(code: string) {
-    pressStart.current = Date.now();
-    photoTargetCode.current = code;
-    if (armTimer.current) clearTimeout(armTimer.current);
-    armTimer.current = setTimeout(() => setPressArmed(code), 2000);
-  }
-
-  // Ouvre le bon sélecteur selon la durée d'appui. DOIT être appelé depuis un
-  // geste utilisateur (touchend en tactile, click à la souris) sinon le navigateur
-  // bloque l'ouverture du sélecteur de fichier.
-  function openPhotoPicker(code: string) {
-    if (armTimer.current) {
-      clearTimeout(armTimer.current);
-      armTimer.current = null;
-    }
-    const held = pressStart.current ? Date.now() - pressStart.current : 0;
-    setPressArmed(null);
-    pressStart.current = 0;
-    photoTargetCode.current = code;
-    if (held >= 2000) galleryInputRef.current?.click();
-    else cameraInputRef.current?.click();
-  }
-  // Tactile : un appui long ne déclenche PAS de "click", donc on agit sur touchend.
-  function onPhotoTouchEnd(code: string, e: { preventDefault: () => void }) {
-    e.preventDefault(); // évite le click simulé en double
-    touchHandled.current = true;
-    openPhotoPicker(code);
-  }
-  // Souris / clavier : on ignore si le tactile vient de gérer l'appui.
-  function onPhotoClick(code: string) {
-    if (touchHandled.current) {
-      touchHandled.current = false;
-      return;
-    }
-    openPhotoPicker(code);
-  }
-  function onPhotoCancel() {
-    if (armTimer.current) {
-      clearTimeout(armTimer.current);
-      armTimer.current = null;
-    }
-    setPressArmed(null);
-    pressStart.current = 0;
-  }
-
   // Miroirs des saisies, lus par flush pour toujours envoyer la dernière valeur
   // (et non une valeur figée par une closure périmée d'un setTimeout / d'un goTo).
   const notesRef = useRef(notes);
@@ -758,6 +701,38 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           </div>
           {/* Actions : ronds, décollés des notations */}
           <div className="ml-2 flex shrink-0 items-center gap-2 border-l border-ink/10 pl-3">
+            {/* Téléverser une image de la tablette (galerie / fichiers), sans capture. */}
+            <label
+              title="Téléverser une image de la tablette"
+              aria-label="Téléverser une image de la tablette"
+              className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M12 4v11m0-11 -4 4m4-4 4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) addPhoto(code, f);
+                  e.target.value = '';
+                }}
+              />
+            </label>
             {/* Note libre */}
             <button
               type="button"
@@ -776,42 +751,41 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
                 <path d="M13.5 6.5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
             </button>
-            {/* Photo : tap = appareil photo, appui long 2 s = téléverser depuis la tablette */}
-            <button
-              type="button"
-              onPointerDown={() => onPhotoDown(code)}
-              onTouchEnd={(e) => onPhotoTouchEnd(code, e)}
-              onClick={() => onPhotoClick(code)}
-              onPointerCancel={onPhotoCancel}
-              onContextMenu={(e) => e.preventDefault()}
-              title="Appui court : appareil photo. Appui long (2 s) : téléverser une image de la tablette."
-              aria-label="Ajouter une photo. Appui long pour téléverser depuis la tablette."
-              className={`grid h-10 w-10 shrink-0 cursor-pointer touch-none select-none place-items-center rounded-full border transition-colors ${
-                pressArmed === code
-                  ? 'border-[#F97316] bg-[#F97316] text-white'
-                  : 'border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]'
-              }`}
+            {/* Appareil photo (capture). Label natif = ouverture fiable sur iOS. */}
+            <label
+              title="Prendre une photo"
+              aria-label="Prendre une photo"
+              className="relative grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]"
             >
-              <span className="relative">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
-                </svg>
-                {(photos[code]?.length ?? 0) > 0 && (
-                  <span
-                    className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
-                    style={{ backgroundColor: pressArmed === code ? '#0C1B17' : ORANGE }}
-                  >
-                    {photos[code]!.length}
-                  </span>
-                )}
-              </span>
-            </button>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+              {(photos[code]?.length ?? 0) > 0 && (
+                <span
+                  className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold text-white"
+                  style={{ backgroundColor: ORANGE }}
+                >
+                  {photos[code]!.length}
+                </span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) addPhoto(code, f);
+                  e.target.value = '';
+                }}
+              />
+            </label>
           </div>
         </div>
 
@@ -938,30 +912,6 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-orange-50/40">
-      {/* Sélecteurs de fichier partagés : appareil photo (capture) et galerie/fichiers. */}
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) addPhoto(photoTargetCode.current, f);
-          e.target.value = '';
-        }}
-      />
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) addPhoto(photoTargetCode.current, f);
-          e.target.value = '';
-        }}
-      />
       {/* En-tête marque */}
       <header className="shrink-0 border-b border-ink/10 bg-white">
         <div className="container-ah flex items-center justify-between gap-3 py-2.5">
