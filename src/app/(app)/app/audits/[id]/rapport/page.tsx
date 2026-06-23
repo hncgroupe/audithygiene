@@ -190,7 +190,7 @@ export default async function RapportResto360Page({ params }: { params: Promise<
             </div>
             <div>
               <dt className="text-white/40">Auditeur</dt>
-              <dd className="font-medium">{user.email ?? 'audit hygiène'}</dd>
+              <dd className="font-medium">auditresto360</dd>
             </div>
             <div>
               <dt className="text-white/40">Type</dt>
@@ -198,6 +198,36 @@ export default async function RapportResto360Page({ params }: { params: Promise<
             </div>
           </dl>
         </div>
+
+        {/* CAS CRITIQUES (points sanitaires notés 1 ou 2) */}
+        {r.casCritiques.length > 0 && (
+          <div className="border-b border-red-100 bg-red-50/60 px-8 py-6 sm:px-12">
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-red-600 text-sm font-extrabold text-white">
+                !
+              </span>
+              <h2 className="text-lg font-bold text-red-700">
+                Cas critiques à traiter en priorité ({r.casCritiques.length})
+              </h2>
+            </div>
+            <p className="mt-1 text-xs text-red-700/80">
+              Points sanitaires ou réglementaires notés 1 ou 2. Ils pèsent doublement dans la note et
+              abaissent le score global.
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {r.casCritiques.map((c, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-ink/85">
+                  <NoteBadge note={c.note} />
+                  <span>
+                    <span className="font-semibold">{c.intitule}</span>
+                    <span className="text-gris"> · {c.pilier}</span>
+                    {c.commentaire ? ` : ${c.commentaire}` : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* SOMMAIRE */}
         <div className="px-8 py-8 sm:px-12">
@@ -228,7 +258,9 @@ export default async function RapportResto360Page({ params }: { params: Promise<
             Cet audit 360 passe en revue l&apos;établissement sur dix piliers couvrant l&apos;exploitation,
             l&apos;hygiène, l&apos;organisation, la gestion et l&apos;expérience client. Chaque critère est
             évalué sur place par l&apos;auditeur selon une échelle de 1 à 5. Le score de chaque pilier est
-            ramené sur 100, et le score global est la moyenne des piliers évalués.
+            ramené sur 100. Les points sanitaires et réglementaires (températures, traçabilité, PMS,
+            affichages, stockage du cru...) comptent double et sont notés plus sévèrement : un point
+            critique noté 1 ou 2 abaisse le score global, et un point critique noté 1 plafonne ce score.
           </p>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>

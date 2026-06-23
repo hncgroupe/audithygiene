@@ -24,13 +24,25 @@ export const NOTATION_RESTO = [
   { note: 1, label: 'Critique', couleur: '#DC2626' },
 ] as const;
 
-/** Un critère noté : intitulé + repère terrain + checklist optionnelle. */
+/** Repère de conformité : pourquoi c'est conforme / non conforme + base de règle. */
+export interface CritereInfo {
+  /** Ce qui rend le point conforme. */
+  conforme: string;
+  /** Ce qui le rend non conforme. */
+  nonConforme: string;
+  /** Base réglementaire (sourçable). */
+  regle?: string;
+}
+
+/** Un critère noté : intitulé + repère terrain + checklist + info conformité. */
 export interface CritereResto {
   label: string;
   /** Une ligne : ce que l'auditeur doit voir / vérifier. */
   aide: string;
   /** Sous-points à cocher. Les décochés = ce qui manque (à basculer en note). */
   checklist?: string[];
+  /** Bulle d'information conformité (icône i). */
+  info?: CritereInfo;
 }
 
 /** On accepte string (legacy) ou objet enrichi. */
@@ -44,6 +56,26 @@ export function critereAide(c: CritereInput): string {
 }
 export function critereChecklist(c: CritereInput): string[] | undefined {
   return typeof c === 'string' ? undefined : c.checklist;
+}
+export function critereInfo(c: CritereInput): CritereInfo | undefined {
+  return typeof c === 'string' ? undefined : c.info;
+}
+
+/** Résout un critereId (P4-2-1...) vers son thème / groupe / intitulé via la grille. */
+export function resolveCritere(
+  id: string
+): { theme: string; groupe: string; intitule: string } | null {
+  for (const p of GRILLE_RESTO360) {
+    for (let gi = 0; gi < p.groupes.length; gi++) {
+      const g = p.groupes[gi];
+      for (let ci = 0; ci < g.criteres.length; ci++) {
+        if (critereId(p.code, gi, ci) === id) {
+          return { theme: p.nom, groupe: g.nom, intitule: critereLabel(g.criteres[ci]) };
+        }
+      }
+    }
+  }
+  return null;
 }
 
 export interface GroupeResto {
@@ -71,10 +103,16 @@ export interface PilierResto {
 
 export const GRILLE_RESTO360_VERSION = 'v2';
 
-const c = (label: string, aide: string, checklist?: string[]): CritereResto => ({
+const c = (
+  label: string,
+  aide: string,
+  checklist?: string[],
+  info?: CritereInfo
+): CritereResto => ({
   label,
   aide,
   ...(checklist ? { checklist } : {}),
+  ...(info ? { info } : {}),
 });
 
 export const GRILLE_RESTO360: PilierResto[] = [
@@ -142,6 +180,7 @@ export const GRILLE_RESTO360: PilierResto[] = [
           c('Respect des recettes', 'Plats conformes à la fiche technique du restaurant.'),
           c('Respect des grammages', 'Portions pesées ou calibrées, régulières d\'une assiette à l\'autre.'),
           c('Présentation des plats', 'Dressage soigné, conforme au standard de la maison.'),
+          c('Fiches recettes / fiches techniques', 'Existence de fiches recettes (grammages, étapes, coût) réellement utilisées.'),
         ],
       },
       {
@@ -176,7 +215,11 @@ export const GRILLE_RESTO360: PilierResto[] = [
         nom: 'Sécurité',
         criteres: [
           c('Produits au sol', 'Rien stocké à même le sol, tout sur étagère ou palette.'),
-          c('Produits chimiques séparés', 'Détergents isolés des denrées, zone dédiée et fermée.'),
+          c('Produits chimiques séparés', 'Détergents isolés des denrées, zone dédiée et fermée.', undefined, {
+            conforme: 'Détergents et désinfectants stockés à l\'écart des denrées, dans une zone ou un local dédié.',
+            nonConforme: 'Produits chimiques au-dessus, à côté ou mélangés aux aliments.',
+            regle: 'Règlement CE 852/2004, annexe II.',
+          }),
           c('Emballages bien rangés', 'Pas d\'encombrement, emballages vides évacués.'),
           c('Circulation libre', 'Allées dégagées, accès aux étagères et aux issues possible.'),
         ],
@@ -202,18 +245,46 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Températures',
         criteres: [
-          c('Chambres froides', 'Froid positif entre 0 et 3 °C, relevés tracés.'),
-          c('Congélateurs', 'Froid négatif à -18 °C ou moins, pas de givre excessif.'),
-          c('Produits chauds', 'Maintien au chaud à 63 °C minimum jusqu\'au service.'),
+          c('Chambres froides', 'Froid positif entre 0 et 3 °C, relevés tracés.', undefined, {
+            conforme: 'Denrées réfrigérées à +3 °C ou moins (ou la température de l\'étiquette), relevés notés 1 à 2 fois par jour.',
+            nonConforme: 'Température au-dessus de +4 °C, sonde en panne, aucun relevé tracé.',
+            regle: 'Paquet hygiène (Règlement CE 852/2004) et arrêté du 21/12/2009 sur les températures.',
+          }),
+          c('Congélateurs', 'Froid négatif à -18 °C ou moins, pas de givre excessif.', undefined, {
+            conforme: 'Produits congelés à -18 °C ou plus froid, chaîne du froid jamais rompue.',
+            nonConforme: 'Température au-dessus de -18 °C, givre épais, produits recongelés.',
+            regle: 'Arrêté du 21/12/2009.',
+          }),
+          c('Produits chauds', 'Maintien au chaud à 63 °C minimum jusqu\'au service.', undefined, {
+            conforme: 'Maintien au chaud à +63 °C minimum jusqu\'au service.',
+            nonConforme: 'Plats sous +63 °C hors service, stationnement prolongé entre +10 et +63 °C.',
+            regle: 'Arrêté du 21/12/2009.',
+          }),
         ],
       },
       {
         nom: 'Traçabilité',
         criteres: [
-          c('DLC (Date Limite de Consommation)', 'Produits frais dans leur date, aucun dépassement.'),
-          c('DDM (Date de Durabilité Minimale)', 'Anciennes DLUO, contrôlées, produits encore exploitables.'),
-          c('Étiquetage', 'Préparations maison datées (fabrication + limite de consommation).'),
-          c('Ouvertures des produits', 'Date d\'ouverture notée, délai d\'utilisation après ouverture respecté.'),
+          c('DLC (Date Limite de Consommation)', 'Produits frais dans leur date, aucun dépassement.', undefined, {
+            conforme: 'Aucun produit dépassé, DLC lisibles, produits périmés retirés.',
+            nonConforme: 'Produit utilisé après sa DLC, dates effacées ou illisibles.',
+            regle: 'Règlement INCO (UE) 1169/2011, Règlement CE 852/2004.',
+          }),
+          c('DDM (Date de Durabilité Minimale)', 'Anciennes DLUO, contrôlées, produits encore exploitables.', undefined, {
+            conforme: 'DDM dépassée tolérée seulement si la qualité est vérifiée et le produit sain.',
+            nonConforme: 'Produit altéré conservé, confusion entre DDM et DLC.',
+            regle: 'Règlement INCO (UE) 1169/2011.',
+          }),
+          c('Étiquetage', 'Préparations maison datées (fabrication + limite de consommation).', undefined, {
+            conforme: 'Chaque préparation maison porte la date de fabrication et la date limite d\'utilisation.',
+            nonConforme: 'Contenants non datés, impossible de tracer la fabrication.',
+            regle: 'Règlement CE 852/2004 (traçabilité interne).',
+          }),
+          c('Ouvertures des produits', 'Date d\'ouverture notée, délai d\'utilisation après ouverture respecté.', undefined, {
+            conforme: 'Date d\'ouverture notée, délai après ouverture respecté (J+3 type, selon produit).',
+            nonConforme: 'Produit entamé non daté, conservé au-delà du délai.',
+            regle: 'Bonnes pratiques d\'hygiène, Règlement CE 852/2004.',
+          }),
         ],
       },
       {
@@ -227,7 +298,11 @@ export const GRILLE_RESTO360: PilierResto[] = [
       {
         nom: 'Documents',
         criteres: [
-          c('PMS (Plan de Maîtrise Sanitaire)', 'Classeur PMS présent, complet et à jour.'),
+          c('PMS (Plan de Maîtrise Sanitaire)', 'Classeur PMS présent, complet et à jour.', undefined, {
+            conforme: 'Classeur PMS présent et à jour : analyse des dangers, bonnes pratiques d\'hygiène, traçabilité, plan de nettoyage.',
+            nonConforme: 'Pas de PMS, classeur vide ou jamais mis à jour.',
+            regle: 'Règlement CE 852/2004 (plan de maîtrise sanitaire fondé sur les principes HACCP).',
+          }),
           c(
             'Affichages obligatoires',
             'Vérifier la présence de tous les affichages réglementaires en salle et cuisine.',
@@ -241,10 +316,48 @@ export const GRILLE_RESTO360: PilierResto[] = [
               'Licence débit de boissons (si alcool)',
               'Consignes de sécurité / plan d\'évacuation',
               'Coordonnées de réclamation / médiateur',
-            ]
+            ],
+            {
+              conforme: 'Tous les affichages réglementaires sont présents, lisibles et à jour (voir checklist).',
+              nonConforme: 'Affichage manquant : interdiction de fumer, prix, allergènes ou origine des viandes.',
+              regle: 'Code de la consommation, Règlement INCO 1169/2011 (allergènes), décret 2006-1386 (tabac), décret 2002-1465 (origine des viandes).',
+            }
           ),
-          c('Registre HACCP', 'Relevés de température, nettoyage, huiles, réceptions consignés.'),
-          c('Plan de lutte nuisibles', 'Contrat dératisation / désinsectisation et plan des appâts.'),
+          c('Registre HACCP', 'Relevés de température, nettoyage, huiles, réceptions consignés.', undefined, {
+            conforme: 'Relevés de température, nettoyage, huiles de friture et réceptions consignés et tenus à jour.',
+            nonConforme: 'Pas de relevés, fiches vierges ou remplies a posteriori.',
+            regle: 'Règlement CE 852/2004 (autocontrôles).',
+          }),
+          c('Plan de lutte nuisibles', 'Contrat dératisation / désinsectisation et plan des appâts.', undefined, {
+            conforme: 'Contrat de dératisation/désinsectisation, plan des appâts et passages tracés.',
+            nonConforme: 'Aucun dispositif, traces de nuisibles, plan absent.',
+            regle: 'Règlement CE 852/2004 (lutte contre les nuisibles).',
+          }),
+        ],
+      },
+      {
+        nom: 'Stockage au froid (organisation)',
+        criteres: [
+          c(
+            'Rangement des denrées au froid',
+            'Ordre du frigo : prêt à consommer en haut, viandes/poissons crus en bas.',
+            undefined,
+            {
+              conforme: 'Produits prêts à consommer et cuits en haut, viandes et poissons crus en bas, légumes séparés ; rien à même le sol ; cru et cuit jamais en contact.',
+              nonConforme: 'Viande crue au-dessus de produits prêts à consommer, mélange cru/cuit, jus qui s\'écoule sur d\'autres denrées.',
+              regle: 'Principe de non contamination croisée, Règlement CE 852/2004 (annexe II) ; bonnes pratiques GBPH.',
+            }
+          ),
+          c('Stockage viande & volaille', 'Viande hachée ≤ +2 °C, volaille ≤ +4 °C, séparées et emballées.', undefined, {
+            conforme: 'Viande hachée à +2 °C maximum, volaille à +4 °C maximum, emballées, datées et séparées du prêt à consommer.',
+            nonConforme: 'Viande à température trop haute, au contact d\'autres aliments, non datée.',
+            regle: 'Arrêté du 21/12/2009 (températures par catégorie de denrée).',
+          }),
+          c('Stockage poisson & produits de la mer', 'Poisson frais sur glace fondante, 0 à +2 °C.', undefined, {
+            conforme: 'Poisson frais sous glace ou à 0-2 °C, eau de fonte évacuée, fraîcheur vérifiée (œil, branchies, odeur).',
+            nonConforme: 'Poisson hors glace, température trop haute, eau de fonte stagnante.',
+            regle: 'Règlement CE 853/2004 (produits de la pêche), arrêté du 21/12/2009.',
+          }),
         ],
       },
     ],
@@ -371,6 +484,14 @@ export const GRILLE_RESTO360: PilierResto[] = [
           c('Coût matière', 'Ratio coût matière / chiffre d\'affaires suivi et sous contrôle.'),
         ],
       },
+      {
+        nom: 'Caisse & clôtures',
+        criteres: [
+          c('Gestion du fond de caisse', 'Fond de caisse défini, compté en début et en fin de service.'),
+          c('Clôtures de caisse', 'Clôture quotidienne, écarts justifiés, ticket Z conservé.'),
+          c('Organisation des encaissements', 'Procédure claire : enveloppes préparées, remises en banque tracées.'),
+        ],
+      },
     ],
   },
   {
@@ -395,6 +516,7 @@ export const GRILLE_RESTO360: PilierResto[] = [
           c('Menus', 'Cartes en ligne complètes et synchronisées avec la salle.'),
           c('Descriptions', 'Descriptifs vendeurs, allergènes et options indiqués.'),
           c('Upselling (vente additionnelle)', 'Suppléments, menus et boissons proposés en ligne.'),
+          c('Optimisation en ligne', 'Fiches Uber Eats / Deliveroo optimisées : photos, prix, disponibilité, avis suivis.'),
         ],
       },
       {
@@ -455,6 +577,45 @@ export function critereId(pilierCode: string, groupeIndex: number, critereIndex:
   return `${pilierCode}-${groupeIndex + 1}-${critereIndex + 1}`;
 }
 
+/**
+ * Un critère est « critique » dès qu'il porte une info de conformité : ce sont
+ * les points sanitaires/réglementaires (températures, traçabilité, PMS,
+ * affichages, stockage cru, produits chimiques...). Ils sont notés plus sévèrement.
+ */
+export function critereEstCritique(c: CritereInput): boolean {
+  return critereInfo(c) !== undefined;
+}
+
+/** Ensemble des identifiants de critères critiques (calculé une fois). */
+export const CRITIQUE_IDS: ReadonlySet<string> = (() => {
+  const s = new Set<string>();
+  for (const p of GRILLE_RESTO360) {
+    p.groupes.forEach((g, gi) =>
+      g.criteres.forEach((cr, ci) => {
+        if (critereEstCritique(cr)) s.add(critereId(p.code, gi, ci));
+      })
+    );
+  }
+  return s;
+})();
+
+/** Poids d'un critère dans la note du pilier : critique = 2, sinon 1. */
+function poids(id: string): number {
+  return CRITIQUE_IDS.has(id) ? 2 : 1;
+}
+
+/** Cas critiques relevés : critères critiques notés 1 ou 2. */
+export function casCritiquesResto(
+  notes: Record<string, NoteResto | undefined>
+): { code: string; note: NoteResto }[] {
+  const out: { code: string; note: NoteResto }[] = [];
+  for (const id of CRITIQUE_IDS) {
+    const n = notes[id];
+    if (n === 1 || n === 2) out.push({ code: id, note: n });
+  }
+  return out;
+}
+
 /** Nombre total de critères notés (hors questions ouvertes). */
 export function totalCriteres(): number {
   return GRILLE_RESTO360.reduce(
@@ -463,21 +624,40 @@ export function totalCriteres(): number {
   );
 }
 
-/** Score d'un pilier sur 100 à partir des notes (1 à 5) de ses critères. */
+/**
+ * Score d'un pilier sur 100. Moyenne pondérée des notes (1 à 5) : les critères
+ * critiques (sanitaires/réglementaires) comptent double.
+ */
 export function scorePilier(notes: Record<string, NoteResto | undefined>, pilier: PilierResto): number | null {
   const ids: string[] = [];
   pilier.groupes.forEach((g, gi) => g.criteres.forEach((_, ci) => ids.push(critereId(pilier.code, gi, ci))));
-  const valeurs = ids.map((id) => notes[id]).filter((n): n is NoteResto => Boolean(n));
-  if (valeurs.length === 0) return null;
-  const somme = valeurs.reduce((a, n) => a + n, 0);
-  return Math.round((somme / (valeurs.length * 5)) * 100);
+  const notes_ = ids
+    .map((id) => ({ id, n: notes[id] }))
+    .filter((x): x is { id: string; n: NoteResto } => Boolean(x.n));
+  if (notes_.length === 0) return null;
+  const sommePond = notes_.reduce((a, x) => a + x.n * poids(x.id), 0);
+  const poidsTotal = notes_.reduce((a, x) => a + poids(x.id), 0);
+  return Math.round((sommePond / (poidsTotal * 5)) * 100);
 }
 
-/** Score global sur 100 : moyenne des piliers notés au radar. */
+/**
+ * Score global sur 100, sévère sur les points critiques :
+ *  - base = moyenne des piliers notés au radar ;
+ *  - malus par cas critique : critère critique noté 1 = -6, noté 2 = -3 ;
+ *  - si au moins un critère critique est noté 1, le score est plafonné à 49
+ *    (« sous surveillance »).
+ * Méthode documentée (rule methodology-guard).
+ */
 export function scoreGlobalResto(notes: Record<string, NoteResto | undefined>): number | null {
   const scores = GRILLE_RESTO360.filter((p) => p.noteAuRadar)
     .map((p) => scorePilier(notes, p))
     .filter((s): s is number => s !== null);
   if (scores.length === 0) return null;
-  return Math.round(scores.reduce((a, s) => a + s, 0) / scores.length);
+  const base = scores.reduce((a, s) => a + s, 0) / scores.length;
+
+  const cas = casCritiquesResto(notes);
+  const malus = cas.reduce((a, x) => a + (x.note === 1 ? 6 : 3), 0);
+  let score = Math.round(base - malus);
+  if (cas.some((x) => x.note === 1)) score = Math.min(score, 49);
+  return Math.max(0, Math.min(100, score));
 }

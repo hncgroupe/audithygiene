@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentDbUser } from '@/lib/auth';
 import {
   GRILLE_RESTO360,
+  resolveCritere,
   scorePilier,
   scoreGlobalResto,
   type NoteResto,
@@ -42,8 +43,9 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
 
   const patches = body.items ?? [];
   const byCode = new Map(patches.map((p) => [p.code, p]));
+  const existingCodes = new Set(audit.items.map((it) => it.code));
 
-  // 1. Mise à jour des critères modifiés
+  // 1. Mise à jour des critères existants
   await Promise.all(
     audit.items
       .filter((it) => byCode.has(it.code))
@@ -61,12 +63,41 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
       })
   );
 
-  // 2. Carte des notes à jour (code -> note)
+  // 1bis. Création des critères de grille absents (audit démarré avant l'ajout
+  // de la question), pour que rien ne soit perdu.
+  await Promise.all(
+    patches
+      .filter((p) => !existingCodes.has(p.code))
+      .map((p) => {
+        const g = resolveCritere(p.code);
+        if (!g) return Promise.resolve(null);
+        const note = typeof p.note === 'number' && p.note >= 1 && p.note <= 5 ? p.note : null;
+        return prisma.auditItem.create({
+          data: {
+            auditId: id,
+            theme: g.theme,
+            groupe: g.groupe,
+            code: p.code,
+            intitule: g.intitule,
+            conformite: 'NON_EVALUE',
+            note,
+            commentaire: p.commentaire?.trim() || null,
+            ...('meta' in p ? { meta: (p.meta ?? undefined) as never } : {}),
+          },
+        });
+      })
+  );
+
+  // 2. Carte des notes à jour (code -> note), items existants + nouveaux patchés
   const notes: Record<string, NoteResto | undefined> = {};
   for (const it of audit.items) {
     const p = byCode.get(it.code);
     const n = p ? p.note : it.note;
     if (typeof n === 'number' && n >= 1 && n <= 5) notes[it.code] = n as NoteResto;
+  }
+  for (const p of patches) {
+    if (existingCodes.has(p.code)) continue;
+    if (typeof p.note === 'number' && p.note >= 1 && p.note <= 5) notes[p.code] = p.note as NoteResto;
   }
 
   // 3. Scores par pilier (theme = nom du pilier)

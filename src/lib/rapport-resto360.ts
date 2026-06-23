@@ -7,6 +7,7 @@ import {
   GRILLE_RESTO360,
   critereId,
   critereLabel,
+  CRITIQUE_IDS,
   scorePilier,
   scoreGlobalResto,
   type NoteResto,
@@ -42,6 +43,7 @@ export interface RapportResto360 {
   radar: RadarPoint[];
   urgences: LigneRapport[]; // notes 1 et 2
   quickWins: LigneRapport[]; // note 3 (à améliorer)
+  casCritiques: LigneRapport[]; // critères critiques (sanitaires) notés 1 ou 2
   plan: { urgence: LigneRapport[]; important: LigneRapport[]; confort: LigneRapport[] };
   dirigeant: { question: string; reponse: string | null }[];
   nbCriteresNotes: number;
@@ -131,6 +133,10 @@ export function calculerRapportResto360(items: ItemNote[]): RapportResto360 {
   const notables = items.filter((i) => i.groupe !== 'Questions ouvertes');
   const urgences = lignes(notables, (n) => n <= 2).slice(0, 10);
   const quickWins = lignes(notables, (n) => n === 3).slice(0, 10);
+  const casCritiques = lignes(
+    notables.filter((i) => CRITIQUE_IDS.has(i.code)),
+    (n) => n <= 2
+  );
 
   const plan = {
     urgence: lignes(notables, (n) => n === 1),
@@ -149,6 +155,7 @@ export function calculerRapportResto360(items: ItemNote[]): RapportResto360 {
     radar,
     urgences,
     quickWins,
+    casCritiques,
     plan,
     dirigeant,
     nbCriteresNotes: notables.filter((i) => typeof i.note === 'number').length,

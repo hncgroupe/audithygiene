@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -10,10 +10,12 @@ import {
   critereLabel,
   critereAide,
   critereChecklist,
+  critereInfo,
   scorePilier,
   scoreGlobalResto,
   totalCriteres,
   type NoteResto,
+  type CritereInfo,
 } from '@/lib/grille-resto360';
 
 export interface Resto360Photo {
@@ -81,9 +83,15 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       .map((i) => ({ code: i.code, theme: i.theme, groupe: i.groupe, intitule: i.intitule }))
   );
 
-  const [step, setStep] = useState(0);
+  const stepKey = `r360-step-${auditId}`;
+  const [step, setStep] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    const saved = Number(window.localStorage.getItem(stepKey));
+    return Number.isInteger(saved) && saved >= 0 && saved < GRILLE_RESTO360.length ? saved : 0;
+  });
   const [openComment, setOpenComment] = useState<string | null>(null);
   const [openCheck, setOpenCheck] = useState<string | null>(null);
+  const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -103,13 +111,38 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
 
   const customForPilier = customItems.filter((ci) => ci.theme === pilier.nom);
 
+  // Référence vers le flush courant (évite les closures périmées dans les listeners).
+  const flushRef = useRef<((finalize?: boolean, beacon?: boolean) => Promise<void>) | null>(null);
+  useEffect(() => {
+    flushRef.current = flush;
+  });
+
+  // Mémorise le pilier en cours pour reprendre au même endroit.
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(stepKey, String(step));
+  }, [step, stepKey]);
+
+  // Enregistre tout dès que l'onglet se ferme ou que l'app passe en arrière-plan.
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') void flushRef.current?.(false, true);
+    };
+    const onPageHide = () => void flushRef.current?.(false, true);
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, []);
+
   function queueSave(code: string) {
     dirty.current.add(code);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => flush(), 900);
   }
 
-  async function flush(finalize = false) {
+  async function flush(finalize = false, beacon = false) {
     if (dirty.current.size === 0 && !finalize) return;
     const codes = Array.from(dirty.current);
     dirty.current.clear();
@@ -119,17 +152,19 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       commentaire: comments[code] ?? null,
       meta: checks[code]?.length ? { checklist: checks[code] } : null,
     }));
-    setSaving(true);
+    if (!beacon) setSaving(true);
     try {
       await fetch(`/api/audits/${auditId}/resto360`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: payload, finalize }),
+        // keepalive : permet l'envoi même si l'onglet se ferme / l'app passe en arrière-plan
+        keepalive: beacon,
       });
     } catch {
       codes.forEach((c) => dirty.current.add(c));
     } finally {
-      setSaving(false);
+      if (!beacon) setSaving(false);
     }
   }
 
@@ -224,11 +259,18 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     }).catch(() => {});
   }
 
+  async function quitter() {
+    if (timer.current) clearTimeout(timer.current);
+    await flush(); // enregistre les éventuelles modifs en attente avant de sortir
+    router.push('/app/audits');
+  }
+
   async function goTo(next: number) {
     if (timer.current) clearTimeout(timer.current);
     await flush();
     setOpenComment(null);
     setOpenCheck(null);
+    setOpenInfo(null);
     setAdding(false);
     setStep(Math.max(0, Math.min(GRILLE_RESTO360.length - 1, next)));
     if (typeof window !== 'undefined') window.scrollTo({ top: 0 });
@@ -249,12 +291,14 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     label: string;
     aide?: string;
     checklist?: string[];
+    info?: CritereInfo;
     onRemove?: () => void;
   }) {
-    const { code, label, aide, checklist, onRemove } = props;
+    const { code, label, aide, checklist, info, onRemove } = props;
     const val = notes[code];
     const commentOpen = openComment === code;
     const checkOpen = openCheck === code;
+    const infoOpen = openInfo === code;
     const done = checks[code] ?? [];
     const manquants = checklist ? checklist.filter((l) => !done.includes(l)).length : 0;
 
@@ -262,7 +306,24 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       <div className="border-b border-ink/5 pb-3 last:border-0 last:pb-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[15px] font-medium text-ink">{label}</p>
+            <p className="flex items-center gap-1.5 text-[15px] font-medium text-ink">
+              <span>{label}</span>
+              {info && (
+                <button
+                  type="button"
+                  onClick={() => setOpenInfo(infoOpen ? null : code)}
+                  title="Règle : conforme / non conforme"
+                  aria-label="Information conformité"
+                  className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[11px] font-bold ${
+                    infoOpen
+                      ? 'border-[#F97316] bg-[#F97316] text-white'
+                      : 'border-[#F97316]/50 text-[#F97316] hover:bg-orange-50'
+                  }`}
+                >
+                  i
+                </button>
+              )}
+            </p>
             {aide && <p className="mt-0.5 text-xs leading-snug text-gris">{aide}</p>}
           </div>
           {onRemove && (
@@ -276,6 +337,23 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
             </button>
           )}
         </div>
+
+        {/* Bulle info conformité */}
+        {info && infoOpen && (
+          <div className="mt-2 space-y-1.5 rounded-xl border border-[#F97316]/30 bg-orange-50/60 p-3 text-xs leading-snug">
+            <p className="text-ink">
+              <span className="font-bold text-green-700">Conforme :</span> {info.conforme}
+            </p>
+            <p className="text-ink">
+              <span className="font-bold text-red-600">Non conforme :</span> {info.nonConforme}
+            </p>
+            {info.regle && (
+              <p className="text-gris">
+                <span className="font-semibold">Règle :</span> {info.regle}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Notation + actions (note / photo) nettement séparées à droite */}
         <div className="mt-2 flex items-stretch gap-1.5">
@@ -310,13 +388,22 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
               type="button"
               onClick={() => setOpenComment(commentOpen ? null : code)}
               title="Ajouter une note"
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border text-[11px] font-semibold ${
+              aria-label="Ajouter une note"
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${
                 comments[code]
                   ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
                   : 'border-ink/20 text-gris hover:border-[#F97316] hover:text-[#F97316]'
               }`}
             >
-              note
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <path d="M13.5 6.5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
             </button>
             {/* Photo */}
             <label
@@ -451,7 +538,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
         <div className="container-ah flex items-center justify-between gap-3 py-2.5">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push('/app/audits')}
+              onClick={quitter}
               className="text-sm text-gris hover:text-ink"
               aria-label="Quitter"
             >
@@ -572,6 +659,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
                           label={critereLabel(crit)}
                           aide={critereAide(crit)}
                           checklist={critereChecklist(crit)}
+                          info={critereInfo(crit)}
                         />
                       );
                     })}
