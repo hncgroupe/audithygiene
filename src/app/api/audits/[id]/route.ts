@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import { calculerNotation, type Conformite } from '@/lib/notation';
 import { grilleByCode } from '@/lib/grille-audit';
 
 export const runtime = 'nodejs';
+
+const CONFORMITES: ReadonlySet<string> = new Set([
+  'CONFORME',
+  'NC_MINEURE',
+  'NC_MAJEURE',
+  'NON_APPLICABLE',
+  'NON_EVALUE',
+]);
 
 interface ItemPatch {
   code: string;
@@ -33,10 +41,20 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
 
   const { prisma } = await import('@/lib/prisma');
 
-  const audit = await prisma.audit.findUnique({ where: { id }, include: { items: true } });
+  const audit = await prisma.audit.findFirst({
+    where: auditAccessWhere(id, user),
+    include: { items: true },
+  });
   if (!audit) return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
 
-  const patches = body.items ?? [];
+  const finalize = body.finalize === true;
+  if (audit.statut === 'RAPPORT_ENVOYE' && !finalize) {
+    return NextResponse.json({ ok: true, locked: true, scoreGlobal: audit.scoreGlobal });
+  }
+
+  // On ignore tout patch dont la conformité n'est pas une valeur connue de l'enum
+  // (sinon Prisma renvoie un 500 sur une valeur arbitraire envoyée par le client).
+  const patches = (body.items ?? []).filter((p) => p && CONFORMITES.has(p.conformite));
   const byCode = new Map(patches.map((p) => [p.code, p]));
 
   // 1. Mise à jour des items modifiés
@@ -72,57 +90,50 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
     merged.map((m) => ({ theme: m.theme, ponderation: m.ponderation, conformite: m.conformite }))
   );
 
-  // 3. Réécriture des scores par thème
-  await prisma.score.deleteMany({ where: { auditId: id } });
-  await prisma.score.createMany({
-    data: Object.entries(notation.scoresParTheme).map(([theme, valeur]) => ({
-      auditId: id,
-      theme,
-      valeur,
-    })),
-  });
-
-  // 4. Régénération des non-conformités (plan correctif amorcé)
-  await prisma.nonConformity.deleteMany({ where: { auditId: id } });
+  // 3-5. Scores, non-conformités et en-tête réécrits dans une seule transaction :
+  // pas de fenêtre où les scores/NC sont supprimés sans être recréés.
+  const scoresData = Object.entries(notation.scoresParTheme).map(([theme, valeur]) => ({
+    auditId: id,
+    theme,
+    valeur,
+  }));
   const ncItems = merged.filter(
     (m) => m.conformite === 'NC_MINEURE' || m.conformite === 'NC_MAJEURE'
   );
-  if (ncItems.length > 0) {
-    const grille = grilleByCode();
-    await prisma.nonConformity.createMany({
-      data: ncItems.map((m) => {
-        const critique = m.conformite === 'NC_MAJEURE';
-        const constat = grille
-          .get(m.code)
-          ?.constats.find((c) => c.conformite === m.conformite);
-        return {
-          auditId: id,
-          theme: m.theme,
-          description: m.commentaire || constat?.pourquoi || m.intitule,
-          critique,
-          actionCorrective: constat?.correctif ?? null,
-          priorite: critique ? 'HAUTE' : 'MOYENNE',
-          delaiJours: critique ? 7 : 30,
-        };
-      }),
-    });
-  }
-
-  // 5. Mise à jour de l'en-tête d'audit
-  const finalize = body.finalize === true;
-  await prisma.audit.update({
-    where: { id },
-    data: {
-      scoreGlobal: notation.scoreGlobal,
-      nbCasCritiques: notation.nbCasCritiques,
-      ...(finalize
-        ? {
-            statut: 'TERMINE',
-            prochainAuditLe: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          }
-        : {}),
-    },
+  const grille = grilleByCode();
+  const ncData = ncItems.map((m) => {
+    const critique = m.conformite === 'NC_MAJEURE';
+    const constat = grille.get(m.code)?.constats.find((c) => c.conformite === m.conformite);
+    return {
+      auditId: id,
+      theme: m.theme,
+      description: m.commentaire || constat?.pourquoi || m.intitule,
+      critique,
+      actionCorrective: constat?.correctif ?? null,
+      priorite: (critique ? 'HAUTE' : 'MOYENNE') as 'HAUTE' | 'MOYENNE',
+      delaiJours: critique ? 7 : 30,
+    };
   });
+
+  await prisma.$transaction([
+    prisma.score.deleteMany({ where: { auditId: id } }),
+    ...(scoresData.length > 0 ? [prisma.score.createMany({ data: scoresData })] : []),
+    prisma.nonConformity.deleteMany({ where: { auditId: id } }),
+    ...(ncData.length > 0 ? [prisma.nonConformity.createMany({ data: ncData })] : []),
+    prisma.audit.update({
+      where: { id },
+      data: {
+        scoreGlobal: notation.scoreGlobal,
+        nbCasCritiques: notation.nbCasCritiques,
+        ...(finalize
+          ? {
+              statut: 'TERMINE',
+              prochainAuditLe: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            }
+          : {}),
+      },
+    }),
+  ]);
 
   return NextResponse.json({
     ok: true,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, assertAuditAccess } from '@/lib/auth';
 import { grilleByCode } from '@/lib/grille-audit';
 
 export const runtime = 'nodejs';
@@ -23,8 +23,9 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   }
 
   const { prisma } = await import('@/lib/prisma');
-  const audit = await prisma.audit.findUnique({ where: { id }, select: { id: true } });
-  if (!audit) return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+  if (!(await assertAuditAccess(id, user))) {
+    return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+  }
 
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
   let theme: string;
@@ -86,6 +87,9 @@ export async function DELETE(request: Request, ctx: { params: Promise<{ id: stri
   if (!code) return NextResponse.json({ error: 'Code requis.' }, { status: 400 });
 
   const { prisma } = await import('@/lib/prisma');
+  if (!(await assertAuditAccess(id, user))) {
+    return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+  }
   const item = await prisma.auditItem.findFirst({ where: { auditId: id, code } });
   if (!item) return NextResponse.json({ error: 'Item introuvable.' }, { status: 404 });
 

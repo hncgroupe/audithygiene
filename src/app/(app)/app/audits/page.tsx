@@ -1,14 +1,19 @@
 import Link from 'next/link';
 import { GRILLE_AUDIT, GRILLE_VERSION } from '@/lib/grille-audit';
 import { env } from '@/lib/env';
+import { getCurrentDbUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 async function getAudits() {
   if (!env.isDatabaseConfigured) return null;
+  const user = await getCurrentDbUser();
+  if (!user) return null;
   try {
     const { prisma } = await import('@/lib/prisma');
     return prisma.audit.findMany({
+      // Un auditeur ne voit que ses audits ; un ADMIN voit tout.
+      where: user.role === 'ADMIN' ? undefined : { auditeurId: user.id },
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: { establishment: true },

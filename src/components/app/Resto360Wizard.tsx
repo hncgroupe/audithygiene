@@ -68,8 +68,9 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   const dataKey = `r360-data-${auditId}`;
   const dirtyKey = `r360-dirty-${auditId}`;
 
-  // Cache local : ce qui a été saisi sur l'appareil (prime sur le serveur pour
-  // ne jamais perdre une saisie faite hors connexion).
+  // Cache local : ce qui a été saisi sur l'appareil. Il ne PRIME sur le serveur
+  // que pour les codes encore "dirty" (non synchronisés). Un cache déjà confirmé
+  // ne doit pas écraser une version serveur plus récente (ex. autre appareil).
   const cached: { notes?: Record<string, number>; comments?: Record<string, string>; checks?: Record<string, string[]> } | null =
     (() => {
       if (typeof window === 'undefined') return null;
@@ -80,15 +81,34 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       }
     })();
 
+  const cachedDirty: Set<string> = (() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      return new Set(JSON.parse(window.localStorage.getItem(dirtyKey) ?? '[]') as string[]);
+    } catch {
+      return new Set();
+    }
+  })();
+
+  // Fusion serveur + cache, où le cache ne gagne que pour une saisie non synchronisée.
+  function mergeCached<T>(server: Record<string, T>, cachedVals?: Record<string, T>): Record<string, T> {
+    if (!cachedVals) return server;
+    const out = { ...server };
+    for (const [code, val] of Object.entries(cachedVals)) {
+      if (cachedDirty.has(code)) out[code] = val;
+    }
+    return out;
+  }
+
   const [notes, setNotes] = useState<Record<string, number>>(() => {
     const o: Record<string, number> = {};
     for (const it of items) if (typeof it.note === 'number') o[it.code] = it.note;
-    return { ...o, ...(cached?.notes ?? {}) };
+    return mergeCached(o, cached?.notes);
   });
   const [comments, setComments] = useState<Record<string, string>>(() => {
     const o: Record<string, string> = {};
     for (const it of items) if (it.commentaire) o[it.code] = it.commentaire;
-    return { ...o, ...(cached?.comments ?? {}) };
+    return mergeCached(o, cached?.comments);
   });
   const [checks, setChecks] = useState<Record<string, string[]>>(() => {
     const o: Record<string, string[]> = {};
@@ -96,7 +116,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       const cl = (it.meta as { checklist?: unknown } | null)?.checklist;
       if (Array.isArray(cl)) o[it.code] = cl.filter((x): x is string => typeof x === 'string');
     }
-    return { ...o, ...(cached?.checks ?? {}) };
+    return mergeCached(o, cached?.checks);
   });
   const [photos, setPhotos] = useState<Record<string, Resto360Photo[]>>(() => {
     const o: Record<string, Resto360Photo[]> = {};
@@ -130,6 +150,33 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
   const dirty = useRef<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draining = useRef(false);
+  // Sérialise les flush réseau (un seul à la fois) et garde une trace si une
+  // nouvelle modif arrive pendant un flush en cours.
+  const flushing = useRef(false);
+  const flushAgain = useRef(false);
+  // localId des photos en cours d'upload direct, pour que le drainer ne les
+  // ré-uploade pas en parallèle (évite les doublons).
+  const uploadingIds = useRef<Set<string>>(new Set());
+
+  // Miroirs des saisies, lus par flush pour toujours envoyer la dernière valeur
+  // (et non une valeur figée par une closure périmée d'un setTimeout / d'un goTo).
+  const notesRef = useRef(notes);
+  const commentsRef = useRef(comments);
+  const checksRef = useRef(checks);
+  notesRef.current = notes;
+  commentsRef.current = comments;
+  checksRef.current = checks;
+
+  // fetch avec délai max : sur réseau faible, on échoue proprement au lieu de figer.
+  async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+      clearTimeout(t);
+    }
+  }
 
   /**
    * Vide la file de photos locale (IndexedDB) : renvoie au serveur toute photo
@@ -143,11 +190,18 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     try {
       const queued = await pendingForAudit(auditId);
       for (const q of queued) {
+        // Déjà en cours d'upload direct (addPhoto) : on ne double pas.
+        if (uploadingIds.current.has(q.localId)) continue;
         try {
+          uploadingIds.current.add(q.localId);
           const fd = new FormData();
           fd.append('file', q.blob, 'photo.jpg');
           fd.append('code', q.code);
-          const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
+          const res = await fetchWithTimeout(
+            `/api/audits/${auditId}/photo`,
+            { method: 'POST', body: fd },
+            20000
+          );
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.url) continue;
           setPhotos((p) => ({
@@ -159,11 +213,36 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           void dequeuePhoto(q.localId);
         } catch {
           /* connexion encore instable : on réessaiera au prochain passage */
+        } finally {
+          uploadingIds.current.delete(q.localId);
         }
       }
     } finally {
       draining.current = false;
     }
+  }
+
+  /**
+   * Au montage / après un rechargement (ou si la tablette a tué l'app), réaffiche
+   * les photos encore en file IndexedDB (prises hors-ligne, jamais confirmées).
+   * Sans ça, leur aperçu mémoire est perdu et l'auditeur croit la photo disparue.
+   */
+  async function hydratePendingPhotos() {
+    const queued = await pendingForAudit(auditId);
+    if (!queued.length) return;
+    const previews = queued.map((q) => ({ ...q, url: URL.createObjectURL(q.blob) }));
+    setPhotos((p) => {
+      const next = { ...p };
+      for (const q of previews) {
+        const arr = next[q.code] ?? [];
+        if (arr.some((ph) => ph.path === q.localId)) {
+          URL.revokeObjectURL(q.url);
+          continue;
+        }
+        next[q.code] = [...arr, { path: q.localId, url: q.url, saved: false, error: true }];
+      }
+      return next;
+    });
   }
 
   const pilier = GRILLE_RESTO360[step];
@@ -209,7 +288,8 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       setOnline(window.navigator.onLine);
       setPending(dirty.current.size);
       if (dirty.current.size > 0) void flushRef.current?.();
-      void drainPhotos();
+      // Réaffiche les photos hors-ligne en attente, puis tente de les renvoyer.
+      void hydratePendingPhotos().then(() => drainPhotos());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -267,34 +347,70 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     timer.current = setTimeout(() => flush(), 900);
   }
 
+  function buildPayload(codes: string[]) {
+    return codes.map((code) => ({
+      code,
+      note: typeof notesRef.current[code] === 'number' ? notesRef.current[code] : null,
+      commentaire: commentsRef.current[code] ?? null,
+      meta: checksRef.current[code]?.length ? { checklist: checksRef.current[code] } : null,
+    }));
+  }
+
   async function flush(finalize = false, beacon = false) {
     if (dirty.current.size === 0 && !finalize) return;
+
+    // Chemin "beacon" (onglet qui se ferme / arrière-plan) : envoi best-effort
+    // SANS vider la file. Si la page est tuée avant la fin, les codes restent en
+    // attente et repartent à la réouverture. Aucune perte de saisie.
+    if (beacon) {
+      const codes = Array.from(dirty.current);
+      try {
+        await fetch(`/api/audits/${auditId}/resto360`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: buildPayload(codes), finalize }),
+          keepalive: true,
+        });
+      } catch {
+        /* ignoré : la file reste pleine, on resync plus tard */
+      }
+      return;
+    }
+
+    // Un seul flush réseau à la fois ; si une modif arrive entre-temps, on relance.
+    if (flushing.current) {
+      flushAgain.current = true;
+      return;
+    }
+    flushing.current = true;
+
     const codes = Array.from(dirty.current);
     dirty.current.clear();
-    const payload = codes.map((code) => ({
-      code,
-      note: typeof notes[code] === 'number' ? notes[code] : null,
-      commentaire: comments[code] ?? null,
-      meta: checks[code]?.length ? { checklist: checks[code] } : null,
-    }));
-    if (!beacon) setSaving(true);
+    setSaving(true);
     try {
-      const res = await fetch(`/api/audits/${auditId}/resto360`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: payload, finalize }),
-        // keepalive : permet l'envoi même si l'onglet se ferme / l'app passe en arrière-plan
-        keepalive: beacon,
-      });
+      const res = await fetchWithTimeout(
+        `/api/audits/${auditId}/resto360`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: buildPayload(codes), finalize }),
+        },
+        8000
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setOnline(true);
     } catch {
-      // hors-ligne ou erreur : on remet les codes en file pour un prochain essai
+      // hors-ligne / timeout : on remet les codes en file pour un prochain essai
       codes.forEach((c) => dirty.current.add(c));
       setOnline(false);
     } finally {
       persistDirty();
-      if (!beacon) setSaving(false);
+      setSaving(false);
+      flushing.current = false;
+      if (flushAgain.current) {
+        flushAgain.current = false;
+        void flush();
+      }
     }
   }
 
@@ -353,12 +469,17 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       type: blob.type || 'image/jpeg',
       createdAt: Date.now(),
     });
-    // 4) Upload en arrière-plan.
+    // 4) Upload en arrière-plan. Marqué "en cours" pour que le drainer ne double pas.
+    uploadingIds.current.add(localId);
     try {
       const fd = new FormData();
       fd.append('file', blob, 'photo.jpg');
       fd.append('code', code);
-      const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
+      const res = await fetchWithTimeout(
+        `/api/audits/${auditId}/photo`,
+        { method: 'POST', body: fd },
+        20000
+      );
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error('upload');
       // Remplace l'entrée locale par la version serveur, marquée enregistrée.
@@ -371,13 +492,16 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
       URL.revokeObjectURL(previewUrl);
       void dequeuePhoto(localId);
     } catch {
-      // Hors-ligne ou erreur : on garde l'aperçu, marqué "à renvoyer".
+      // Hors-ligne / timeout : on garde l'aperçu marqué "à renvoyer". Le blob reste
+      // dans IndexedDB et sera renvoyé par le drainer au retour réseau.
       setPhotos((p) => ({
         ...p,
         [code]: (p[code] ?? []).map((ph) =>
           ph.path === localId ? { ...ph, saved: false, error: true } : ph
         ),
       }));
+    } finally {
+      uploadingIds.current.delete(localId);
     }
   }
 
@@ -432,15 +556,15 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     }).catch(() => {});
   }
 
-  async function quitter() {
+  function quitter() {
     if (timer.current) clearTimeout(timer.current);
-    await flush(); // enregistre les éventuelles modifs en attente avant de sortir
+    void flush(); // sauvegarde en arrière-plan, on ne bloque pas la sortie sur le réseau
     router.push('/app/audits');
   }
 
-  async function goTo(next: number) {
+  function goTo(next: number) {
     if (timer.current) clearTimeout(timer.current);
-    await flush();
+    void flush(); // fire-and-forget : la saisie est déjà en cache + file, navigation instantanée
     setOpenComment(null);
     setOpenCheck(null);
     setOpenInfo(null);
@@ -455,8 +579,15 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
     items.forEach((i) => dirty.current.add(i.code));
     customItems.forEach((i) => dirty.current.add(i.code));
     await flush(true);
-    if (typeof window !== 'undefined' && dirty.current.size === 0) {
-      // tout est synchronisé : on purge le cache local de cet audit
+    // On envoie les photos encore en attente AVANT de purger quoi que ce soit.
+    await drainPhotos();
+    const photosEnAttente = (await pendingForAudit(auditId)).length;
+    if (
+      typeof window !== 'undefined' &&
+      dirty.current.size === 0 &&
+      photosEnAttente === 0
+    ) {
+      // tout est synchronisé (réponses ET photos) : on purge le cache local
       window.localStorage.removeItem(dataKey);
       window.localStorage.removeItem(dirtyKey);
       window.localStorage.removeItem(stepKey);
@@ -810,6 +941,19 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           />
         </div>
       </header>
+
+      {/* Bandeau d'état permanent et coloré : l'auditeur voit clairement si tout
+          est synchronisé, en attente, ou hors-ligne (pour les réponses ET photos). */}
+      {(!online || pending > 0) && (
+        <div
+          className="shrink-0 px-3 py-1.5 text-center text-xs font-semibold text-white"
+          style={{ backgroundColor: !online ? '#DC2626' : '#F59E0B' }}
+        >
+          {!online
+            ? `Hors ligne${pending ? ` · ${pending} réponse(s) à synchroniser` : ''}. Vos saisies sont conservées et repartiront au retour du réseau.`
+            : `Synchronisation… ${pending} réponse(s) en attente.`}
+        </div>
+      )}
 
       {/* Corps */}
       <div className="min-h-0 flex-1 overflow-y-auto">

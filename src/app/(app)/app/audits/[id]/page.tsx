@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import { AuditWizard, type WizardItem } from '@/components/app/AuditWizard';
 import { Resto360Wizard, type Resto360Item } from '@/components/app/Resto360Wizard';
 import { grilleByCode, flattenGrille, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
@@ -15,8 +15,8 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const { prisma } = await import('@/lib/prisma');
 
-  const audit = await prisma.audit.findUnique({
-    where: { id },
+  const audit = await prisma.audit.findFirst({
+    where: auditAccessWhere(id, user),
     include: { establishment: true, items: true },
   });
   if (!audit) notFound();

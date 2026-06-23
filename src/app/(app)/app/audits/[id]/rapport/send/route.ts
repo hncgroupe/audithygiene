@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import { getDataUri } from '@/lib/supabase';
 import { assembleResto360Report, type ItemNote } from '@/lib/rapport-resto360';
+import { genererRestitutionTemplate } from '@/lib/restitution-template';
 import { renderResto360Report } from '@/lib/pdf/generate';
 import { sendTransactionalEmail } from '@/lib/brevo';
 
@@ -21,8 +22,8 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
 
   const { id } = await ctx.params;
   const { prisma } = await import('@/lib/prisma');
-  const audit = await prisma.audit.findUnique({
-    where: { id },
+  const audit = await prisma.audit.findFirst({
+    where: auditAccessWhere(id, user),
     include: { establishment: true, items: true },
   });
   if (!audit) return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
@@ -54,10 +55,12 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
   const data = assembleResto360Report({
     etablissement: audit.establishment.nom,
     ville: audit.establishment.ville,
+    type: audit.establishment.type,
     date: dateStr,
     ref,
     items,
     photos: [],
+    restitution: genererRestitutionTemplate(audit.establishment.nom, items),
   });
 
   let pdf: Buffer;

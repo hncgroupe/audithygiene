@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import { env } from '@/lib/env';
 import { genererRestitution } from '@/lib/restitution';
 import type { ItemNote } from '@/lib/rapport-resto360';
@@ -23,8 +23,8 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
 
   const { id } = await ctx.params;
   const { prisma } = await import('@/lib/prisma');
-  const audit = await prisma.audit.findUnique({
-    where: { id },
+  const audit = await prisma.audit.findFirst({
+    where: auditAccessWhere(id, user),
     include: { establishment: true, items: true },
   });
   if (!audit) return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });

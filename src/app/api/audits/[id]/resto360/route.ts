@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import {
   GRILLE_RESTO360,
   resolveCritere,
@@ -38,8 +38,18 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
 
   const { prisma } = await import('@/lib/prisma');
 
-  const audit = await prisma.audit.findUnique({ where: { id }, include: { items: true } });
+  const audit = await prisma.audit.findFirst({
+    where: auditAccessWhere(id, user),
+    include: { items: true },
+  });
   if (!audit) return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+
+  const finalize = body.finalize === true;
+  // Un rapport déjà envoyé ne se réécrit pas par une autosave tardive (réseau en
+  // retard) : on accepte seulement la finalisation explicite, jamais l'autosave.
+  if (audit.statut === 'RAPPORT_ENVOYE' && !finalize) {
+    return NextResponse.json({ ok: true, locked: true, scoreGlobal: audit.scoreGlobal });
+  }
 
   const patches = body.items ?? [];
   const byCode = new Map(patches.map((p) => [p.code, p]));
@@ -101,26 +111,26 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
   }
 
   // 3. Scores par pilier (theme = nom du pilier)
-  await prisma.score.deleteMany({ where: { auditId: id } });
   const scoresData = GRILLE_RESTO360.filter((p) => p.noteAuRadar)
     .map((p) => ({ pilier: p, valeur: scorePilier(notes, p) }))
     .filter((s) => s.valeur !== null)
     .map((s) => ({ auditId: id, theme: s.pilier.nom, valeur: s.valeur as number }));
-  if (scoresData.length > 0) {
-    await prisma.score.createMany({ data: scoresData });
-  }
 
   const scoreGlobal = scoreGlobalResto(notes);
 
-  // 4. En-tête d'audit
-  const finalize = body.finalize === true;
-  await prisma.audit.update({
-    where: { id },
-    data: {
-      scoreGlobal: scoreGlobal ?? null,
-      ...(finalize ? { statut: 'TERMINE' } : {}),
-    },
-  });
+  // 4. Scores + en-tête dans une seule transaction : on ne peut pas se retrouver
+  // avec les scores supprimés mais non recréés si la requête échoue en cours.
+  await prisma.$transaction([
+    prisma.score.deleteMany({ where: { auditId: id } }),
+    ...(scoresData.length > 0 ? [prisma.score.createMany({ data: scoresData })] : []),
+    prisma.audit.update({
+      where: { id },
+      data: {
+        scoreGlobal: scoreGlobal ?? null,
+        ...(finalize ? { statut: 'TERMINE' } : {}),
+      },
+    }),
+  ]);
 
   return NextResponse.json({
     ok: true,

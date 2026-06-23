@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, assertAuditAccess } from '@/lib/auth';
 import { getSupabaseAdmin, getSignedUrl } from '@/lib/supabase';
 import { env } from '@/lib/env';
 
@@ -26,6 +26,9 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   }
 
   const { prisma } = await import('@/lib/prisma');
+  if (!(await assertAuditAccess(id, user))) {
+    return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+  }
   const item = await prisma.auditItem.findFirst({ where: { auditId: id, code } });
   if (!item) return NextResponse.json({ error: 'Item introuvable.' }, { status: 404 });
 
@@ -42,10 +45,9 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: 'Échec de l’upload.' }, { status: 500 });
   }
 
-  await prisma.auditItem.update({
-    where: { id: item.id },
-    data: { photoUrls: { set: [...item.photoUrls, path] } },
-  });
+  // Ajout ATOMIQUE au tableau : deux photos uploadées en parallèle ne s'écrasent
+  // plus (le read-modify-write précédent perdait l'une des deux).
+  await prisma.$executeRaw`UPDATE "audit_items" SET "photoUrls" = array_append("photoUrls", ${path}) WHERE "id" = ${item.id}`;
 
   const url = await getSignedUrl(path, 60 * 60 * 8);
   return NextResponse.json({ path, url });
@@ -71,14 +73,15 @@ export async function DELETE(request: Request, ctx: { params: Promise<{ id: stri
   }
 
   const { prisma } = await import('@/lib/prisma');
+  if (!(await assertAuditAccess(id, user))) {
+    return NextResponse.json({ error: 'Audit introuvable.' }, { status: 404 });
+  }
   const item = await prisma.auditItem.findFirst({ where: { auditId: id, code: body.code } });
   if (!item) return NextResponse.json({ error: 'Item introuvable.' }, { status: 404 });
 
   await admin.storage.from(env.storageBucket).remove([body.path]).catch(() => null);
-  await prisma.auditItem.update({
-    where: { id: item.id },
-    data: { photoUrls: { set: item.photoUrls.filter((p) => p !== body.path) } },
-  });
+  // Retrait atomique (cohérent avec l'ajout array_append).
+  await prisma.$executeRaw`UPDATE "audit_items" SET "photoUrls" = array_remove("photoUrls", ${body.path}) WHERE "id" = ${item.id}`;
 
   return NextResponse.json({ ok: true });
 }

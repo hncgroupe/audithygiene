@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { AppHeader } from '@/components/app/AppHeader';
+import { ServiceWorkerRegister } from '@/components/app/ServiceWorkerRegister';
 
 /**
  * Shell de l'espace opérationnel (app.audithygiene.fr).
@@ -13,6 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-vert-50/30">
+      <ServiceWorkerRegister />
       <AppHeader email={user.email ?? ''} />
       <main className="container-ah py-10">{children}</main>
     </div>
