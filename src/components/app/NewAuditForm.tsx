@@ -33,9 +33,9 @@ interface BanFeature {
   properties: { label: string; name: string; postcode: string; city: string; context: string };
 }
 
-export function NewAuditForm() {
+export function NewAuditForm({ marqueInitiale }: { marqueInitiale?: 'AUDIT_HYGIENE' | 'AUDITRESTO360' }) {
   const router = useRouter();
-  const [marque, setMarque] = useState<'AUDIT_HYGIENE' | 'AUDITRESTO360'>('AUDIT_HYGIENE');
+  const [marque, setMarque] = useState<'AUDIT_HYGIENE' | 'AUDITRESTO360'>(marqueInitiale ?? 'AUDIT_HYGIENE');
   const [f, setF] = useState({
     nom: '',
     adresse: '',
@@ -151,35 +151,47 @@ export function NewAuditForm() {
       {/* Champs (page fixe, bouton toujours visible en bas) */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="container-ah mx-auto max-w-lg space-y-3 py-4">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink/80">Type d&apos;audit</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setMarque('AUDIT_HYGIENE')}
-              className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
-                marque === 'AUDIT_HYGIENE'
-                  ? 'border-vert bg-vert-50 ring-1 ring-vert/30'
-                  : 'border-ink/12 bg-white hover:border-vert/40'
-              }`}
-            >
-              <span className="block text-sm font-bold text-ink">audit hygiène</span>
-              <span className="mt-0.5 block text-xs text-ink/70">Hygiène &amp; HACCP, notation conformité</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMarque('AUDITRESTO360')}
-              className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
-                marque === 'AUDITRESTO360'
-                  ? 'border-[#F97316] bg-orange-50 ring-1 ring-[#F97316]/30'
-                  : 'border-ink/12 bg-white hover:border-[#F97316]/40'
-              }`}
-            >
-              <span className="block text-sm font-bold text-ink">auditresto360</span>
-              <span className="mt-0.5 block text-xs text-ink/70">Audit 360, 10 piliers notés /100</span>
-            </button>
+        {marqueInitiale ? (
+          <div className="flex items-center justify-between rounded-xl border border-ink/12 bg-white px-3.5 py-2.5">
+            <span className="text-sm">
+              <span className="text-gris">Type : </span>
+              <span className="font-bold text-ink">{marque === 'AUDITRESTO360' ? 'auditresto360' : 'audit hygiène'}</span>
+            </span>
+            <Link href="/app/audits/nouveau" className="text-xs font-medium text-gris underline hover:text-ink">
+              Changer
+            </Link>
           </div>
-        </div>
+        ) : (
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink/80">Type d&apos;audit</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setMarque('AUDIT_HYGIENE')}
+                className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                  marque === 'AUDIT_HYGIENE'
+                    ? 'border-vert bg-vert-50 ring-1 ring-vert/30'
+                    : 'border-ink/12 bg-white hover:border-vert/40'
+                }`}
+              >
+                <span className="block text-sm font-bold text-ink">audit hygiène</span>
+                <span className="mt-0.5 block text-xs text-ink/70">Hygiène &amp; HACCP, notation conformité</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMarque('AUDITRESTO360')}
+                className={`rounded-xl border-2 p-3 text-left transition-all active:scale-[0.99] ${
+                  marque === 'AUDITRESTO360'
+                    ? 'border-[#F97316] bg-orange-50 ring-1 ring-[#F97316]/30'
+                    : 'border-ink/12 bg-white hover:border-[#F97316]/40'
+                }`}
+              >
+                <span className="block text-sm font-bold text-ink">auditresto360</span>
+                <span className="mt-0.5 block text-xs text-ink/70">Audit 360, 10 piliers notés /100</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink/80">Nom du restaurant</label>
