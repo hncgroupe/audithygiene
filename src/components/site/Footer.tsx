@@ -12,6 +12,16 @@ export function Footer() {
           <p className="mt-4 text-sm text-white/60">
             Audit hygiène & HACCP pour restaurants et CHR en France.
           </p>
+          <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs font-semibold text-white">Le groupe</p>
+            <p className="mt-1 text-xs text-white/60">
+              audit hygiène et{' '}
+              <a href="https://auditresto360.fr" target="_blank" rel="noopener" className="font-semibold text-vert hover:underline">
+                auditresto360
+              </a>{' '}
+              font partie du même groupe. auditresto360 réalise l’audit complet du restaurant (hygiène, RH, gestion, carte, commercial).
+            </p>
+          </div>
         </div>
 
         <div>

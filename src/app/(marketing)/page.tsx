@@ -11,6 +11,7 @@ import { LeadMagnet } from '@/components/marketing/LeadMagnet';
 import { StickyCta } from '@/components/marketing/StickyCta';
 import { Formules } from '@/components/marketing/Formules';
 import { Faq } from '@/components/marketing/Faq';
+import { Groupe } from '@/components/marketing/Groupe';
 import { RdvForm } from '@/components/marketing/RdvForm';
 import { JsonLd } from '@/components/site/JsonLd';
 import { localBusinessSchema, serviceSchema, faqSchema } from '@/lib/schema';
@@ -55,6 +56,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Groupe />
       <Faq />
       <StickyCta />
     </>
