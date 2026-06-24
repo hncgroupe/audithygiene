@@ -14,12 +14,13 @@ export default function MentionsPage() {
     <LegalLayout title="Mentions légales">
       <h2>Éditeur du site</h2>
       <p>
-        {/* TODO : compléter avec les informations légales réelles */}
-        audit hygiène - <em>raison sociale TODO</em>, <em>forme juridique TODO</em>, <em>SIREN/SIRET TODO</em>.
-        Siège social : <em>adresse TODO</em>. Contact : contact@audithygiene.fr.
+        Le site audit hygiène est édité par <strong>HNC</strong>, société par actions simplifiée (SAS).
+        Siège social : 26 rue Bosquet, 75007 Paris, France.
+        SIREN : 985 221 324 - SIRET (siège) : 985 221 324 00017. RCS Paris 985 221 324 - Code APE 70.22Z.
+        TVA non applicable, article 293 B du CGI. Contact : contact@audithygiene.fr.
       </p>
       <h2>Directeur de la publication</h2>
-      <p><em>Nom TODO.</em></p>
+      <p>Vanessa Chaboz, présidente.</p>
       <h2>Hébergement</h2>
       <p>Vercel Inc. - 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.</p>
       <h2>Propriété intellectuelle</h2>
