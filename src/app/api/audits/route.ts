@@ -3,8 +3,35 @@ import { getCurrentDbUser } from '@/lib/auth';
 import { flattenGrille, GRILLE_VERSION } from '@/lib/grille-audit';
 import { GRILLE_RESTO360, GRILLE_RESTO360_VERSION, critereId, critereLabel } from '@/lib/grille-resto360';
 import { isDriveEnabled, auditFolderLabel, createAuditDriveFolder } from '@/lib/drive';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { env } from '@/lib/env';
 
 export const runtime = 'nodejs';
+
+/**
+ * Enregistre le logo du client (dataURL base64) dans le bucket et renvoie son
+ * chemin de stockage, pour l'afficher ensuite sur la couverture du rapport.
+ * Best-effort : un échec ne bloque pas la création de l'audit.
+ */
+async function uploadLogoEtablissement(estabId: string, dataUrl: string): Promise<string | null> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return null;
+  const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(dataUrl.trim());
+  if (!m) return null;
+  const mime = m[1].toLowerCase();
+  const ext = (mime.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+  const buffer = Buffer.from(m[2], 'base64');
+  if (buffer.length === 0 || buffer.length > 2_000_000) return null; // garde-fou taille
+  const path = `etablissements/${estabId}/logo.${ext}`;
+  const { error } = await admin.storage
+    .from(env.storageBucket)
+    .upload(path, buffer, { contentType: mime, upsert: true });
+  if (error) {
+    console.error('[audits] upload logo', error.message);
+    return null;
+  }
+  return path;
+}
 
 /**
  * Crée le dossier Drive "audit - NOM - DATE" / "photos" et stocke son id, AVANT
@@ -39,6 +66,7 @@ interface Body {
   emailRapport?: string; // compat : email unique
   emails?: string[]; // destinataires multiples du rapport
   marque?: string; // AUDIT_HYGIENE | AUDITRESTO360
+  logo?: string | null; // dataURL du logo client (couverture du rapport)
 }
 
 /** Items instanciés pour un audit resto360 (un par critère + questions ouvertes). */
@@ -135,6 +163,14 @@ export async function POST(request: Request) {
       },
     });
     establishmentId = etab.id;
+
+    // Logo client (optionnel) : stocké dans le bucket, chemin enregistré sur l'établissement.
+    if (body.logo) {
+      const logoPath = await uploadLogoEtablissement(etab.id, body.logo);
+      if (logoPath) {
+        await prisma.establishment.update({ where: { id: etab.id }, data: { logoUrl: logoPath } });
+      }
+    }
   } else {
     const etab = await prisma.establishment.findUnique({ where: { id: establishmentId } });
     if (!etab) return NextResponse.json({ error: 'Établissement introuvable.' }, { status: 404 });

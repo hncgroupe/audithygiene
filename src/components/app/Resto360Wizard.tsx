@@ -1003,7 +1003,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
                   }`}
                   style={on ? { backgroundColor: ORANGE } : undefined}
                 >
-                  {p.numero}. {p.radar}
+                  {i + 1}. {p.radar}
                   {sc !== null && <span className="ml-1 opacity-80">({sc})</span>}
                 </button>
               );
@@ -1013,7 +1013,7 @@ export function Resto360Wizard({ auditId, etablissement, items, statutInitial }:
           {/* Titre pilier */}
           <div className="mb-4 flex items-baseline justify-between">
             <h1 className="text-xl font-bold tracking-tight text-ink">
-              {pilier.numero}. {pilier.nom}
+              {step + 1}. {pilier.nom}
             </h1>
             {scorePil !== null && (
               <span className="text-sm font-bold" style={{ color: ORANGE }}>

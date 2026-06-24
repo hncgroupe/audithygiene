@@ -120,7 +120,7 @@ const c = (
   ...(info ? { info } : {}),
 });
 
-export const GRILLE_RESTO360: PilierResto[] = [
+const GRILLE_RESTO360_RAW: PilierResto[] = [
   {
     code: 'P1',
     numero: 1,
@@ -861,6 +861,17 @@ export const GRILLE_RESTO360: PilierResto[] = [
       'Quels sont vos freins ?',
     ],
   },
+];
+
+/**
+ * Le pilier Dirigeant (questions ouvertes, non noté) passe en PREMIÈRE étape du
+ * parcours d'audit : on échange d'abord avec le dirigeant, puis on note les
+ * piliers. Les codes des critères restent inchangés (basés sur le code pilier,
+ * pas sur la position), donc les audits déjà en cours ne sont pas impactés.
+ */
+export const GRILLE_RESTO360: PilierResto[] = [
+  ...GRILLE_RESTO360_RAW.filter((p) => !p.noteAuRadar),
+  ...GRILLE_RESTO360_RAW.filter((p) => p.noteAuRadar),
 ];
 
 /** Identifiant stable d'un critère : code-pilier . index-groupe . index-critère. */

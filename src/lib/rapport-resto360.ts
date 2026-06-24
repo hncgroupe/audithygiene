@@ -204,6 +204,7 @@ export function assembleResto360Report(args: {
   ref: string;
   items: ItemNote[];
   photos: { intitule: string; url: string }[];
+  logo?: string | null; // logo client (data URI), affiché sur la couverture
   restitution?: {
     synthese: string;
     pointsForts: string[];
@@ -266,6 +267,7 @@ export function assembleResto360Report(args: {
     quickWins: r.quickWins.map((q) => ({ intitule: q.intitule, pilier: q.pilier })),
     details,
     piliers,
+    logo: args.logo ?? null,
     restitution: args.restitution ?? null,
     dirigeant: r.dirigeant
       .filter((d) => d.reponse)

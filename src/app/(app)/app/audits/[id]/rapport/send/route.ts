@@ -52,6 +52,9 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
     : new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const ref = `R360-${audit.id.slice(-6).toUpperCase()}`;
 
+  // Logo client embarqué en data URI (comme les photos) pour la couverture du PDF.
+  const logo = audit.establishment.logoUrl ? await getDataUri(audit.establishment.logoUrl) : null;
+
   const data = assembleResto360Report({
     etablissement: audit.establishment.nom,
     ville: audit.establishment.ville,
@@ -60,6 +63,7 @@ export async function POST(_request: Request, ctx: { params: Promise<{ id: strin
     ref,
     items,
     photos: [],
+    logo,
     restitution: genererRestitutionTemplate(audit.establishment.nom, items),
   });
 

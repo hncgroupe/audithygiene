@@ -154,6 +154,7 @@ model Establishment {
   ville       String?
   codePostal  String?
   departement String?
+  logoUrl     String?           // chemin du logo client dans le bucket (couverture du rapport)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 

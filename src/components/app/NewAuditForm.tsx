@@ -3,6 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { compressImage } from '@/lib/photo-queue';
+
+/** Blob -> dataURL base64, pour transmettre le logo dans le corps JSON. */
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result));
+    fr.onerror = () => reject(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
 
 const TYPES = [
   ['RESTAURANT', 'Restaurant'],
@@ -34,8 +45,20 @@ export function NewAuditForm() {
     dateHeure: '',
   });
   const [emails, setEmails] = useState<string[]>(['']);
+  const [logo, setLogo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const onLogo = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      // Compression légère (logo petit) avant envoi en base64.
+      const blob = await compressImage(file, 600, 0.85).catch(() => file);
+      setLogo(await blobToDataUrl(blob));
+    } catch {
+      setError('Logo illisible, réessayez avec une autre image.');
+    }
+  };
 
   // Autocomplétion adresse (Base Adresse Nationale - gratuit, sans clé)
   const [suggestions, setSuggestions] = useState<BanFeature[]>([]);
@@ -99,7 +122,7 @@ export function NewAuditForm() {
       const res = await fetch('/api/audits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...f, marque, emails: emails.map((e) => e.trim()).filter(Boolean) }),
+        body: JSON.stringify({ ...f, marque, logo, emails: emails.map((e) => e.trim()).filter(Boolean) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erreur');
@@ -222,6 +245,43 @@ export function NewAuditForm() {
                 className={field}
               />
             </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink/80">Logo du client (optionnel)</label>
+          <p className="mb-2 text-xs text-gris">Il apparaîtra sur la couverture du rapport.</p>
+          <div className="flex items-center gap-3">
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logo}
+                alt="Logo client"
+                className="h-14 w-14 rounded-lg border border-ink/10 bg-white object-contain p-1"
+              />
+            ) : (
+              <div className="grid h-14 w-14 place-items-center rounded-lg border border-dashed border-ink/20 text-xs text-gris">
+                Logo
+              </div>
+            )}
+            <label className="cursor-pointer rounded-xl border border-ink/15 px-3.5 py-2 text-sm font-medium text-ink/80 hover:border-vert hover:text-vert">
+              {logo ? 'Changer' : 'Ajouter un logo'}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => onLogo(e.target.files?.[0])}
+              />
+            </label>
+            {logo && (
+              <button
+                type="button"
+                onClick={() => setLogo(null)}
+                className="text-sm text-gris hover:text-red-600"
+              >
+                Retirer
+              </button>
+            )}
           </div>
         </div>
 

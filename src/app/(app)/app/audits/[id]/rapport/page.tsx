@@ -43,6 +43,9 @@ export default async function RapportResto360Page({ params }: { params: Promise<
   const r = calculerRapportResto360(items);
   const restitution = genererRestitutionTemplate(audit.establishment.nom, items);
   const details = detailPiliers(items);
+  const logoUrl = audit.establishment.logoUrl
+    ? await getSignedUrl(audit.establishment.logoUrl, 60 * 60 * 8)
+    : null;
 
   const dateStr = audit.dateAudit
     ? new Date(audit.dateAudit).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -76,6 +79,7 @@ export default async function RapportResto360Page({ params }: { params: Promise<
           adresse: audit.establishment.adresse,
           ville: audit.establishment.ville,
           type: audit.establishment.type,
+          logoUrl,
         }}
         dateStr={dateStr}
         reference={ref}

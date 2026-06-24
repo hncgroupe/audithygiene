@@ -35,6 +35,7 @@ export interface Resto360ReportData {
   quickWins: { intitule: string; pilier: string }[];
   dirigeant: { question: string; reponse: string }[];
   photos: { intitule: string; url: string }[];
+  logo?: string | null;
   piliers: PilierD[];
   restitution: {
     synthese: string;
@@ -56,6 +57,7 @@ const s = StyleSheet.create({
   coverTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brand: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: '#fff' },
   brandO: { color: ORANGE },
+  clientLogo: { maxWidth: 120, height: 40, objectFit: 'contain', marginBottom: 6, backgroundColor: '#fff', borderRadius: 4, padding: 3 },
   coverKicker: { color: ORANGE, fontSize: 10, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 1 },
   coverTitle: { fontSize: 30, fontFamily: 'Helvetica-Bold', color: '#fff', marginTop: 6 },
   coverSub: { color: '#FFFFFFB0', marginTop: 4 },
@@ -160,7 +162,13 @@ export function Resto360Document({ data }: { data: Resto360ReportData }) {
             <Text style={s.brand}>
               audit<Text style={s.brandO}>resto360</Text>
             </Text>
-            <Text style={{ color: '#FFFFFF70', fontSize: 8 }}>Confidentiel · {data.ref}</Text>
+            <View style={{ alignItems: 'flex-end' }}>
+              {data.logo ? (
+                // eslint-disable-next-line jsx-a11y/alt-text
+                <Image src={data.logo} style={s.clientLogo} />
+              ) : null}
+              <Text style={{ color: '#FFFFFF70', fontSize: 8 }}>Confidentiel · {data.ref}</Text>
+            </View>
           </View>
 
           <View>

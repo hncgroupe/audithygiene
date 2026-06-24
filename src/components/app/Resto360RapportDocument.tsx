@@ -175,7 +175,7 @@ function Section({ num, titre, children }: { num: string; titre: string; childre
 const DELAI: Record<string, string> = { Urgence: 'sous 7 jours', Important: 'sous 30 jours', Confort: 'sous 90 jours' };
 
 export interface Resto360RapportDocumentProps {
-  etablissement: { nom: string; adresse?: string | null; ville?: string | null; type: string };
+  etablissement: { nom: string; adresse?: string | null; ville?: string | null; type: string; logoUrl?: string | null };
   dateStr: string;
   reference: string;
   auditeur?: string;
@@ -228,7 +228,17 @@ export function Resto360RapportDocument({
       <div className="flex min-h-[68vh] flex-col justify-between border-b border-ink/10 px-8 py-12 sm:px-12 print:min-h-screen">
         <div className="flex items-center justify-between">
           <Image src="/logo-auditresto360.png" alt="auditresto360" width={170} height={44} className="h-8 w-auto" />
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gris">Confidentiel</span>
+          <div className="flex items-center gap-4">
+            {etablissement.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={etablissement.logoUrl}
+                alt={`Logo ${etablissement.nom}`}
+                className="h-12 w-auto max-w-[160px] object-contain"
+              />
+            )}
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gris">Confidentiel</span>
+          </div>
         </div>
 
         <div>
