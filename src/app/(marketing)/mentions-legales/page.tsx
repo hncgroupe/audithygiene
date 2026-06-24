@@ -20,7 +20,7 @@ export default function MentionsPage() {
         TVA non applicable, article 293 B du CGI. Contact : contact@audithygiene.fr.
       </p>
       <h2>Directeur de la publication</h2>
-      <p>Vanessa Chaboz, présidente.</p>
+      <p>Le représentant légal de HNC.</p>
       <h2>Hébergement</h2>
       <p>Vercel Inc. - 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.</p>
       <h2>Propriété intellectuelle</h2>
