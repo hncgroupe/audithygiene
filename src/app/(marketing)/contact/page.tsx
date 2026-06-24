@@ -63,8 +63,8 @@ export default function ContactPage() {
             Parlons de votre établissement
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-ink/70">
-            Une question, un devis, une demande d'audit ? Laissez-nous quelques lignes, on vous
-            recontacte rapidement. Simple et sans engagement.
+            Une question, un devis, une demande d'audit ? Remplissez le formulaire ci-dessous ou
+            ouvrez le chat en bas à droite : on vous répond rapidement. Simple et sans engagement.
           </p>
         </div>
       </section>
@@ -76,6 +76,15 @@ export default function ContactPage() {
           </div>
 
           <aside className="space-y-6">
+            <div className="rounded-2xl border border-ink/8 bg-white p-6">
+              <h2 className="text-lg font-semibold text-ink">Par chat</h2>
+              <p className="mt-2 text-sm text-ink/75">
+                Une question rapide ? Ouvrez le chat en bas à droite de votre écran : on vous répond
+                directement. Si nous ne sommes pas en ligne, laissez votre email, nous revenons vers
+                vous au plus vite.
+              </p>
+            </div>
+
             <div className="rounded-2xl border border-ink/8 bg-white p-6">
               <h2 className="text-lg font-semibold text-ink">Par email</h2>
               <p className="mt-2 text-sm text-ink/75">
