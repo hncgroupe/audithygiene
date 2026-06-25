@@ -4,20 +4,21 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/site/Logo';
 
-const NAV = [
+const NAV_BASE: [string, string][] = [
   ['/app', 'Tableau de bord'],
   ['/app/leads', 'Leads'],
   ['/app/audits', 'Audits'],
   ['/app/etablissements', 'Établissements'],
-] as const;
+];
 
 /**
  * En-tête de l'espace auditeur.
  * - Desktop : logo + navigation à gauche, email + déconnexion à droite.
  * - Mobile : logo centré, bouton menu à droite ouvrant un panneau simple.
  */
-export function AppHeader({ email }: { email: string }) {
+export function AppHeader({ email, isAdmin = false }: { email: string; isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
+  const NAV: [string, string][] = isAdmin ? [...NAV_BASE, ['/app/auditeurs', 'Auditeurs']] : NAV_BASE;
 
   const Logout = (
     <form action="/api/auth/logout" method="post">

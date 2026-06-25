@@ -75,8 +75,23 @@ export type SessionUser = NonNullable<Awaited<ReturnType<typeof getCurrentDbUser
  * lit/modifie un audit (sinon n'importe quel compte connecté pourrait agir sur
  * l'audit d'un autre établissement).
  */
+/** Marque autorisée par le périmètre d'accès, ou null si les deux types. */
+export function marqueForAcces(acces: SessionUser['acces']): 'AUDIT_HYGIENE' | 'AUDITRESTO360' | null {
+  if (acces === 'HYGIENE') return 'AUDIT_HYGIENE';
+  if (acces === 'RESTO360') return 'AUDITRESTO360';
+  return null;
+}
+
+/** Liste des marques que l'utilisateur peut créer/ouvrir. */
+export function marquesAutorisees(user: SessionUser): ('AUDIT_HYGIENE' | 'AUDITRESTO360')[] {
+  const m = marqueForAcces(user.acces);
+  return m ? [m] : ['AUDIT_HYGIENE', 'AUDITRESTO360'];
+}
+
 export function auditAccessWhere(id: string, user: SessionUser) {
-  return user.role === 'ADMIN' ? { id } : { id, auditeurId: user.id };
+  const base = user.role === 'ADMIN' ? { id } : { id, auditeurId: user.id };
+  const marque = marqueForAcces(user.acces);
+  return marque ? { ...base, marque } : base;
 }
 
 /**

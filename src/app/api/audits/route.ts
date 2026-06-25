@@ -181,6 +181,12 @@ export async function POST(request: Request) {
   const dateOk = isNaN(dateAudit.getTime()) ? new Date() : dateAudit;
   const marque = body.marque === 'AUDITRESTO360' ? 'AUDITRESTO360' : 'AUDIT_HYGIENE';
 
+  // Contrôle du périmètre d'accès de l'auditeur.
+  const { marquesAutorisees } = await import('@/lib/auth');
+  if (!marquesAutorisees(user).includes(marque)) {
+    return NextResponse.json({ error: "Ce type d'audit n'est pas autorisé pour votre compte." }, { status: 403 });
+  }
+
   if (marque === 'AUDITRESTO360') {
     const audit = await prisma.audit.create({
       data: {

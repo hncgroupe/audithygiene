@@ -22,11 +22,20 @@ enum Role {
   AUDITEUR
 }
 
+/// Périmètre d'audit autorisé pour un auditeur.
+enum AccesAudit {
+  HYGIENE // uniquement les audits hygiène (AUDIT_HYGIENE)
+  RESTO360 // uniquement les audits auditresto360 (AUDITRESTO360)
+  LES_DEUX // les deux types
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
   role      Role     @default(AUDITEUR)
+  // Périmètre d'audit. Défaut LES_DEUX : les comptes existants gardent tout.
+  acces     AccesAudit @default(LES_DEUX)
   // Lié à l'utilisateur Supabase Auth (auth.users.id)
   authId    String?  @unique
   active    Boolean  @default(true)

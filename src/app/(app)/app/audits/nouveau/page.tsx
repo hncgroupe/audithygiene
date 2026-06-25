@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getCurrentDbUser } from '@/lib/auth';
+import { getCurrentDbUser, marquesAutorisees } from '@/lib/auth';
 import { NewAuditForm } from '@/components/app/NewAuditForm';
 
 export const dynamic = 'force-dynamic';
@@ -13,10 +13,19 @@ export default async function NouvelAuditPage({
   const user = await getCurrentDbUser();
   if (!user) redirect('/login');
 
+  const autorisees = marquesAutorisees(user);
   const { type } = await searchParams;
-  const marque = type === 'AUDITRESTO360' ? 'AUDITRESTO360' : type === 'AUDIT_HYGIENE' ? 'AUDIT_HYGIENE' : null;
+  const demande = type === 'AUDITRESTO360' ? 'AUDITRESTO360' : type === 'AUDIT_HYGIENE' ? 'AUDIT_HYGIENE' : null;
 
-  // Type déjà choisi → formulaire établissement.
+  // Périmètre restreint à un seul type : on va droit au formulaire, pas de choix.
+  if (autorisees.length === 1) {
+    return <NewAuditForm marqueInitiale={autorisees[0]} />;
+  }
+
+  // Type demandé mais non autorisé → retour au choix.
+  const marque = demande && autorisees.includes(demande) ? demande : null;
+
+  // Type déjà choisi (et autorisé) → formulaire établissement.
   if (marque) {
     return <NewAuditForm marqueInitiale={marque} />;
   }

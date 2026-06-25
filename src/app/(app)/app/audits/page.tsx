@@ -11,9 +11,15 @@ async function getAudits() {
   if (!user) return null;
   try {
     const { prisma } = await import('@/lib/prisma');
+    const { marqueForAcces } = await import('@/lib/auth');
+    const marque = marqueForAcces(user.acces);
     return prisma.audit.findMany({
       // Un auditeur ne voit que ses audits ; un ADMIN voit tout.
-      where: user.role === 'ADMIN' ? undefined : { auditeurId: user.id },
+      // Le périmètre d'accès (acces) filtre en plus par type d'audit.
+      where: {
+        ...(user.role === 'ADMIN' ? {} : { auditeurId: user.id }),
+        ...(marque ? { marque } : {}),
+      },
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: { establishment: true },
