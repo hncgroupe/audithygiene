@@ -73,16 +73,48 @@ export function getArticle(slug: string): Article | undefined {
   return ARTICLES.find((a) => a.slug === slug);
 }
 
+/**
+ * Décalages premiers entre eux, appliqués sur ARTICLES pour garantir le
+ * maillage.
+ *
+ * Le champ `related` de chaque article est curaté à la main : il donne des
+ * liens pertinents, mais sa couverture est très inégale. Treize articles ne
+ * recevaient qu'un seul lien entrant, celui de la liste /blog. Google connaît
+ * alors l'URL par le sitemap mais ne la visite jamais : motif « Détectée,
+ * actuellement non indexée » dans Search Console. Le sitemap n'y change rien,
+ * seul le maillage compte.
+ *
+ * La rotation est donc toujours ajoutée, en plus des liens curatés et jamais à
+ * leur place : par symétrie, chaque article en cite cinq et en reçoit cinq,
+ * quelle que soit la curation. L'ordre est stable d'un build à l'autre.
+ */
+const DECALAGES = [1, 7, 23, 53, 97];
+
+function parRotation(article: Article): Article[] {
+  const i = ARTICLES.findIndex((a) => a.slug === article.slug);
+  if (i < 0) return [];
+  const vus = new Set([i]);
+  const out: Article[] = [];
+  for (const d of DECALAGES) {
+    const k = (i + d) % ARTICLES.length;
+    if (vus.has(k)) continue;
+    vus.add(k);
+    out.push(ARTICLES[k]);
+  }
+  return out;
+}
+
 export function getRelated(article: Article, limit = 3): Article[] {
-  const bySlug = article.related
+  const curates = article.related
     .map((slug) => ARTICLES.find((a) => a.slug === slug))
-    .filter((a): a is Article => Boolean(a));
-  if (bySlug.length >= limit) return bySlug.slice(0, limit);
-  // Complète avec d'autres articles de la même catégorie si besoin.
-  const fillers = ARTICLES.filter(
-    (a) => a.slug !== article.slug && !bySlug.includes(a) && a.category === article.category
-  );
-  return [...bySlug, ...fillers].slice(0, limit);
+    .filter((a): a is Article => Boolean(a))
+    .slice(0, limit);
+  const sortie: Article[] = [];
+  for (const a of [...curates, ...parRotation(article)]) {
+    if (a.slug === article.slug || sortie.some((x) => x.slug === a.slug)) continue;
+    sortie.push(a);
+  }
+  return sortie;
 }
 
 export type { Article } from './types';

@@ -96,6 +96,25 @@ export default async function DepartementPage({ params }: { params: Promise<{ de
 
       <Deroule />
 
+      {/* Maillage interne : les départements se citent entre eux. Sans ça,
+          certaines zones n'avaient qu'un seul lien entrant et Google ne les
+          visitait pas (« Détectée, actuellement non indexée »). */}
+      <section className="container-ah pb-4">
+        <h2 className="text-2xl font-bold tracking-tight text-ink">Nos autres zones d’intervention</h2>
+        <ul className="mt-5 flex flex-wrap gap-3">
+          {DEPARTEMENTS.filter((d) => d.slug !== dept.slug).map((d) => (
+            <li key={d.slug}>
+              <Link
+                href={`/zones/${d.slug}`}
+                className="inline-block rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink hover:border-vert-700 hover:text-vert-700"
+              >
+                Audit d’hygiène en {d.nom}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="container-ah pb-20">
         <div className="rounded-2xl bg-vert-50 p-8 text-center sm:p-12">
           <h2 className="text-2xl font-bold text-ink">Prêt à faire auditer votre établissement en {dept.nom} ?</h2>
