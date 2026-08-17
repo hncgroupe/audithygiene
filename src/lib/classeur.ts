@@ -12,8 +12,9 @@ import { createSign } from 'node:crypto';
  * silence et rien d'autre ne change.
  *
  *   GOOGLE_SHEET_BACKUP_ID
- *   GOOGLE_SERVICE_ACCOUNT_EMAIL
- *   GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+ *   GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+ *   ou, si le site porte déjà l'autre convention du groupe,
+ *   GOOGLE_SERVICE_ACCOUNT_B64 (la clé JSON entière, encodée)
  *
  * Signature JWT par `node:crypto`, sans dépendance ajoutée : le projet n'a que
  * Prisma, Zod et Next, et une brique de sauvegarde ne mérite pas d'alourdir
@@ -37,16 +38,43 @@ function b64(valeur: string | Buffer): string {
   return Buffer.from(valeur).toString('base64url');
 }
 
+/**
+ * L'identité du compte de service, quelle que soit la forme sous laquelle elle
+ * a été posée.
+ *
+ * Deux conventions coexistent dans le groupe : deux variables séparées, ou la
+ * clé JSON entière encodée en base64. Accepter les deux évite de reposer une
+ * variable là où l'autre existe déjà, et évite surtout qu'un site reste muet
+ * parce qu'il portait la bonne clé sous le mauvais nom.
+ */
+function compteDeService(): { compte: string; cle: string } | null {
+  const compte = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const cleBrute = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  // La clé arrive parfois avec des \n littéraux, selon l'interface qui l'a posée.
+  if (compte && cleBrute) return { compte, cle: cleBrute.trim().replace(/\\n/g, '\n') };
+
+  const encodee = process.env.GOOGLE_SERVICE_ACCOUNT_B64;
+  if (!encodee) return null;
+  try {
+    const json = JSON.parse(Buffer.from(encodee, 'base64').toString('utf8')) as {
+      client_email?: string;
+      private_key?: string;
+    };
+    if (!json.client_email || !json.private_key) return null;
+    return { compte: json.client_email, cle: json.private_key.replace(/\\n/g, '\n') };
+  } catch {
+    return null;
+  }
+}
+
 async function jeton(): Promise<string> {
   const maintenant = Math.floor(Date.now() / 1000);
   if (cache && cache.expire > maintenant + 60) return cache.valeur;
 
-  const compte = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const cleBrute = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
-  if (!compte || !cleBrute) throw new Error('compte de service Google absent');
+  const identite = compteDeService();
+  if (!identite) throw new Error('compte de service Google absent');
+  const { compte, cle } = identite;
 
-  // La clé arrive parfois avec des \n littéraux, selon l'interface qui l'a posée.
-  const cle = cleBrute.trim().replace(/\\n/g, '\n');
   const entete = b64(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
   const corps = b64(
     JSON.stringify({ iss: compte, scope: SCOPE, aud: TOKEN_URI, iat: maintenant, exp: maintenant + 3600 }),
