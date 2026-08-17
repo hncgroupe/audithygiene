@@ -3,13 +3,16 @@ import { leadSchema } from '@/lib/validation';
 import { env } from '@/lib/env';
 import { notifyTelegram, formatLeadMessage } from '@/lib/telegram';
 import { sendTransactionalEmail, leadConfirmationEmail } from '@/lib/brevo';
+import { ajouterAuClasseur, celluleJson } from '@/lib/classeur';
 
 export const runtime = 'nodejs';
 
 /**
  * Réception d'un lead depuis le formulaire de RDV.
- * Flux : validation → enregistrement DB → notification Telegram → email confirmation Brevo.
- * Chaque effet de bord (DB/Telegram/Brevo) est protégé : un échec n'empêche pas les autres.
+ *
+ * Flux : validation → classeur → base → Telegram → email de confirmation.
+ * Chaque effet de bord reste protégé, un échec n'empêche pas les autres, mais
+ * la réponse ne vaut « ok » que si au moins une copie a réellement tenu.
  */
 export async function POST(request: Request) {
   let raw: unknown;
@@ -51,6 +54,31 @@ export async function POST(request: Request) {
     source: data.source ?? 'site',
   };
 
+  /* Ce que la réponse « ok » doit valoir. Avant, chaque effet de bord était
+     protégé par un `.catch(() => false)` et la route répondait `ok` quoi qu'il
+     arrive : base injoignable, Telegram muet, clé Brevo expirée donnaient le
+     même résultat qu'un lead parfaitement transmis. */
+  const copies: string[] = [];
+
+  // 0. Le classeur, la seule copie qu'on saura relire et compter dans six mois.
+  if (
+    await ajouterAuClasseur('Leads', [
+      new Date().toISOString(),
+      lead.source,
+      lead.nom,
+      lead.email ?? '',
+      lead.telephone ?? '',
+      lead.typeEtablissement ?? '',
+      [lead.besoin, lead.formule].filter(Boolean).join(' · '),
+      lead.message ?? '',
+      lead.nombreCouverts ? String(lead.nombreCouverts) : '',
+      [lead.ville, lead.departement].filter(Boolean).join(' '),
+      celluleJson(data),
+    ])
+  ) {
+    copies.push('classeur');
+  }
+
   // 1. Enregistrement en base (si configurée)
   if (env.isDatabaseConfigured) {
     try {
@@ -63,6 +91,7 @@ export async function POST(request: Request) {
           consentementMarketing: Boolean(data.consentementMarketing),
         },
       });
+      copies.push('base');
     } catch (e) {
       console.error('[lead] échec enregistrement DB', e);
       // On continue : le lead ne doit pas être perdu côté notification.
@@ -72,7 +101,7 @@ export async function POST(request: Request) {
   }
 
   // 2. Notification Telegram (non bloquant)
-  await notifyTelegram(
+  const telegramOk = await notifyTelegram(
     formatLeadMessage({
       nom: data.nom,
       email: data.email || null,
@@ -84,6 +113,7 @@ export async function POST(request: Request) {
       message: data.message || null,
     })
   ).catch(() => false);
+  if (telegramOk) copies.push('telegram');
 
   // 3. Email de confirmation au lead (non bloquant)
   const tpl = leadConfirmationEmail(data.nom);
@@ -93,5 +123,17 @@ export async function POST(request: Request) {
     htmlContent: tpl.htmlContent,
   }).catch(() => false);
 
-  return NextResponse.json({ ok: true });
+  if (!copies.length) {
+    /* Aucune copie n'a tenu. Le dire vaut mieux que de laisser croire au
+       visiteur que sa demande est partie : il peut réessayer, alors qu'un faux
+       succès le fait partir pour de bon. Le journal porte le lead entier,
+       dernière trace avant qu'il ne disparaisse. */
+    console.error('[lead] AUCUNE COPIE GARDEE', JSON.stringify(data));
+    return NextResponse.json(
+      { error: "Votre demande n'a pas pu être transmise. Réessayez, ou écrivez-nous directement." },
+      { status: 503 },
+    );
+  }
+
+  return NextResponse.json({ ok: true, copies });
 }
