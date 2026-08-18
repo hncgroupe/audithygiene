@@ -119,9 +119,27 @@ export function RdvForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nom.trim() || !email.trim() || !telephone.trim() || !adresse.trim()) {
+    /* Quatre champs annoncés dans un seul message obligent le visiteur à
+       relire tout le formulaire pour trouver lequel bloque. On désigne le
+       premier qui manque, avec la raison pour laquelle il nous sert. */
+    if (!nom.trim()) {
       setStatus('error');
-      setError('Nom, email, téléphone et adresse sont obligatoires.');
+      setError('Merci d’indiquer votre nom.');
+      return;
+    }
+    if (!email.trim()) {
+      setStatus('error');
+      setError('Merci d’indiquer votre email : c’est là que part la confirmation.');
+      return;
+    }
+    if (!telephone.trim()) {
+      setStatus('error');
+      setError('Merci d’indiquer un téléphone : nous appelons pour caler le créneau.');
+      return;
+    }
+    if (!adresse.trim()) {
+      setStatus('error');
+      setError('Merci d’indiquer l’adresse de l’établissement : l’auditeur s’y déplace.');
       return;
     }
     if (!consent) {

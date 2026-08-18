@@ -7,6 +7,16 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 const inputCls =
   'w-full rounded-xl border border-ink/15 bg-white px-3.5 py-3 text-sm text-ink placeholder:text-gris/70 focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20';
 
+/* Limite de longueur du message, en miroir de MESSAGE_MAX dans
+   src/lib/validation.ts. Volontairement recopiée plutôt qu'importée : importer
+   le schéma ici embarquerait Zod dans le bundle client pour un seul nombre.
+
+   Pas de `maxLength` sur le textarea : l'attribut tronque un collage SANS rien
+   dire, et le visiteur envoie un message amputé en croyant l'avoir écrit en
+   entier. On préfère un compteur visible, et un serveur qui tronque en le
+   signalant plutôt que de refuser. */
+const MESSAGE_MAX = 2000;
+
 const TYPES = [
   { v: '', label: 'Type d\'établissement (facultatif)' },
   { v: 'RESTAURANT', label: 'Restaurant' },
@@ -33,9 +43,16 @@ export function ContactForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nom.trim() || !email.trim()) {
+    /* Un message qui liste plusieurs champs oblige le visiteur à deviner lequel
+       pose problème. On nomme celui qui manque, et un seul à la fois. */
+    if (!nom.trim()) {
       setStatus('error');
-      setError('Votre nom et votre email sont nécessaires.');
+      setError('Merci d’indiquer votre nom : c’est ainsi que nous vous appellerons.');
+      return;
+    }
+    if (!email.trim()) {
+      setStatus('error');
+      setError('Merci d’indiquer votre email : c’est là que part notre réponse.');
       return;
     }
     if (!consent) {
@@ -132,13 +149,22 @@ export function ContactForm() {
         </select>
       </div>
 
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Votre message (votre besoin, votre établissement, votre ville)"
-        rows={4}
-        className={inputCls}
-      />
+      <div>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Votre message (votre besoin, votre établissement, votre ville)"
+          rows={4}
+          className={inputCls}
+        />
+        {message.length > MESSAGE_MAX - 300 && (
+          <p className={`mt-1 text-xs ${message.length > MESSAGE_MAX ? 'text-red-600' : 'text-ink/60'}`}>
+            {message.length > MESSAGE_MAX
+              ? `Message très long : seuls les ${MESSAGE_MAX} premiers caractères seront transmis. Votre demande part quand même.`
+              : `${MESSAGE_MAX - message.length} caractères restants.`}
+          </p>
+        )}
+      </div>
 
       {/* Honeypot anti-spam : champ caché, doit rester vide */}
       <input

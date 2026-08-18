@@ -26,9 +26,12 @@ const SHEETS = 'https://sheets.googleapis.com/v4/spreadsheets';
 const SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 
 /** Colonnes communes à tous les sites du groupe. */
+// Grille commune au classeur « LEADS - TOUS PROJETS ». Tous les projets du
+// groupe ecrivent ces memes 12 colonnes, dans cet ordre, chacun dans son onglet.
+// Changer l'ordre ici sans mettre a jour l'onglet decale toutes les colonnes.
 export const ENTETES = [
-  'Horodatage', 'Source', 'Nom', 'Email', 'Telephone', 'Societe',
-  'Sujet', 'Message', 'Montant', 'Statut', 'Demande complete (JSON)',
+  'Date', 'Projet', 'Source', 'Nom', 'Societe', 'Email',
+  'Telephone', 'Message', 'Details', 'Consentement', 'Statut', 'ID',
 ];
 
 /** Un jeton vaut une heure ; le garder évite un aller-retour OAuth par lead. */
@@ -36,6 +39,33 @@ let cache: { valeur: string; expire: number } | null = null;
 
 function b64(valeur: string | Buffer): string {
   return Buffer.from(valeur).toString('base64url');
+}
+
+interface Identite {
+  compte: string;
+  cle: string;
+  /** D'où vient cette identité, pour le journal. Jamais la clé, seulement le nom des variables. */
+  origine: string;
+}
+
+/**
+ * Le dernier compte de service réellement utilisé. Sert à écrire l'email exact
+ * dans le message d'erreur d'un 403 : c'est ce compte-là, et pas un autre, qui
+ * doit apparaître en Éditeur sur le classeur.
+ */
+let compteUtilise: string | null = null;
+
+/** Le journal ne doit pas répéter la même ligne à chaque lead. */
+let identiteJournalisee = false;
+
+function journaliser(identite: Identite): Identite {
+  compteUtilise = identite.compte;
+  if (!identiteJournalisee) {
+    identiteJournalisee = true;
+    // Uniquement l'email du compte de service. La clé privée ne sort jamais d'ici.
+    console.info(`[classeur] compte de service : ${identite.compte} (source : ${identite.origine})`);
+  }
+  return identite;
 }
 
 /**
@@ -46,25 +76,81 @@ function b64(valeur: string | Buffer): string {
  * clé JSON entière encodée en base64. Accepter les deux évite de reposer une
  * variable là où l'autre existe déjà, et évite surtout qu'un site reste muet
  * parce qu'il portait la bonne clé sous le mauvais nom.
+ *
+ * Le repli d'une convention vers l'autre est ce qui a masqué un 403 pendant des
+ * semaines : GOOGLE_SERVICE_ACCOUNT_EMAIL était posé, sa clé privée non, et le
+ * code retombait en silence sur le compte de service du Drive, jamais partagé
+ * sur le classeur. On dit donc systématiquement QUEL compte est utilisé et
+ * POURQUOI, pour qu'un prochain 403 se lise en une ligne de journal.
  */
-function compteDeService(): { compte: string; cle: string } | null {
+function compteDeService(): Identite | null {
   const compte = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const cleBrute = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
   // La clé arrive parfois avec des \n littéraux, selon l'interface qui l'a posée.
-  if (compte && cleBrute) return { compte, cle: cleBrute.trim().replace(/\\n/g, '\n') };
+  if (compte && cleBrute) {
+    return journaliser({
+      compte,
+      cle: cleBrute.trim().replace(/\\n/g, '\n'),
+      origine: 'GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY',
+    });
+  }
+
+  const raison = compte
+    ? 'GOOGLE_SERVICE_ACCOUNT_EMAIL est posé mais GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY manque (un email seul ne signe rien)'
+    : cleBrute
+      ? 'GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY est posée mais GOOGLE_SERVICE_ACCOUNT_EMAIL manque'
+      : 'ni GOOGLE_SERVICE_ACCOUNT_EMAIL ni GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ne sont posés';
 
   const encodee = process.env.GOOGLE_SERVICE_ACCOUNT_B64;
-  if (!encodee) return null;
+  if (!encodee) {
+    console.error(
+      `[classeur] aucun compte de service exploitable : ${raison}, et GOOGLE_SERVICE_ACCOUNT_B64 est absent.`,
+    );
+    return null;
+  }
   try {
     const json = JSON.parse(Buffer.from(encodee, 'base64').toString('utf8')) as {
       client_email?: string;
       private_key?: string;
     };
-    if (!json.client_email || !json.private_key) return null;
-    return { compte: json.client_email, cle: json.private_key.replace(/\\n/g, '\n') };
-  } catch {
+    if (!json.client_email || !json.private_key) {
+      console.error('[classeur] GOOGLE_SERVICE_ACCOUNT_B64 décodé mais sans client_email ou private_key.');
+      return null;
+    }
+    if (compte && json.client_email !== compte) {
+      /* Le cas exact du bug : la variable qui nomme le compte attendu existe,
+         mais c'est un autre compte qui va signer. Le dire fort. */
+      console.warn(
+        `[classeur] REPLI de compte de service : attendu ${compte} (GOOGLE_SERVICE_ACCOUNT_EMAIL), ` +
+          `utilisé ${json.client_email} (GOOGLE_SERVICE_ACCOUNT_B64). Raison : ${raison}. ` +
+          'Le classeur doit être partagé en Éditeur avec le compte réellement utilisé.',
+      );
+    }
+    return journaliser({
+      compte: json.client_email,
+      cle: json.private_key.replace(/\\n/g, '\n'),
+      origine: `GOOGLE_SERVICE_ACCOUNT_B64 (repli, raison : ${raison})`,
+    });
+  } catch (cause) {
+    console.error('[classeur] GOOGLE_SERVICE_ACCOUNT_B64 illisible (base64 ou JSON invalide)', cause);
     return null;
   }
+}
+
+/**
+ * Ce qu'il faut lire quand Google répond 403. Le partage du classeur est une
+ * action humaine : le message doit donner l'email exact à coller, sinon le
+ * lecteur du journal repart chercher lequel des deux comptes était en cause.
+ */
+function messagePermissionRefusee(classeur: string): string {
+  const email = compteUtilise ?? '(compte de service inconnu)';
+  return (
+    `[classeur] 403 PERMISSION_DENIED sur le classeur ${classeur}. ` +
+    `Le compte de service utilisé est ${email}. ` +
+    `Correctif humain : ouvrir le classeur dans Google Sheets, Partager, ajouter ${email} ` +
+    'avec le rôle Éditeur (sans notification), puis relancer. ' +
+    'Aucune variable d\'environnement ne remplace ce partage.'
+  );
 }
 
 async function jeton(): Promise<string> {
@@ -123,8 +209,9 @@ async function creerOnglet(acces: string, classeur: string, onglet: string): Pro
     const texte = await ajout.text();
     // Deux leads simultanés peuvent créer l'onglet en même temps ; le second
     // échoue sur un nom déjà pris, ce qui n'est pas une erreur.
-    if (!/already exists/i.test(texte)) throw new Error(`addSheet ${ajout.status}: ${texte.slice(0, 200)}`);
-    return;
+    if (/already exists/i.test(texte)) return;
+    if (ajout.status === 403) throw new Error(`${messagePermissionRefusee(classeur)} ${texte.slice(0, 200)}`);
+    throw new Error(`addSheet ${ajout.status}: ${texte.slice(0, 200)}`);
   }
   await fetch(`${SHEETS}/${classeur}/values/${encodeURIComponent(`${onglet}!A1`)}?valueInputOption=RAW`, {
     method: 'PUT',
@@ -160,7 +247,12 @@ export async function ajouterAuClasseur(onglet: string, valeurs: (string | numbe
       res = await fetch(cible, { method: 'POST', headers: entetes, body: corps });
     }
     if (!res.ok) {
-      console.error(`[classeur] ${onglet} ${res.status}`, (await res.text()).slice(0, 200));
+      const detail = (await res.text()).slice(0, 200);
+      if (res.status === 403) {
+        console.error(messagePermissionRefusee(classeur), detail);
+      } else {
+        console.error(`[classeur] ${onglet} ${res.status}`, detail);
+      }
       return false;
     }
     return true;
