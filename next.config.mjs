@@ -21,6 +21,12 @@ const nextConfig = {
         destination: 'https://audithygiene.fr/:path*',
         permanent: true,
       },
+      // Article renommé : la contre-visite ne fait plus partie de l'offre (301)
+      {
+        source: '/blog/contre-visite-audit-hygiene',
+        destination: '/blog/traiter-son-plan-d-action-apres-un-audit',
+        permanent: true,
+      },
     ];
   },
 };

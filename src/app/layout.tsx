@@ -17,11 +17,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'audit hygiène - Audit hygiène & HACCP pour restaurants en France',
+    default: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
     template: '%s | audit hygiène',
   },
   description:
-    "Cabinet d'audit hygiène et HACCP pour restaurants et CHR en France. Un auditeur contrôle votre établissement et vous remet un rapport complet : notation, cas critiques, plan correctif. Label privé indépendant.",
+    "Cabinet d'audit hygiène et HACCP pour restaurants et CHR en Île-de-France. Un auditeur contrôle votre établissement et vous remet un rapport complet : notation, cas critiques, plan correctif. Label privé indépendant.",
   applicationName: 'audit hygiène',
   authors: [{ name: 'audit hygiène' }],
   creator: 'audit hygiène',
@@ -42,15 +42,15 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     url: siteUrl,
     siteName: 'audit hygiène',
-    title: 'audit hygiène - Audit hygiène & HACCP pour restaurants en France',
+    title: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
     description:
-      "Anticipez le contrôle sanitaire : audit complet, rapport clair, plan d'action. Label privé indépendant, partout en France.",
+      "Anticipez le contrôle sanitaire : audit sur place, rapport clair, plan d'action. Label privé indépendant, dans les huit départements franciliens.",
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'audit hygiène - Audit hygiène & HACCP restaurants en France',
+    title: 'audit hygiène - Audit hygiène & HACCP restaurants en Île-de-France',
     description:
-      "Audit hygiène et HACCP pour restaurants en France. Notation, cas critiques, plan correctif.",
+      "Audit hygiène et HACCP pour restaurants en Île-de-France. Notation, cas critiques, plan correctif.",
   },
   robots: {
     index: true,

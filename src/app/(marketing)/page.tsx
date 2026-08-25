@@ -1,15 +1,23 @@
+/**
+ * La page d'accueil.
+ *
+ * Le parcours tenait en treize sections, dont trois construites sur la peur du
+ * contrôle et deux qui redisaient la même chose. Un restaurateur qui arrive ici
+ * est déjà inquiet : l'empiler ne le fait pas convertir, ça le fait partir.
+ *
+ * Il en reste six, dans l'ordre des questions qu'il se pose vraiment : qu'est-ce
+ * que vous faites, comment ça se passe, qu'est-ce que je reçois, combien ça
+ * coûte, comment je réserve, et les objections. Un seul bloc de conversion, en
+ * bas, vers lequel pointent tous les boutons de la page.
+ */
 import { Hero } from '@/components/marketing/Hero';
-import { Reseau } from '@/components/marketing/Reseau';
-import { Configurateur } from '@/components/marketing/Configurateur';
-import { Probleme } from '@/components/marketing/Probleme';
-import { Urgence } from '@/components/marketing/Urgence';
-import { SavoirFaire } from '@/components/marketing/SavoirFaire';
+import { TrustBar } from '@/components/marketing/TrustBar';
 import { ThemesAudit } from '@/components/marketing/ThemesAudit';
 import { Deroule } from '@/components/marketing/Deroule';
 import { Rapport } from '@/components/marketing/Rapport';
-import { LeadMagnet } from '@/components/marketing/LeadMagnet';
-import { StickyCta } from '@/components/marketing/StickyCta';
+import { Configurateur } from '@/components/marketing/Configurateur';
 import { Formules } from '@/components/marketing/Formules';
+import { StickyCta } from '@/components/marketing/StickyCta';
 import { Faq } from '@/components/marketing/Faq';
 import { Groupe } from '@/components/marketing/Groupe';
 import { RdvForm } from '@/components/marketing/RdvForm';
@@ -24,35 +32,52 @@ export default function HomePage() {
       <JsonLd data={serviceSchema()} />
       <JsonLd data={faqSchema(FAQ_ITEMS)} />
 
-      {/* Tunnel conversion : hook → confiance → peur → urgence → expertise → méthode → process → livrable → devis → prix → capture → résa → objections */}
       <Hero />
-      <Reseau />
-      <Probleme />
-      <Urgence />
-      <SavoirFaire />
-      <ThemesAudit />
+      <TrustBar />
       <Deroule />
+      <ThemesAudit />
       <Rapport />
-      <Configurateur />
       <Formules />
-      <LeadMagnet />
 
-      <section id="rdv" className="container-ah scroll-mt-24 py-24">
-        <div className="max-w-3xl">
-          <h2 className="section-title">Réservez votre audit</h2>
-          <p className="mt-4 text-lg text-ink/80">
-            Configurez votre audit et laissez vos coordonnées. Un auditeur vous recontacte pour convenir d'un créneau.
-          </p>
+      {/* Le bloc de conversion, unique. Le configurateur cerne le besoin, le
+          formulaire envoie la demande. Les deux aboutissent a /api/lead, qui
+          notifie Telegram et ecrit au classeur. */}
+      <section id="rdv" className="scroll-mt-24 bg-vert-50/60 py-20">
+        <div className="container-ah">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="section-title">Demandez votre audit</h2>
+            <p className="mt-4 text-lg text-ink/80">
+              Décrivez votre établissement en quelques clics. Un auditeur vous rappelle pour
+              convenir d&apos;un créneau, et vous recevez votre devis avant toute intervention.
+            </p>
+          </div>
         </div>
-        <div className="mt-8">
-          <RdvForm />
-        </div>
-        <div className="mt-6 flex flex-wrap justify-center gap-x-8 gap-y-2">
-          {['Intervention partout en France', 'Rapport PDF complet à la clé', 'Plan d’action priorisé', 'Réponse rapide, sans engagement'].map((t) => (
-            <span key={t} className="inline-flex items-center gap-2 text-sm font-medium text-ink/80">
-              <Dot /> {t}
-            </span>
-          ))}
+
+        {/* Le configurateur porte sa propre section et son propre conteneur :
+            le reemboiter doublerait les marges. */}
+        <Configurateur />
+
+        <div className="container-ah">
+
+          <div className="mx-auto mt-8 max-w-3xl">
+            <RdvForm />
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-2">
+            {[
+              'Intervention dans les huit départements franciliens',
+              'Rapport PDF complet',
+              'Plan d’action priorisé',
+              'Sans engagement',
+            ].map((t) => (
+              <span
+                key={t}
+                className="inline-flex items-center gap-2 text-sm font-medium text-ink/80"
+              >
+                <Dot /> {t}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -65,9 +90,22 @@ export default function HomePage() {
 
 function Dot() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0"
+    >
       <circle cx="12" cy="12" r="11" fill="#10B981" />
-      <path d="M7 12.5l3.2 3.2L17 9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M7 12.5l3.2 3.2L17 9"
+        stroke="white"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

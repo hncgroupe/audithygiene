@@ -10,7 +10,7 @@ export function Footer() {
         <div className="md:col-span-1">
           <Logo dark />
           <p className="mt-4 text-sm text-white/60">
-            Audit hygiène & HACCP pour restaurants et CHR en France.
+            Audit hygiène & HACCP pour restaurants et CHR en Île-de-France.
           </p>
           <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs font-semibold text-white">Le groupe</p>

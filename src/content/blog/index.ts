@@ -30,7 +30,7 @@ import { article as franchiseReseau } from './audit-hygiene-franchise-reseau';
 import { article as auditReprise } from './audit-reprise-restaurant';
 import { article as auditPriveVsControle } from './audit-prive-vs-controle-officiel';
 import { article as auditApresControle } from './audit-hygiene-apres-controle';
-import { article as contreVisite } from './contre-visite-audit-hygiene';
+import { article as planAction } from './traiter-son-plan-d-action-apres-un-audit';
 import { article as frequenceAudit } from './frequence-audit-hygiene';
 import { article as comprendreRapport } from './comprendre-rapport-audit-hygiene';
 import { article as casCritique } from './cas-critique-non-conformite-majeure';
@@ -63,7 +63,7 @@ export const ARTICLES: Article[] = [
   auditReprise,
   auditPriveVsControle,
   auditApresControle,
-  contreVisite,
+  planAction,
   frequenceAudit,
   comprendreRapport,
   casCritique,

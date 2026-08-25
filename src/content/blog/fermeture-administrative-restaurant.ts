@@ -132,12 +132,12 @@ export const article: Article = {
       type: 'ol',
       items: [
         "Contrôle sur place par les agents de la DDPP, qui consignent les non-conformités dans un rapport de visite remis ou notifié à l'exploitant.",
-        "Selon la gravité, mise en demeure de régulariser dans un délai déterminé, assortie le cas échéant d'une contre-visite programmée.",
+        "Selon la gravité, mise en demeure de régulariser dans un délai déterminé, assortie le cas échéant d'une contre-visite programmée des services de contrôle.",
         "Mise en oeuvre de la procédure contradictoire : l'exploitant est invité à présenter ses observations avant que la décision ne soit prise, sauf urgence justifiant une action immédiate.",
         "En cas de danger grave et immédiat, l'autorité peut suspendre l'activité sans attendre l'expiration du délai de mise en demeure.",
         "Prise de l'arrêté préfectoral de fermeture, totale ou partielle, notifié à l'exploitant, motivé en fait et en droit, précisant les manquements visés et les conditions de levée.",
         "Mise en conformité par le restaurateur, qui réalise les travaux, le nettoyage et les corrections exigés et en conserve les preuves.",
-        "Contre-visite de contrôle pour vérifier la réalité de la remise en conformité.",
+        "Contre-visite des services de contrôle pour vérifier la réalité de la remise en conformité.",
         "Levée de la mesure si les conditions sanitaires sont rétablies, ou maintien tant que le danger persiste.",
       ],
     },
@@ -206,7 +206,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "En pratique, la rapidité de réouverture dépend surtout de la qualité et de la sincérité de la mise en conformité. Une correction superficielle expose à un nouveau constat défavorable lors de la contre-visite, donc à un maintien de la fermeture. Une remise à niveau sérieuse, prouvée et durable, est la voie la plus sûre et la plus courte pour rouvrir.",
+      text: "En pratique, la rapidité de réouverture dépend surtout de la qualité et de la sincérité de la mise en conformité. Une correction superficielle expose à un nouveau constat défavorable lors de la contre-visite des services de contrôle, donc à un maintien de la fermeture. Une remise à niveau sérieuse, prouvée et durable, est la voie la plus sûre et la plus courte pour rouvrir.",
     },
     {
       type: 'h2',
@@ -228,7 +228,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Les délais de recours sont encadrés et courent à compter de la notification de la décision. Sur un dossier à fort enjeu, l'appui d'un avocat spécialisé en droit administratif est vivement conseillé, en particulier pour le référé qui obéit à des règles strictes et rapides. Cela dit, contester en justice et corriger sur le terrain ne s'opposent pas. Dans bien des cas, la voie la plus efficace pour rouvrir reste de remédier sans tarder aux manquements et de demander la contre-visite, le contentieux servant alors à faire reconnaître une éventuelle irrégularité de la procédure ou de la motivation.",
+      text: "Les délais de recours sont encadrés et courent à compter de la notification de la décision. Sur un dossier à fort enjeu, l'appui d'un avocat spécialisé en droit administratif est vivement conseillé, en particulier pour le référé qui obéit à des règles strictes et rapides. Cela dit, contester en justice et corriger sur le terrain ne s'opposent pas. Dans bien des cas, la voie la plus efficace pour rouvrir reste de remédier sans tarder aux manquements et de demander la contre-visite au service compétent, le contentieux servant alors à faire reconnaître une éventuelle irrégularité de la procédure ou de la motivation.",
     },
     {
       type: 'h2',
@@ -274,11 +274,11 @@ export const article: Article = {
     },
     {
       q: "Une fermeture administrative est-elle définitive ?",
-      a: "Non, elle est en principe temporaire. Elle dure jusqu'à la mise en conformité de l'établissement. Dès que le danger sanitaire a disparu et qu'une contre-visite le confirme, la mesure a vocation à être levée.",
+      a: "Non, elle est en principe temporaire. Elle dure jusqu'à la mise en conformité de l'établissement. Dès que le danger sanitaire a disparu et qu'une contre-visite des services de contrôle le confirme, la mesure a vocation à être levée.",
     },
     {
       q: "Comment obtenir la levée de la fermeture ?",
-      a: "En corrigeant l'ensemble des manquements visés par l'arrêté, en documentant chaque correction (factures, photos, bons d'intervention, relevés repris), puis en sollicitant la contre-visite. La levée intervient après constat favorable de l'agent compétent.",
+      a: "En corrigeant l'ensemble des manquements visés par l'arrêté, en documentant chaque correction (factures, photos, bons d'intervention, relevés repris), puis en sollicitant la contre-visite auprès du service compétent. La levée intervient après constat favorable de l'agent.",
     },
     {
       q: "Peut-on contester une décision de fermeture ?",

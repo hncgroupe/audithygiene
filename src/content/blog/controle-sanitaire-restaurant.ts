@@ -209,7 +209,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Quand les manquements sont plus sérieux mais sans péril immédiat, l'administration adresse une mise en demeure de régulariser dans un délai donné. Une contre-visite vérifie que les corrections ont été effectuées. Ne pas s'exécuter dans le délai expose à des mesures plus lourdes, y compris des sanctions financières administratives.",
+      text: "Quand les manquements sont plus sérieux mais sans péril immédiat, l'administration adresse une mise en demeure de régulariser dans un délai donné. Une contre-visite des services de contrôle vérifie ensuite que les corrections ont été effectuées. Ne pas s'exécuter dans le délai expose à des mesures plus lourdes, y compris des sanctions financières administratives.",
     },
     {
       type: 'h3',
@@ -332,7 +332,7 @@ export const article: Article = {
     },
     {
       q: 'Que se passe-t-il si des non-conformités sont relevées ?',
-      a: "Les suites sont graduées : rappel à la réglementation pour des écarts mineurs, mise en demeure avec délai et contre-visite pour des manquements plus sérieux, procès-verbal en cas d'infraction pénale, et fermeture administrative décidée par le préfet en cas de danger grave et immédiat pour la santé du consommateur.",
+      a: "Les suites sont graduées : rappel à la réglementation pour des écarts mineurs, mise en demeure avec délai et contre-visite des services de contrôle pour des manquements plus sérieux, procès-verbal en cas d'infraction pénale, et fermeture administrative décidée par le préfet en cas de danger grave et immédiat pour la santé du consommateur.",
     },
     {
       q: 'Les résultats du contrôle sont-ils publics ?',

@@ -56,11 +56,11 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   // Prix et formules
   {
     q: "Combien coûte un audit ?",
-    a: "À partir de 690 € pour l'Audit Essentiel et 990 € pour l'Audit Complet (tarifs indicatifs, précisés selon la taille de l'établissement). Le devis est gratuit et sans engagement.",
+    a: "490 € HT pour l'Audit Essentiel, qui couvre les 27 points de la grille, et 890 € HT pour l'Audit Conformité, qui ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris. Le devis est gratuit et sans engagement, et il est établi avant toute intervention.",
   },
   {
     q: "Quelle est la différence entre Essentiel et Complet ?",
-    a: "L'Essentiel (20 points de contrôle) est un diagnostic rapide des points clés. Le Complet (50 points, grille HACCP complète) couvre tous les thèmes avec un plan d'action détaillé et chaque non-conformité photographiée. Nous recommandons le Complet pour une vraie mise en conformité.",
+    a: "Les deux parcourent les 27 points de contrôle répartis en 12 thèmes : nous ne vendons pas d'audit partiel, qui rassurerait à tort. L'Audit Conformité ajoute un second volet, celui de l'affichage et de l'information du consommateur, qui relève de la DGCCRF et non des services vétérinaires. C'est un contrôle distinct, et un établissement irréprochable en cuisine peut se faire reprendre sur sa carte ou son affichage.",
   },
   {
     q: "Y a-t-il un engagement ?",
@@ -69,8 +69,8 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
 
   // Logistique
   {
-    q: "Intervenez-vous partout en France ?",
-    a: "Oui, nous intervenons partout en France. Indiquez votre adresse lors de la demande, nous organisons la visite d'un auditeur.",
+    q: "Intervenez-vous partout en Île-de-France ?",
+    a: "Oui, dans les huit départements : Paris, Hauts-de-Seine, Seine-Saint-Denis, Val-de-Marne, Seine-et-Marne, Yvelines, Essonne et Val-d'Oise. Aucune commune n'est écartée pour cause d'éloignement. Indiquez votre adresse lors de la demande, nous organisons la visite d'un auditeur.",
   },
   {
     q: "Proposez-vous des interventions en urgence ?",
@@ -136,7 +136,7 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "Êtes-vous certifiés ?",
-    a: "Nous sommes certifiés Qualiopi au titre de la catégorie « actions de formation ». L'audit hygiène, lui, est un label privé indépendant : c'est une démarche volontaire de mise en conformité, distincte d'un contrôle officiel.",
+    a: "Deux choses à ne pas confondre. HNC, la société qui édite ce site, est un organisme de formation certifié Qualiopi au titre des actions de formation, et déclaré pour la formation en hygiène alimentaire en restauration commerciale. L'audit, lui, n'est pas une prestation certifiée : audit hygiène est un label privé indépendant, ni certification officielle, ni agrément d'État, ni contrôle des services vétérinaires. Le rapport que nous vous remettons est un document privé, sans valeur opposable à l'administration.",
   },
   {
     q: "Mes données et mon rapport restent-ils confidentiels ?",
@@ -144,7 +144,7 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "Que puis-je faire après l'audit ?",
-    a: "Vous appliquez le plan d'action, à votre rythme et selon les priorités indiquées. Une contre-visite peut être organisée pour valider les corrections, et un suivi régulier permet de rester conforme dans la durée.",
+    a: "Vous appliquez le plan d'action vous-même, à votre rythme et selon les priorités indiquées. Chaque écart précise le correctif attendu et la preuve à constituer, pour que la liste soit exploitable sans nous. Si vous souhaitez un nouvel état des lieux plus tard, il s'agit d'un nouvel audit.",
   },
 ];
 

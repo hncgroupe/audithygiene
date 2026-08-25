@@ -5,15 +5,15 @@ export const article: Article = {
   title: "Après un contrôle sanitaire avec des remarques : que faire concrètement",
   metaTitle: 'Après un contrôle sanitaire : que faire avec les remarques',
   description:
-    "Contrôle sanitaire avec remarques : lire le rapport, comprendre la mise en demeure et les délais, prioriser les corrections et préparer la contre-visite.",
+    "Contrôle sanitaire avec remarques : lire le rapport, comprendre la mise en demeure et les délais, prioriser les corrections et préparer le retour de l'agent.",
   excerpt:
-    "Votre restaurant a reçu des remarques après une inspection. Comment lire le rapport, comprendre la mise en demeure, hiérarchiser les corrections, prouver la remise en conformité et préparer la contre-visite officielle.",
+    "Votre restaurant a reçu des remarques après une inspection. Comment lire le rapport, comprendre la mise en demeure, hiérarchiser les corrections, prouver la remise en conformité et préparer la contre-visite des services de contrôle.",
   category: 'Audit',
   datePublished: '2026-06-21',
   dateModified: '2026-06-21',
   readingMinutes: 14,
   answer:
-    "Après un contrôle sanitaire assorti de remarques, la première chose à faire est de lire intégralement le rapport remis par l'administration, en repérant la nature de chaque non-conformité et le délai de mise en conformité imposé. Vient ensuite la hiérarchisation : traiter d'abord les manquements à risque sanitaire direct, puis les écarts documentaires ou organisationnels. Chaque correction doit être réalisée puis prouvée (photos, factures, relevés repris, procédures mises à jour), car la contre-visite vérifie la réalité et la durabilité de la remise en conformité, pas seulement les bonnes intentions. Un audit de remise en conformité aide à structurer ce plan d'action, à ne rien oublier et à aborder le passage de l'inspecteur sans appréhension.",
+    "Après un contrôle sanitaire assorti de remarques, la première chose à faire est de lire intégralement le rapport remis par l'administration, en repérant la nature de chaque non-conformité et le délai de mise en conformité imposé. Vient ensuite la hiérarchisation : traiter d'abord les manquements à risque sanitaire direct, puis les écarts documentaires ou organisationnels. Chaque correction doit être réalisée puis prouvée (photos, factures, relevés repris, procédures mises à jour), car la contre-visite des services de contrôle vérifie la réalité et la durabilité de la remise en conformité, pas seulement les bonnes intentions. Un audit de remise en conformité aide à structurer ce plan d'action, à ne rien oublier et à aborder le passage de l'inspecteur sans appréhension.",
   blocks: [
     {
       type: 'p',
@@ -21,7 +21,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Cet article décrit pas à pas la marche à suivre après un contrôle assorti de remarques : décoder le rapport, comprendre ce qu'est exactement une mise en demeure et comment courent les délais, classer les non-conformités par priorité réelle, bâtir un plan d'action, constituer les preuves de correction, préparer la contre-visite officielle, et surtout éviter de retomber dans les mêmes écarts. Le tout en restant factuel, en citant les textes officiels et sans dramatiser.",
+      text: "Cet article décrit pas à pas la marche à suivre après un contrôle assorti de remarques : décoder le rapport, comprendre ce qu'est exactement une mise en demeure et comment courent les délais, classer les non-conformités par priorité réelle, bâtir un plan d'action, constituer les preuves de correction, préparer la contre-visite des services de contrôle, et surtout éviter de retomber dans les mêmes écarts. Le tout en restant factuel, en citant les textes officiels et sans dramatiser.",
     },
     {
       type: 'h2',
@@ -34,7 +34,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Le bon réflexe est inverse de l'urgence ressentie : prendre une heure au calme pour lire le rapport en entier, à froid, avant la moindre action. Une correction faite à côté du sujet ne compte pas lors de la contre-visite. Une cuisine astiquée ne répare pas une absence de relevés de température ni un défaut de traçabilité. La méthode prime sur la précipitation.",
+      text: "Le bon réflexe est inverse de l'urgence ressentie : prendre une heure au calme pour lire le rapport en entier, à froid, avant la moindre action. Une correction faite à côté du sujet ne compte pas le jour où l'administration revient constater. Une cuisine astiquée ne répare pas une absence de relevés de température ni un défaut de traçabilité. La méthode prime sur la précipitation.",
     },
     {
       type: 'callout',
@@ -48,7 +48,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Le rapport de visite, parfois appelé rapport d'inspection ou compte rendu, est le document de référence. C'est lui qui fixe ce qui doit être corrigé, et c'est sur lui que la contre-visite s'appuiera. Le lire en diagonale est l'erreur la plus coûteuse. Chaque ligne mérite d'être comprise : ce qui est reproché, où, et à quel point de la réglementation l'écart se rattache.",
+      text: "Le rapport de visite, parfois appelé rapport d'inspection ou compte rendu, est le document de référence. C'est lui qui fixe ce qui doit être corrigé, et c'est sur lui que les services de contrôle s'appuieront lorsqu'ils reviendront. Le lire en diagonale est l'erreur la plus coûteuse. Chaque ligne mérite d'être comprise : ce qui est reproché, où, et à quel point de la réglementation l'écart se rattache.",
     },
     {
       type: 'h3',
@@ -77,7 +77,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Au-delà de la liste des écarts, le rapport indique le plus souvent ce qui est demandé : une mise en conformité dans un délai, parfois une contre-visite annoncée, parfois la transmission de preuves par écrit. Ces éléments sont à surligner immédiatement. Ils définissent votre feuille de route et votre échéance. Si une mention vous paraît ambiguë, il vaut mieux contacter le service qui a réalisé le contrôle pour la clarifier plutôt que de l'interpréter au jugé.",
+      text: "Au-delà de la liste des écarts, le rapport indique le plus souvent ce qui est demandé : une mise en conformité dans un délai, parfois une contre-visite annoncée des services de contrôle, parfois la transmission de preuves par écrit. Ces éléments sont à surligner immédiatement. Ils définissent votre feuille de route et votre échéance. Si une mention vous paraît ambiguë, il vaut mieux contacter le service qui a réalisé le contrôle pour la clarifier plutôt que de l'interpréter au jugé.",
     },
     {
       type: 'h2',
@@ -130,7 +130,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Cette hiérarchie n'est pas figée. Un rapport peut imposer un ordre différent par ses délais. Mais le principe directeur reste constant : on ne laisse jamais un risque sanitaire direct derrière soi pour s'occuper d'un point cosmétique. C'est exactement la logique qu'appliquent les agents lors de la contre-visite.",
+      text: "Cette hiérarchie n'est pas figée. Un rapport peut imposer un ordre différent par ses délais. Mais le principe directeur reste constant : on ne laisse jamais un risque sanitaire direct derrière soi pour s'occuper d'un point cosmétique. C'est exactement la logique qu'appliquent les agents de l'administration lorsqu'ils reviennent.",
     },
     {
       type: 'quote',
@@ -143,7 +143,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Une liste de remarques dans un rapport reste une liste tant qu'elle n'est pas convertie en plan d'action concret. Le plan d'action transforme chaque grief en une tâche assignée, datée et vérifiable. C'est l'outil qui évite les oublis et qui prouvera, le jour de la contre-visite, que la démarche a été sérieuse.",
+      text: "Une liste de remarques dans un rapport reste une liste tant qu'elle n'est pas convertie en plan d'action concret. Le plan d'action transforme chaque grief en une tâche assignée, datée et vérifiable. C'est l'outil qui évite les oublis et qui prouvera, le jour où l'administration revient, que la démarche a été sérieuse.",
     },
     {
       type: 'p',
@@ -160,7 +160,7 @@ export const article: Article = {
     {
       type: 'callout',
       title: 'Le plan correctif, coeur de la remise en conformité',
-      text: "Un plan d'action lisible, où chaque remarque du rapport trouve sa réponse datée et prouvée, est l'outil le plus convaincant face à un agent en contre-visite. Il démontre que l'établissement a compris ses écarts, les a traités méthodiquement, et a mis en place de quoi ne pas les reproduire. C'est précisément ce qu'un audit de remise en conformité aide à formaliser.",
+      text: "Un plan d'action lisible, où chaque remarque du rapport trouve sa réponse datée et prouvée, est l'outil le plus convaincant face à un agent revenu constater la remise en conformité. Il démontre que l'établissement a compris ses écarts, les a traités méthodiquement, et a mis en place de quoi ne pas les reproduire. C'est précisément ce qu'un audit de remise en conformité aide à formaliser.",
     },
     {
       type: 'h2',
@@ -173,7 +173,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Concrètement, l'auditeur repart du rapport de l'administration, confronte chaque grief à la réalité du terrain après correction, repère les écarts résiduels, distingue les cas critiques des points mineurs, puis remet un plan correctif priorisé avec des délais conseillés. L'intérêt est double : combler ce qui a été corrigé à moitié, et débusquer les non-conformités que l'inspecteur n'a pas relevées ce jour-là mais qui pourraient ressortir à la contre-visite.",
+      text: "Concrètement, l'auditeur repart du rapport de l'administration, confronte chaque grief à la réalité du terrain après correction, repère les écarts résiduels, distingue les cas critiques des points mineurs, puis remet un plan correctif priorisé avec des délais conseillés. L'intérêt est double : combler ce qui a été corrigé à moitié, et débusquer les non-conformités que l'inspecteur n'a pas relevées ce jour-là mais qui pourraient ressortir lors du retour de l'administration.",
     },
     {
       type: 'h3',
@@ -181,16 +181,16 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Une équipe qui travaille tous les jours dans la même cuisine finit par ne plus voir certains défauts. L'habitude masque le détail que l'inspecteur, lui, remarque immédiatement. Un audit externe casse cette accoutumance. Il pose les questions qu'un agent poserait, demande à voir les preuves qu'un agent demanderait, et met le doigt sur ce qui semblait acquis. C'est inconfortable sur le moment, utile à la contre-visite.",
+      text: "Une équipe qui travaille tous les jours dans la même cuisine finit par ne plus voir certains défauts. L'habitude masque le détail que l'inspecteur, lui, remarque immédiatement. Un audit externe casse cette accoutumance. Il pose les questions qu'un agent poserait, demande à voir les preuves qu'un agent demanderait, et met le doigt sur ce qui semblait acquis. C'est inconfortable sur le moment, utile le jour où l'administration revient.",
     },
     {
       type: 'p',
-      text: "audit hygiène est un label privé indépendant. Il ne constitue ni une certification d'État, ni un agrément réglementaire, ni un contrôle des services vétérinaires ou de la DDPP, et il ne se substitue à aucune autorité administrative. Il ne garantit aucun résultat à un contrôle officiel ni à une contre-visite. Son rôle est d'aider à corriger, à documenter et à préparer, pour aborder le retour de l'administration avec une situation maîtrisée plutôt qu'incertaine.",
+      text: "audit hygiène est un label privé indépendant. Il ne constitue ni une certification d'État, ni un agrément réglementaire, ni un contrôle des services vétérinaires ou de la DDPP, et il ne se substitue à aucune autorité administrative. Il ne garantit aucun résultat à un contrôle officiel ni à une contre-visite des services de contrôle. La prestation s'arrête d'ailleurs à la remise du rapport : l'auditeur ne repasse pas vérifier et ne suit pas le chantier, c'est l'exploitant qui applique les correctifs à son rythme. Le rôle de l'audit est d'aider à corriger, à documenter et à préparer, pour aborder le retour de l'administration avec une situation maîtrisée plutôt qu'incertaine.",
     },
     {
       type: 'h2',
       id: 'preparer-la-contre-visite',
-      text: 'Préparer la contre-visite officielle',
+      text: 'Préparer la contre-visite des services de contrôle',
     },
     {
       type: 'p',
@@ -227,7 +227,7 @@ export const article: Article = {
     {
       type: 'callout',
       title: 'La durabilité prime sur le coup d\'éclat',
-      text: "Une cuisine impeccable le jour de la contre-visite, mais sans aucun relevé ni procédure entre les deux visites, ne convainc pas. L'agent cherche la preuve d'une maîtrise installée, pas d'un grand ménage de circonstance. C'est pourquoi reprendre les enregistrements dès le lendemain du premier contrôle, et les tenir sans interruption, vaut mieux que tout reconstituer la veille du retour.",
+      text: "Une cuisine impeccable le jour de la contre-visite de l'administration, mais sans aucun relevé ni procédure entre les deux visites, ne convainc pas. L'agent cherche la preuve d'une maîtrise installée, pas d'un grand ménage de circonstance. C'est pourquoi reprendre les enregistrements dès le lendemain du premier contrôle, et les tenir sans interruption, vaut mieux que tout reconstituer la veille du retour.",
     },
     {
       type: 'h2',
@@ -236,7 +236,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Passer une contre-visite avec succès clôt un épisode, mais ne garantit rien pour la suite si les habitudes reviennent. La récidive est mal vue : un établissement qui retombe sur les mêmes écarts montre que la correction était de façade. Le vrai enjeu, une fois le dossier refermé, est de rendre la maîtrise sanitaire routinière, pour qu'un prochain contrôle inopiné se passe sans stress.",
+      text: "Passer avec succès la contre-visite de l'administration clôt un épisode, mais ne garantit rien pour la suite si les habitudes reviennent. La récidive est mal vue : un établissement qui retombe sur les mêmes écarts montre que la correction était de façade. Le vrai enjeu, une fois le dossier refermé, est de rendre la maîtrise sanitaire routinière, pour qu'un prochain contrôle inopiné se passe sans stress.",
     },
     {
       type: 'ol',
@@ -276,7 +276,7 @@ export const article: Article = {
       a: "Laisser passer l'échéance sans avoir corrigé ni transmis les preuves expose à une escalade : nouvelle visite défavorable, sanction administrative, voire suspension d'activité si le danger persiste. Si un délai vous paraît intenable, en particulier pour des travaux lourds, contactez le service de contrôle pour exposer l'avancement, devis et calendrier à l'appui.",
     },
     {
-      q: "Comment se déroule une contre-visite et que vérifie l'agent ?",
+      q: "Comment se déroule la contre-visite de l'administration et que vérifie l'agent ?",
       a: "L'agent reprend son rapport précédent et vérifie chaque constat un par un. Il regarde deux choses : que le défaut est corrigé, et que la correction tient dans la durée. Un historique de relevés tenus régulièrement depuis le contrôle a plus de valeur qu'un relevé fait la veille. La continuité prouve la maîtrise retrouvée.",
     },
     {
@@ -285,11 +285,11 @@ export const article: Article = {
     },
     {
       q: "À quoi sert un audit de remise en conformité après un contrôle ?",
-      a: "Il apporte un regard extérieur calibré sur la même réglementation que l'inspecteur. L'auditeur repart du rapport de l'administration, vérifie que chaque grief est traité, repère les écarts résiduels et les cas critiques, puis remet un plan correctif priorisé. Il aide à combler ce qui a été corrigé à moitié et à débusquer les non-conformités qui pourraient ressortir à la contre-visite.",
+      a: "Il apporte un regard extérieur calibré sur la même réglementation que l'inspecteur. L'auditeur repart du rapport de l'administration, vérifie que chaque grief est traité, repère les écarts résiduels et les cas critiques, puis remet un plan correctif priorisé. Il aide à combler ce qui a été corrigé à moitié et à débusquer les non-conformités qui pourraient ressortir lors du retour de l'administration.",
     },
     {
-      q: "Un audit hygiène garantit-il de réussir la contre-visite ?",
-      a: "Non, aucun prestataire ne peut le garantir. audit hygiène est un label privé indépendant qui aide à corriger, documenter et préparer. Il ne constitue pas une certification d'État, ne se substitue à aucune autorité administrative et ne garantit aucun résultat à un contrôle officiel ou à une contre-visite.",
+      q: "Un audit hygiène garantit-il de réussir la contre-visite de l'administration ?",
+      a: "Non, aucun prestataire ne peut le garantir. audit hygiène est un label privé indépendant qui aide à corriger, documenter et préparer. Il ne constitue pas une certification d'État, ne se substitue à aucune autorité administrative et ne garantit aucun résultat à un contrôle officiel ou à une contre-visite des services de contrôle. La prestation s'arrête à la remise du rapport : l'exploitant applique ensuite les correctifs lui-même.",
     },
     {
       q: "Comment éviter de retomber dans les mêmes écarts ?",
@@ -329,7 +329,7 @@ export const article: Article = {
   related: [
     'fermeture-administrative-restaurant',
     'controle-sanitaire-restaurant',
-    'contre-visite-audit-hygiene',
+    'traiter-son-plan-d-action-apres-un-audit',
   ],
   relatedZones: ['seine-saint-denis', 'paris', 'val-de-marne'],
 };

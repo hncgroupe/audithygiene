@@ -182,7 +182,7 @@ export const article: Article = {
         "Évaluer l'étendue : déterminer quels autres produits ont pu être touchés et appliquer le doute en faveur de la sécurité.",
         "Tracer l'incident : noter ce qui s'est passé, ce qui a été retiré, ce qui a été fait, dans le cadre de la gestion des non-conformités du PMS.",
         "Corriger la cause, pas seulement le symptôme : réparer ou remplacer l'équipement, revoir l'organisation, reformer l'équipe sur le point en cause.",
-        "Vérifier que la correction tient : contrôler que la barrière de sécurité est de nouveau en place et le reste, au besoin lors d'une contre-visite.",
+        "Vérifier que la correction tient : contrôler vous-même, quelques jours puis quelques semaines plus tard, que la barrière de sécurité est de nouveau en place et qu'elle le reste, en gardant la trace datée de ce contrôle.",
       ],
     },
     {

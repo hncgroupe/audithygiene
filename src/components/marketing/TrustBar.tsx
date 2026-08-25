@@ -1,15 +1,18 @@
 const PILIERS = [
   {
-    titre: 'Fondé sur la réglementation',
-    texte: "Chaque point d'audit s'appuie sur l'hygiène alimentaire et les principes HACCP.",
+    titre: 'Chaque point porte son texte',
+    texte:
+      "La grille cite le règlement ou l'arrêté qui fonde l'exigence, et dit ce que ce texte n'impose pas.",
   },
   {
     titre: 'Un auditeur sur place',
-    texte: "Une visite réelle de votre établissement, partout en France.",
+    texte:
+      "Une visite réelle de votre établissement, dans les huit départements d'Île-de-France.",
   },
   {
-    titre: 'Un rapport actionnable',
-    texte: 'Notation, cas critiques et plan correctif priorisé, sans jargon.',
+    titre: 'Un rapport que vous pouvez appliquer seul',
+    texte:
+      "Notation, écarts classés par priorité, et pour chacun le correctif attendu et la preuve à constituer.",
   },
 ];
 

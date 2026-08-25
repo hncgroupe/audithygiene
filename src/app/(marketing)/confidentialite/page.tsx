@@ -32,7 +32,22 @@ export default function ConfidentialitePage() {
         consentement explicite.
       </p>
       <h2>Durée de conservation</h2>
-      <p>{/* TODO : durées à valider */}Durées de conservation : <em>à préciser (TODO)</em>. Vos données ne sont pas conservées au-delà du nécessaire.</p>
+      {/* Durees alignees sur les recommandations de la CNIL et sur les
+          obligations comptables. A revoir si le perimetre de traitement change. */}
+      <p>
+        Vos données ne sont pas conservées au-delà de ce qui est nécessaire. Les demandes de
+        contact restées sans suite sont supprimées au bout de trois ans à compter du dernier
+        échange. Les dossiers d&apos;audit, rapports et photographies compris, sont conservés
+        cinq ans après la fin de la relation contractuelle, durée qui correspond à la
+        prescription de droit commun et permet de justifier de la prestation réalisée. Les pièces
+        comptables et les factures sont conservées dix ans, conformément à l&apos;article
+        L. 123-22 du code de commerce.
+      </p>
+      <p>
+        Les photographies prises pendant un audit ne servent qu&apos;à documenter le rapport et le
+        plan d&apos;action. Elles ne sont ni publiées, ni transmises à un tiers, et sont
+        supprimées avant terme sur simple demande de votre part.
+      </p>
       <h2>Destinataires & sous-traitants</h2>
       <p>
         Vos données sont traitées par audit hygiène et ses prestataires techniques (hébergement

@@ -68,7 +68,7 @@ export const article: Article = {
         "Type d'établissement et nature des préparations : produits crus, liaison froide, sous-vide, viande hachée, produits de la mer et préparations à base d'œuf cru augmentent le risque par rapport à des plats cuits à cœur et servis chauds.",
         "Volume et flux : un service qui double ou triple en coup de feu met sous tension la chaîne du froid, les temps de manipulation et la marche en avant. Le volume crée des occasions d'erreur.",
         "Public sensible : restauration collective servant des enfants, des personnes âgées ou des malades (cantines, EHPAD, établissements de santé). Une même défaillance y a des conséquences bien plus lourdes, ce qui justifie une surveillance plus serrée.",
-        "Historique de non-conformités : un établissement qui a connu des cas critiques, une contre-visite ou une fermeture administrative doit revenir sous contrôle rapproché jusqu'à preuve d'une stabilisation durable.",
+        "Historique de non-conformités : un établissement qui a connu des cas critiques, une contre-visite des services de contrôle ou une fermeture administrative gagne à revenir sous contrôle rapproché jusqu'à preuve d'une stabilisation durable.",
         "Turnover des équipes : chaque départ emporte des réflexes acquis, chaque arrivée demande une nouvelle montée en compétence. Une cuisine qui change souvent de personnel perd plus vite le niveau atteint.",
         "Saisonnalité et extras : recours fréquent à des renforts ponctuels, ouverture d'une terrasse l'été, pics événementiels. Les périodes de tension méritent un audit calé juste avant ou pendant.",
       ],
@@ -126,7 +126,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Quatre passages par an se justifient pour les situations à risque élevé ou en cours de stabilisation. Un établissement qui sort d'une contre-visite difficile, d'une fermeture administrative ou d'un audit avec cas critiques a besoin d'un suivi rapproché pour ancrer durablement ses corrections. Idem pour une jeune structure dans ses premiers mois, ou pour une cuisine au turnover très élevé où le niveau se reconstruit en continu. Le trimestriel n'est pas une punition : c'est un dispositif de remise à niveau, pensé pour redescendre vers l'annuel une fois la stabilité prouvée.",
+      text: "Quatre passages par an se justifient pour les situations à risque élevé ou en cours de stabilisation. Un établissement qui sort d'une contre-visite difficile des services de contrôle, d'une fermeture administrative ou d'un audit avec cas critiques a besoin d'un suivi rapproché pour ancrer durablement ses corrections. Idem pour une jeune structure dans ses premiers mois, ou pour une cuisine au turnover très élevé où le niveau se reconstruit en continu. Le trimestriel n'est pas une punition : c'est un dispositif de remise à niveau, pensé pour redescendre vers l'annuel une fois la stabilité prouvée.",
     },
     {
       type: 'callout',
@@ -169,7 +169,7 @@ export const article: Article = {
         "Poser un audit complet de référence. Il établit le niveau de départ, identifie les non-conformités, distingue les cas critiques et fixe un plan correctif avec priorités et délais.",
         "Évaluer le profil de risque. À partir du type d'activité, du volume, du public, de l'historique et du turnover, l'auditeur recommande un intervalle (annuel, semestriel ou trimestriel) et le note dans le rapport.",
         "Caler les passages dans le calendrier. On évite les périodes mortes et on vise plutôt les moments de tension réelle : avant la saison haute, après l'arrivée d'une nouvelle équipe, à l'ouverture d'une terrasse.",
-        "Programmer une contre-visite si nécessaire. Quand des cas critiques ont été relevés, un passage de vérification ciblé vérifie que les corrections ont été appliquées, sans attendre l'audit suivant.",
+        "Traiter le plan d'action sans attendre l'audit suivant. Quand des cas critiques ont été relevés, l'exploitant les reprend en priorité, avec ses propres moyens, et conserve au fil de l'eau les preuves de correction, relevés repris, photos datées, factures, qui montreront ensuite ce qui a été fait.",
         "Faire vivre les autocontrôles entre deux audits. Le PMS reste actif chaque jour. L'auditeur s'appuiera sur ces enregistrements au passage suivant pour mesurer la régularité, pas seulement l'état du jour.",
         "Réviser le rythme à chaque cycle. Un historique qui s'assainit autorise à espacer. Une dégradation impose de resserrer. Le plan de suivi n'est pas figé, il respire avec l'établissement.",
       ],
@@ -194,7 +194,7 @@ export const article: Article = {
     {
       type: 'callout',
       title: "Maintenir vaut mieux que rattraper",
-      text: "Corriger une dérive identifiée tôt coûte peu : un rappel, un ajustement de procédure, une formation. Rattraper un établissement qui a glissé pendant des mois mobilise bien plus d'énergie, parfois sous la pression d'une contre-visite ou d'une suite administrative. Le suivi régulier est moins une dépense qu'une assurance contre le décrochage.",
+      text: "Corriger une dérive identifiée tôt coûte peu : un rappel, un ajustement de procédure, une formation. Rattraper un établissement qui a glissé pendant des mois mobilise bien plus d'énergie, parfois sous la pression d'une contre-visite des services de contrôle ou d'une suite administrative. Le suivi régulier est moins une dépense qu'une assurance contre le décrochage.",
     },
     {
       type: 'h2',
@@ -203,7 +203,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "La recommandation de date n'est pas un automatisme commercial. Elle découle directement de ce que l'audit a révélé. Un rapport sans cas critique, des écarts mineurs corrigés vite, une équipe stable : la date recommandée s'éloigne, souvent vers l'annuel. Des cas critiques, un PMS lacunaire, un turnover marqué : elle se rapproche, et une contre-visite peut s'intercaler. La logique est transparente et tracée dans le rapport, pour que le restaurateur comprenne le pourquoi de l'intervalle proposé.",
+      text: "La recommandation de date n'est pas un automatisme commercial. Elle découle directement de ce que l'audit a révélé. Un rapport sans cas critique, des écarts mineurs corrigés vite, une équipe stable : la date recommandée s'éloigne, souvent vers l'annuel. Des cas critiques, un PMS lacunaire, un turnover marqué : elle se rapproche, le temps que le plan d'action soit traité et que les preuves de correction s'accumulent. La logique est transparente et tracée dans le rapport, pour que le restaurateur comprenne le pourquoi de l'intervalle proposé.",
     },
     {
       type: 'p',
@@ -237,7 +237,7 @@ export const article: Article = {
       items: [
         "Avant une ouverture ou une réouverture : un audit de démarrage cale les bonnes pratiques dès le premier jour, quand tout est encore à fixer.",
         "Après un changement majeur : nouveau chef, refonte de carte, travaux de cuisine, changement de système de froid. La maîtrise acquise peut être bousculée par ces transitions.",
-        "À la suite d'une contre-visite officielle ou d'une suite administrative : un suivi rapproché aide à reconstruire un niveau stable et documenté.",
+        "À la suite d'une contre-visite des services de contrôle ou d'une suite administrative : un suivi rapproché aide à reconstruire un niveau stable et documenté.",
         "Avant un événement à fort enjeu : ouverture estivale d'une terrasse, montée en charge saisonnière, reprise après une longue fermeture.",
         "En cas de doute interne : un signal d'alerte, un incident évité de justesse, une équipe qui exprime des difficultés. Mieux vaut un audit anticipé qu'une dérive installée.",
       ],
@@ -322,7 +322,7 @@ export const article: Article = {
   ],
   related: [
     'audit-hygiene-restaurant-ile-de-france',
-    'contre-visite-audit-hygiene',
+    'traiter-son-plan-d-action-apres-un-audit',
     'plan-maitrise-sanitaire-pms',
   ],
   relatedZones: ['paris', 'hauts-de-seine', 'seine-saint-denis'],

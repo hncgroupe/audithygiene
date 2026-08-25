@@ -143,7 +143,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "La fréquence se règle selon le profil. Un site en difficulté, ou qui présente un cas critique, mérite une contre-visite rapprochée pour vérifier que le plan correctif a été appliqué. Un site solide peut espacer ses audits. C'est le tableau de bord qui oriente cette cadence : il fait remonter les sites à risque, et c'est sur eux que se concentre l'effort. Un réseau qui audite tous ses sites à la même fréquence, indépendamment de leur niveau, gaspille son énergie sur les bons élèves et néglige les sites fragiles.",
+      text: "La fréquence se règle selon le profil. Un site en difficulté, ou qui présente un cas critique, mérite un nouvel audit rapproché, le temps que l'exploitant traite le plan correctif et rassemble ses preuves de correction. Un site solide peut espacer ses audits. C'est le tableau de bord qui oriente cette cadence : il fait remonter les sites à risque, et c'est sur eux que se concentre l'effort. Un réseau qui audite tous ses sites à la même fréquence, indépendamment de leur niveau, gaspille son énergie sur les bons élèves et néglige les sites fragiles.",
     },
     {
       type: 'ol',
@@ -152,7 +152,7 @@ export const article: Article = {
         "Remise d'un rapport individuel par site : notation, cas critiques, plan correctif daté.",
         "Consolidation des résultats dans le tableau de bord du réseau.",
         "Identification des points faibles récurrents et des sites à risque.",
-        "Contre-visites ciblées sur les sites fragiles, audits espacés sur les sites solides.",
+        "Audits rapprochés sur les sites fragiles, audits espacés sur les sites solides.",
         "Suivi de l'évolution audit après audit, avec la même grille versionnée.",
       ],
     },
@@ -231,7 +231,7 @@ export const article: Article = {
         "Points faibles récurrents identifiés comme défauts de système et corrigés à la racine.",
         "Formation du personnel ciblée sur les besoins révélés par les audits.",
         "Référent hygiène identifié sur chaque site, point de contact stable malgré le turnover.",
-        "Plan correctif daté et priorisé pour chaque non-conformité, avec contre-visite des sites fragiles.",
+        "Plan correctif daté et priorisé pour chaque non-conformité, appliqué par le site lui-même et dont les preuves remontent à la tête de réseau.",
       ],
     },
     {
@@ -266,7 +266,7 @@ export const article: Article = {
     },
     {
       q: "À quelle fréquence auditer les sites d'un réseau ?",
-      a: "La fréquence dépend du profil de chaque site. Un établissement fragile ou présentant un cas critique mérite une contre-visite rapprochée pour vérifier l'application du plan correctif. Un site solide peut espacer ses audits. Le tableau de bord du réseau fait remonter les sites à risque et oriente la cadence, plutôt que d'auditer tout le monde à la même fréquence indépendamment du niveau.",
+      a: "La fréquence dépend du profil de chaque site. Un établissement fragile ou présentant un cas critique mérite un nouvel audit rapproché, une fois que le site a traité le plan correctif et constitué ses preuves. Un site solide peut espacer ses audits. Le tableau de bord du réseau fait remonter les sites à risque et oriente la cadence, plutôt que d'auditer tout le monde à la même fréquence indépendamment du niveau.",
     },
     {
       q: "En quoi l'audit hygiène protège-t-il la réputation d'une enseigne ?",

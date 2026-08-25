@@ -7,7 +7,7 @@ export const article: Article = {
   description:
     "Déroulé complet d'un audit hygiène privé d'un restaurant en Île-de-France : prise de rendez-vous, visite d'environ 2 h, thèmes HACCP contrôlés, notation, rapport PDF.",
   excerpt:
-    "Prise de rendez-vous, visite sur place d'environ 2 h, contrôle des thèmes HACCP, notation, cas critiques, rapport PDF avec plan correctif, contre-visite : le déroulé complet d'un audit hygiène privé dans les 8 départements d'IDF.",
+    "Prise de rendez-vous, visite sur place d'environ 2 h, contrôle des thèmes HACCP, notation, cas critiques, rapport PDF avec un plan correctif que vous appliquez ensuite : le déroulé complet d'un audit hygiène privé dans les 8 départements d'IDF.",
   category: 'Méthode',
   datePublished: '2026-06-21',
   dateModified: '2026-06-22',
@@ -166,20 +166,20 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Le rapport PDF reprend la note globale, le détail par thème, la liste des cas critiques et un plan correctif actionnable. Pour chaque non-conformité, vous obtenez une action concrète, un niveau de priorité (haute, moyenne, basse) et un délai conseillé. Les photos illustrent les constats quand c'est utile. Vous ne recevez pas un simple verdict : vous savez exactement quoi corriger, dans quel ordre, et dans quel délai raisonnable. Le rapport recommande aussi une date pour le prochain point de suivi.",
+      text: "Le rapport PDF reprend la note globale, le détail par thème, la liste des cas critiques et un plan correctif actionnable. Pour chaque non-conformité, vous obtenez une action concrète, un niveau de priorité (haute, moyenne, basse) et un délai conseillé. Les photos illustrent les constats quand c'est utile. Vous ne recevez pas un simple verdict : vous savez exactement quoi corriger, dans quel ordre, et dans quel délai raisonnable. Le rapport indique aussi une date repère si vous souhaitez refaire un point plus tard, une fois la liste traitée.",
     },
     {
       type: 'h2',
-      id: 'la-contre-visite',
-      text: "La contre-visite : vérifier que les corrections tiennent",
+      id: 'apres-le-rapport',
+      text: "Après le rapport : le plan correctif vous appartient",
     },
     {
       type: 'p',
-      text: "Remettre un rapport ne suffit pas. La valeur réelle d'un audit se mesure à ce qui change ensuite. Une contre-visite, programmée quelques semaines après la première, permet de vérifier que les actions correctives ont bien été mises en place et qu'elles tiennent dans la durée. L'auditeur reprend les points qui posaient problème, contrôle les corrections, et ajuste la note. Cette étape est particulièrement utile après un cas critique : on veut s'assurer que la cause a été traitée à la racine, pas seulement le symptôme le jour de la visite.",
+      text: "La prestation s'arrête à la remise du rapport. L'auditeur ne repasse pas vérifier, ne suit pas le chantier et ne fait pas les travaux : c'est vous qui appliquez le plan correctif, à votre rythme et avec vos propres moyens. C'est précisément pour cela que chaque ligne indique le correctif attendu et la preuve à constituer une fois qu'il est appliqué. Vous n'avez besoin de personne pour lire ce document, ni pour le mettre en oeuvre. Après un cas critique, le réflexe utile est de traiter la cause et non le symptôme, puis de garder une trace datée de la correction, relevé repris, photo, facture ou bon d'intervention.",
     },
     {
       type: 'p',
-      text: "Certains établissements en font un rituel. Un audit annuel complet, une contre-visite légère à mi-année, et le niveau d'hygiène se maintient sans à-coups. C'est moins coûteux et moins stressant que de tout reprendre en urgence à l'annonce d'un contrôle.",
+      text: "Certains établissements en font un rituel. Un audit complet une fois par an, le plan correctif traité dans les semaines qui suivent, les preuves rangées au fur et à mesure, et le niveau d'hygiène se maintient sans à-coups. C'est moins stressant que de tout reprendre en urgence à l'annonce d'un contrôle.",
     },
     {
       type: 'h2',
@@ -284,7 +284,7 @@ export const article: Article = {
     },
     {
       q: "À quelle fréquence faut-il faire un audit ?",
-      a: "Il n'existe pas d'obligation légale d'audit privé. En pratique, beaucoup d'établissements en programment un à l'ouverture, puis une fois par an ou après un changement d'équipe ou de carte, parfois complété d'une contre-visite, pour entretenir leur niveau de conformité.",
+      a: "Il n'existe pas d'obligation légale d'audit privé. En pratique, beaucoup d'établissements en programment un à l'ouverture, puis une fois par an ou après un changement d'équipe ou de carte, en traitant le plan correctif reçu dans les semaines qui suivent, pour entretenir leur niveau de conformité.",
     },
   ],
   sources: [

@@ -194,7 +194,7 @@ export const article: Article = {
     },
     {
       type: 'p',
-      text: "Le rapport se termine en général par une recommandation de date pour le prochain audit. Cette échéance n'est pas arbitraire : elle se cale sur le niveau de maîtrise constaté. Un établissement solide, sans cas critique, avec quelques écarts mineurs faciles à corriger, peut espacer ses audits. Un établissement présentant des non-conformités majeures gagne à programmer une contre-visite rapprochée, le temps de vérifier que les corrections ont tenu dans la durée et pas seulement le jour qui a suivi le rapport.",
+      text: "Le rapport se termine en général par une recommandation de date pour le prochain audit. Cette échéance n'est pas arbitraire : elle se cale sur le niveau de maîtrise constaté. Un établissement solide, sans cas critique, avec quelques écarts mineurs faciles à corriger, peut espacer ses audits. Un établissement présentant des non-conformités majeures gagne à rapprocher son prochain audit, le temps de traiter la liste et de laisser aux corrections quelques semaines pour montrer qu'elles tiennent, et pas seulement le jour qui a suivi le rapport.",
     },
     {
       type: 'p',

@@ -20,8 +20,8 @@ export function StickyCta() {
         show ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <Link href="/#configurateur" className="btn-primary w-full">
-        Configurer mon audit · dès 690 €
+      <Link href="/#rdv" className="btn-primary w-full">
+        Demander mon audit · dès 490 € HT
       </Link>
     </div>
   );

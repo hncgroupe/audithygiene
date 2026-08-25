@@ -180,9 +180,11 @@ export default function MethodePage() {
             pouvez confier à votre équipe.
           </p>
           <p className="mt-4 max-w-3xl text-ink/75">
-            Une contre-visite peut être organisée pour vérifier que les corrections ont bien été
-            mises en place et qu'elles tiennent dans le temps. Pour comprendre en détail la lecture
-            d'un rapport, voir notre article{' '}
+            Les corrections vous reviennent ensuite : vous les menez avec votre équipe et vos
+            artisans habituels, dans l'ordre qui convient à votre activité. C'est pour cela que
+            chaque ligne indique aussi la preuve à constituer, une photo, un relevé, une facture ou
+            une procédure écrite, afin que vous puissiez montrer plus tard ce qui a été fait. Pour
+            comprendre en détail la lecture d'un rapport, voir notre article{' '}
             <Link
               href="/blog/comprendre-rapport-audit-hygiene"
               className="font-medium text-vert-700 underline decoration-vert/40 underline-offset-2"

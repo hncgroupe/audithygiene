@@ -41,7 +41,7 @@ export interface Formule {
   description: string;
   inclus: string[];
   duree: string;
-  prix: string; // TODO
+  prix: string;
   recurrent: boolean;
   populaire?: boolean;
 }
@@ -50,31 +50,34 @@ export const FORMULES: Formule[] = [
   {
     id: 'essentiel',
     nom: 'Audit Essentiel',
-    description: 'Le diagnostic rapide pour savoir où vous en êtes.', // TODO valider
+    description: "L'état des lieux complet de votre hygiène, sur les 27 points de la grille.",
     inclus: [
-      'Visite sur place',
-      '20 points de contrôle clés',
-      'Cas critiques signalés',
-      'Synthèse des priorités (PDF)',
+      'Visite sur place, environ 2 h',
+      'Les 27 points de contrôle, 12 thèmes',
+      'Chaque écart photographié',
+      'Note globale et note par thème',
+      "Rapport PDF avec plan d'action priorisé",
+      'Pour chaque écart : le correctif attendu et la preuve à constituer',
     ],
-    duree: 'TODO',
-    prix: '690 €', // proposition à valider
+    duree: 'environ 2 h sur place',
+    prix: '490 € HT',
     recurrent: false,
   },
   {
-    id: 'complet',
-    nom: 'Audit Complet',
-    description: 'L’audit approfondi sur tous les thèmes, avec plan d’action détaillé.', // TODO valider
+    id: 'conformite',
+    nom: 'Audit Conformité',
+    description:
+      "L'hygiène et l'affichage réunis : deux administrations contrôlent, deux risques à couvrir.",
     inclus: [
-      'Visite sur place',
-      '50 points de contrôle (grille HACCP complète)',
-      'Chaque non-conformité photographiée',
-      'Rapport PDF détaillé',
-      'Plan d’action priorisé (action, priorité, délai)',
-      'Date du prochain audit recommandé',
+      "Tout l'Audit Essentiel, soit les 27 points d'hygiène",
+      '17 points de plus : prix, allergènes, origine des viandes, mentions, affichages en salle',
+      'Les documents examinés un par un : PMS, relevés, traçabilité, plan de nettoyage',
+      'Visite sur place, environ 3 h 30',
+      'Rapport PDF détaillé, les deux volets notés séparément',
+      "Plan d'action priorisé, avec la preuve attendue pour chaque point",
     ],
-    duree: 'TODO',
-    prix: '990 €', // proposition à valider
+    duree: 'environ 3 h 30 sur place',
+    prix: '890 € HT',
     recurrent: false,
     populaire: true,
   },

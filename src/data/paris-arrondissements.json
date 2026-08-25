@@ -1,0 +1,1125 @@
+{
+ "genere": "2026-08-24",
+ "arrondissements": {
+  "75101": {
+   "code": "75101",
+   "numero": 1,
+   "nom": "Paris 1er",
+   "codePostal": "75001",
+   "population": 15114,
+   "chiffres": {
+    "restaurants": 1059,
+    "rapide": 574,
+    "bars": 147,
+    "boulangeries": 58,
+    "boucheries": 43,
+    "traiteurs": 104,
+    "cafeterias": 3,
+    "autresRestauration": 13,
+    "collectiveSousContrat": 10,
+    "detailPain": 32
+   },
+   "total": 2043,
+   "centre": [
+    2.3359,
+    48.862
+   ],
+   "voisines": [
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 0.7
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 1.4
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 1.7
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 1.7
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 1.8
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 2
+    }
+   ]
+  },
+  "75102": {
+   "code": "75102",
+   "numero": 2,
+   "nom": "Paris 2e",
+   "codePostal": "75002",
+   "population": 19847,
+   "chiffres": {
+    "restaurants": 1021,
+    "rapide": 744,
+    "bars": 176,
+    "boulangeries": 50,
+    "boucheries": 18,
+    "traiteurs": 137,
+    "cafeterias": 4,
+    "autresRestauration": 11,
+    "collectiveSousContrat": 8,
+    "detailPain": 24
+   },
+   "total": 2193,
+   "centre": [
+    2.3411,
+    48.8677
+   ],
+   "voisines": [
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 0.7
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 1.1
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 1.4
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 1.8
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 1.9
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 2.2
+    }
+   ]
+  },
+  "75103": {
+   "code": "75103",
+   "numero": 3,
+   "nom": "Paris 3e",
+   "codePostal": "75003",
+   "population": 32179,
+   "chiffres": {
+    "restaurants": 710,
+    "rapide": 463,
+    "bars": 129,
+    "boulangeries": 80,
+    "boucheries": 8,
+    "traiteurs": 91,
+    "cafeterias": 3,
+    "autresRestauration": 11,
+    "collectiveSousContrat": 7,
+    "detailPain": 12
+   },
+   "total": 1514,
+   "centre": [
+    2.3593,
+    48.8626
+   ],
+   "voisines": [
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 1
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 1.4
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 1.5
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 1.7
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 1.7
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 2
+    }
+   ]
+  },
+  "75104": {
+   "code": "75104",
+   "numero": 4,
+   "nom": "Paris 4e",
+   "codePostal": "75004",
+   "population": 27332,
+   "chiffres": {
+    "restaurants": 737,
+    "rapide": 339,
+    "bars": 147,
+    "boulangeries": 55,
+    "boucheries": 11,
+    "traiteurs": 67,
+    "cafeterias": 1,
+    "autresRestauration": 12,
+    "collectiveSousContrat": 6,
+    "detailPain": 23
+   },
+   "total": 1398,
+   "centre": [
+    2.3569,
+    48.8541
+   ],
+   "voisines": [
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 1
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 1
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 1.8
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 1.9
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 1.9
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 2
+    }
+   ]
+  },
+  "75105": {
+   "code": "75105",
+   "numero": 5,
+   "nom": "Paris 5e",
+   "codePostal": "75005",
+   "population": 55252,
+   "chiffres": {
+    "restaurants": 1197,
+    "rapide": 615,
+    "bars": 174,
+    "boulangeries": 102,
+    "boucheries": 23,
+    "traiteurs": 73,
+    "cafeterias": 2,
+    "autresRestauration": 18,
+    "collectiveSousContrat": 8,
+    "detailPain": 25
+   },
+   "total": 2237,
+   "centre": [
+    2.3514,
+    48.8454
+   ],
+   "voisines": [
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 1
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 1.6
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 2
+    },
+    {
+     "code": "75113",
+     "nom": "Paris 13e",
+     "km": 2
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 2.2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 2.6
+    }
+   ]
+  },
+  "75106": {
+   "code": "75106",
+   "numero": 6,
+   "nom": "Paris 6e",
+   "codePostal": "75006",
+   "population": 40389,
+   "chiffres": {
+    "restaurants": 930,
+    "rapide": 410,
+    "bars": 149,
+    "boulangeries": 67,
+    "boucheries": 15,
+    "traiteurs": 56,
+    "cafeterias": 4,
+    "autresRestauration": 16,
+    "collectiveSousContrat": 10,
+    "detailPain": 32
+   },
+   "total": 1689,
+   "centre": [
+    2.3307,
+    48.8495
+   ],
+   "voisines": [
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 1.4
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 1.5
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 1.6
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 2.2
+    },
+    {
+     "code": "75114",
+     "nom": "Paris 14e",
+     "km": 2.3
+    }
+   ]
+  },
+  "75107": {
+   "code": "75107",
+   "numero": 7,
+   "nom": "Paris 7e",
+   "codePostal": "75007",
+   "population": 48015,
+   "chiffres": {
+    "restaurants": 633,
+    "rapide": 276,
+    "bars": 91,
+    "boulangeries": 74,
+    "boucheries": 19,
+    "traiteurs": 92,
+    "cafeterias": 3,
+    "autresRestauration": 33,
+    "collectiveSousContrat": 10,
+    "detailPain": 27
+   },
+   "total": 1258,
+   "centre": [
+    2.3115,
+    48.8548
+   ],
+   "voisines": [
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 1.5
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 2
+    },
+    {
+     "code": "75108",
+     "nom": "Paris 8e",
+     "km": 2
+    },
+    {
+     "code": "75115",
+     "nom": "Paris 15e",
+     "km": 2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 2.6
+    },
+    {
+     "code": "75114",
+     "nom": "Paris 14e",
+     "km": 2.9
+    }
+   ]
+  },
+  "75108": {
+   "code": "75108",
+   "numero": 8,
+   "nom": "Paris 8e",
+   "codePostal": "75008",
+   "population": 35317,
+   "chiffres": {
+    "restaurants": 1659,
+    "rapide": 1482,
+    "bars": 252,
+    "boulangeries": 99,
+    "boucheries": 45,
+    "traiteurs": 416,
+    "cafeterias": 13,
+    "autresRestauration": 34,
+    "collectiveSousContrat": 25,
+    "detailPain": 34
+   },
+   "total": 4059,
+   "centre": [
+    2.3111,
+    48.8732
+   ],
+   "voisines": [
+    {
+     "code": "75117",
+     "nom": "Paris 17e",
+     "km": 1.6
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 2
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 2
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 2.2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 2.3
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 3
+    }
+   ]
+  },
+  "75109": {
+   "code": "75109",
+   "numero": 9,
+   "nom": "Paris 9e",
+   "codePostal": "75009",
+   "population": 57271,
+   "chiffres": {
+    "restaurants": 1637,
+    "rapide": 1218,
+    "bars": 274,
+    "boulangeries": 110,
+    "boucheries": 42,
+    "traiteurs": 133,
+    "cafeterias": 5,
+    "autresRestauration": 26,
+    "collectiveSousContrat": 16,
+    "detailPain": 35
+   },
+   "total": 3496,
+   "centre": [
+    2.3379,
+    48.8771
+   ],
+   "voisines": [
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 1.1
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 1.7
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 1.8
+    },
+    {
+     "code": "75118",
+     "nom": "Paris 18e",
+     "km": 1.8
+    },
+    {
+     "code": "75108",
+     "nom": "Paris 8e",
+     "km": 2
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 2.2
+    }
+   ]
+  },
+  "75110": {
+   "code": "75110",
+   "numero": 10,
+   "nom": "Paris 10e",
+   "codePostal": "75010",
+   "population": 83873,
+   "chiffres": {
+    "restaurants": 1667,
+    "rapide": 1202,
+    "bars": 305,
+    "boulangeries": 137,
+    "boucheries": 100,
+    "traiteurs": 177,
+    "cafeterias": 6,
+    "autresRestauration": 21,
+    "collectiveSousContrat": 8,
+    "detailPain": 28
+   },
+   "total": 3651,
+   "centre": [
+    2.3624,
+    48.876
+   ],
+   "voisines": [
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 1.5
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 1.8
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 1.8
+    },
+    {
+     "code": "75118",
+     "nom": "Paris 18e",
+     "km": 2
+    },
+    {
+     "code": "75119",
+     "nom": "Paris 19e",
+     "km": 2.2
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 2.3
+    }
+   ]
+  },
+  "75111": {
+   "code": "75111",
+   "numero": 11,
+   "nom": "Paris 11e",
+   "codePostal": "75011",
+   "population": 138170,
+   "chiffres": {
+    "restaurants": 1996,
+    "rapide": 1370,
+    "bars": 510,
+    "boulangeries": 201,
+    "boucheries": 87,
+    "traiteurs": 278,
+    "cafeterias": 1,
+    "autresRestauration": 23,
+    "collectiveSousContrat": 12,
+    "detailPain": 29
+   },
+   "total": 4507,
+   "centre": [
+    2.3816,
+    48.8601
+   ],
+   "voisines": [
+    {
+     "code": "75120",
+     "nom": "Paris 20e",
+     "km": 1.1
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 1.7
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 1.9
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 2.3
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 2.7
+    },
+    {
+     "code": "75119",
+     "nom": "Paris 19e",
+     "km": 3
+    }
+   ]
+  },
+  "75112": {
+   "code": "75112",
+   "numero": 12,
+   "nom": "Paris 12e",
+   "codePostal": "75012",
+   "population": 138024,
+   "chiffres": {
+    "restaurants": 1132,
+    "rapide": 809,
+    "bars": 215,
+    "boulangeries": 168,
+    "boucheries": 71,
+    "traiteurs": 198,
+    "cafeterias": 6,
+    "autresRestauration": 32,
+    "collectiveSousContrat": 15,
+    "detailPain": 31
+   },
+   "total": 2677,
+   "centre": [
+    2.4173,
+    48.8342
+   ],
+   "voisines": [
+    {
+     "code": "75120",
+     "nom": "Paris 20e",
+     "km": 3.5
+    },
+    {
+     "code": "75113",
+     "nom": "Paris 13e",
+     "km": 3.8
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 3.9
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 4.9
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 5
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 5.3
+    }
+   ]
+  },
+  "75113": {
+   "code": "75113",
+   "numero": 13,
+   "nom": "Paris 13e",
+   "codePostal": "75013",
+   "population": 181271,
+   "chiffres": {
+    "restaurants": 1014,
+    "rapide": 730,
+    "bars": 157,
+    "boulangeries": 181,
+    "boucheries": 67,
+    "traiteurs": 144,
+    "cafeterias": 7,
+    "autresRestauration": 28,
+    "collectiveSousContrat": 15,
+    "detailPain": 18
+   },
+   "total": 2361,
+   "centre": [
+    2.3656,
+    48.8303
+   ],
+   "voisines": [
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 2
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 2.7
+    },
+    {
+     "code": "75114",
+     "nom": "Paris 14e",
+     "km": 3.1
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 3.3
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 3.5
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 3.6
+    }
+   ]
+  },
+  "75114": {
+   "code": "75114",
+   "numero": 14,
+   "nom": "Paris 14e",
+   "codePostal": "75014",
+   "population": 136455,
+   "chiffres": {
+    "restaurants": 993,
+    "rapide": 622,
+    "bars": 167,
+    "boulangeries": 150,
+    "boucheries": 73,
+    "traiteurs": 138,
+    "cafeterias": 6,
+    "autresRestauration": 17,
+    "collectiveSousContrat": 14,
+    "detailPain": 25
+   },
+   "total": 2205,
+   "centre": [
+    2.323,
+    48.8297
+   ],
+   "voisines": [
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 2.3
+    },
+    {
+     "code": "75115",
+     "nom": "Paris 15e",
+     "km": 2.5
+    },
+    {
+     "code": "75105",
+     "nom": "Paris 5e",
+     "km": 2.7
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 2.9
+    },
+    {
+     "code": "75113",
+     "nom": "Paris 13e",
+     "km": 3.1
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 3.7
+    }
+   ]
+  },
+  "75115": {
+   "code": "75115",
+   "numero": 15,
+   "nom": "Paris 15e",
+   "codePostal": "75015",
+   "population": 229713,
+   "chiffres": {
+    "restaurants": 1561,
+    "rapide": 1006,
+    "bars": 231,
+    "boulangeries": 240,
+    "boucheries": 85,
+    "traiteurs": 247,
+    "cafeterias": 9,
+    "autresRestauration": 36,
+    "collectiveSousContrat": 14,
+    "detailPain": 40
+   },
+   "total": 3469,
+   "centre": [
+    2.2937,
+    48.8417
+   ],
+   "voisines": [
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 2
+    },
+    {
+     "code": "75114",
+     "nom": "Paris 14e",
+     "km": 2.5
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 2.8
+    },
+    {
+     "code": "75116",
+     "nom": "Paris 16e",
+     "km": 2.8
+    },
+    {
+     "code": "75108",
+     "nom": "Paris 8e",
+     "km": 3.7
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 3.8
+    }
+   ]
+  },
+  "75116": {
+   "code": "75116",
+   "numero": 16,
+   "nom": "Paris 16e",
+   "codePostal": "75016",
+   "population": 159386,
+   "chiffres": {
+    "restaurants": 1141,
+    "rapide": 671,
+    "bars": 139,
+    "boulangeries": 135,
+    "boucheries": 65,
+    "traiteurs": 204,
+    "cafeterias": 4,
+    "autresRestauration": 31,
+    "collectiveSousContrat": 16,
+    "detailPain": 34
+   },
+   "total": 2440,
+   "centre": [
+    2.263,
+    48.8572
+   ],
+   "voisines": [
+    {
+     "code": "75115",
+     "nom": "Paris 15e",
+     "km": 2.8
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 3.6
+    },
+    {
+     "code": "75108",
+     "nom": "Paris 8e",
+     "km": 3.9
+    },
+    {
+     "code": "75117",
+     "nom": "Paris 17e",
+     "km": 4.6
+    },
+    {
+     "code": "75106",
+     "nom": "Paris 6e",
+     "km": 5
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 5.4
+    }
+   ]
+  },
+  "75117": {
+   "code": "75117",
+   "numero": 17,
+   "nom": "Paris 17e",
+   "codePostal": "75017",
+   "population": 159212,
+   "chiffres": {
+    "restaurants": 1756,
+    "rapide": 1123,
+    "bars": 263,
+    "boulangeries": 215,
+    "boucheries": 85,
+    "traiteurs": 285,
+    "cafeterias": 7,
+    "autresRestauration": 26,
+    "collectiveSousContrat": 13,
+    "detailPain": 39
+   },
+   "total": 3812,
+   "centre": [
+    2.305,
+    48.8874
+   ],
+   "voisines": [
+    {
+     "code": "75108",
+     "nom": "Paris 8e",
+     "km": 1.6
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 2.7
+    },
+    {
+     "code": "75118",
+     "nom": "Paris 18e",
+     "km": 3.2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 3.4
+    },
+    {
+     "code": "75101",
+     "nom": "Paris 1er",
+     "km": 3.6
+    },
+    {
+     "code": "75107",
+     "nom": "Paris 7e",
+     "km": 3.7
+    }
+   ]
+  },
+  "75118": {
+   "code": "75118",
+   "numero": 18,
+   "nom": "Paris 18e",
+   "codePostal": "75018",
+   "population": 183127,
+   "chiffres": {
+    "restaurants": 1835,
+    "rapide": 1159,
+    "bars": 392,
+    "boulangeries": 253,
+    "boucheries": 153,
+    "traiteurs": 319,
+    "cafeterias": 10,
+    "autresRestauration": 25,
+    "collectiveSousContrat": 10,
+    "detailPain": 37
+   },
+   "total": 4193,
+   "centre": [
+    2.3487,
+    48.8919
+   ],
+   "voisines": [
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 1.8
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 2
+    },
+    {
+     "code": "75102",
+     "nom": "Paris 2e",
+     "km": 2.7
+    },
+    {
+     "code": "75119",
+     "nom": "Paris 19e",
+     "km": 2.9
+    },
+    {
+     "code": "75117",
+     "nom": "Paris 17e",
+     "km": 3.2
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 3.3
+    }
+   ]
+  },
+  "75119": {
+   "code": "75119",
+   "numero": 19,
+   "nom": "Paris 19e",
+   "codePostal": "75019",
+   "population": 178691,
+   "chiffres": {
+    "restaurants": 956,
+    "rapide": 807,
+    "bars": 220,
+    "boulangeries": 174,
+    "boucheries": 93,
+    "traiteurs": 236,
+    "cafeterias": 6,
+    "autresRestauration": 28,
+    "collectiveSousContrat": 17,
+    "detailPain": 31
+   },
+   "total": 2568,
+   "centre": [
+    2.3878,
+    48.8871
+   ],
+   "voisines": [
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 2.2
+    },
+    {
+     "code": "75120",
+     "nom": "Paris 20e",
+     "km": 2.8
+    },
+    {
+     "code": "75118",
+     "nom": "Paris 18e",
+     "km": 2.9
+    },
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 3
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 3.4
+    },
+    {
+     "code": "75109",
+     "nom": "Paris 9e",
+     "km": 3.8
+    }
+   ]
+  },
+  "75120": {
+   "code": "75120",
+   "numero": 20,
+   "nom": "Paris 20e",
+   "codePostal": "75020",
+   "population": 185140,
+   "chiffres": {
+    "restaurants": 1058,
+    "rapide": 812,
+    "bars": 251,
+    "boulangeries": 215,
+    "boucheries": 104,
+    "traiteurs": 209,
+    "cafeterias": 2,
+    "autresRestauration": 18,
+    "collectiveSousContrat": 9,
+    "detailPain": 18
+   },
+   "total": 2696,
+   "centre": [
+    2.3966,
+    48.8625
+   ],
+   "voisines": [
+    {
+     "code": "75111",
+     "nom": "Paris 11e",
+     "km": 1.1
+    },
+    {
+     "code": "75103",
+     "nom": "Paris 3e",
+     "km": 2.7
+    },
+    {
+     "code": "75119",
+     "nom": "Paris 19e",
+     "km": 2.8
+    },
+    {
+     "code": "75110",
+     "nom": "Paris 10e",
+     "km": 2.9
+    },
+    {
+     "code": "75104",
+     "nom": "Paris 4e",
+     "km": 3.1
+    },
+    {
+     "code": "75112",
+     "nom": "Paris 12e",
+     "km": 3.5
+    }
+   ]
+  }
+ }
+}

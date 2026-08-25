@@ -52,3 +52,6 @@ Thumbs.db
 .env
 
 .vercel
+
+# Sorties de travail : journaux de build, releves, scripts jetables.
+/tmp/

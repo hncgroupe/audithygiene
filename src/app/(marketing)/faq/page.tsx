@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { RUBRIQUES } from '@/data/questions-pseo';
+import { QUESTIONS_OUVERTES } from '@/lib/vagues';
 import { FAQ_ITEMS } from '@/lib/content';
 import { JsonLd } from '@/components/site/JsonLd';
 import { faqSchema, breadcrumbSchema } from '@/lib/schema';
@@ -48,6 +50,27 @@ export default function FaqPage() {
             </details>
           ))}
         </dl>
+
+        {/* Le sommaire des questions autonomes. Sans ce bloc, aucune de ces
+            pages n'aurait de lien entrant et Google les laisserait
+            « detectees, actuellement non indexees ». */}
+        {RUBRIQUES.filter((r) => QUESTIONS_OUVERTES.some((q) => q.rubrique === r)).map((r) => (
+          <div key={r} className="mt-12">
+            <h2 className="text-2xl font-bold tracking-tight text-ink">{r}</h2>
+            <ul className="mt-4 max-w-3xl space-y-2">
+              {QUESTIONS_OUVERTES.filter((q) => q.rubrique === r).map((q) => (
+                <li key={q.slug}>
+                  <Link
+                    href={`/questions/${q.slug}`}
+                    className="text-ink/80 underline decoration-ink/20 underline-offset-4 hover:text-vert-700"
+                  >
+                    {q.question}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
 
         <div className="mt-12 max-w-3xl rounded-2xl border border-vert/30 bg-vert-50/60 p-6 sm:p-8">
           <h2 className="text-xl font-bold text-ink">Prêt à savoir où vous en êtes ?</h2>

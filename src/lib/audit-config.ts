@@ -40,11 +40,19 @@ export const PMS_OPTS = [
 ] as const;
 
 export const FORMULE = {
-  ESSENTIEL: { nom: 'Audit Essentiel', prix: '690 €', points: '20 points de contrôle' },
-  COMPLET: { nom: 'Audit Complet', prix: '990 €', points: '50 points · plan d’action détaillé' },
+  ESSENTIEL: {
+    nom: 'Audit Essentiel',
+    prix: '490 € HT',
+    points: '27 points de contrôle · plan d’action',
+  },
+  COMPLET: {
+    nom: 'Audit Conformité',
+    prix: '890 € HT',
+    points: '44 points · hygiène et affichage',
+  },
 } as const;
 
-/** Recommandation de formule : on recommande toujours l'Audit Complet. */
+/** Recommandation de formule : on recommande toujours l'Audit Conformité. */
 export function recommander(_situationIds: string[], _taille: string, _pms: string): 'ESSENTIEL' | 'COMPLET' {
   return 'COMPLET';
 }
