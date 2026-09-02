@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { commune, dep, depSlug, nombre, urlCommune } from '@/lib/communes';
 import { contenuCommune } from '@/lib/contenu-commune';
 import { communeOuverte, COMMUNES_OUVERTES } from '@/lib/vagues';
-import { DEPARTEMENTS, FORMULES, MENTION_LABEL_PRIVE } from '@/lib/constants';
+import { DEPARTEMENTS, MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { JsonLd } from '@/components/site/JsonLd';
 import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema, localBusinessSchema } from '@/lib/schema';
@@ -42,23 +42,20 @@ export async function generateMetadata({
   if (!c) return {};
   const url = `${siteUrl}${urlCommune(c)}`;
   const titre = `Audit hygiène restaurant ${c.nom} (${c.codePostal})`;
-  /* Le prix vient de FORMULES, jamais recopie a la main : deux chiffres
-     differents sur le meme site finissent toujours par arriver autrement. */
-  const aPartirDe = FORMULES[0].prix;
   return {
     /* Google coupe une title au dela d'une soixantaine de caracteres, et le
        template du layout ajoute encore « | audit hygiène ». Le nom de la
        commune et le code postal sont ce qui doit survivre a la coupe. */
     title: titre,
     /* Ce que la prestation comprend reellement : l'audit et le rapport. Pas de
-       contre-visite, pas de suivi, pas de cloture de dossier. Le prix et le
-       devis figurent ici parce que c'est ce que cherche quelqu'un qui compare
-       avant d'appeler. */
-    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport avec son plan d'action. À partir de ${aPartirDe}, devis avant intervention.`,
+       contre-visite, pas de suivi, pas de cloture de dossier.
+       TODO prix a confirmer : aucun montant ici tant que FORMULES porte la
+       mention « a valider ». Le devis reste l'accroche commerciale. */
+    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport avec son plan d'action. Devis gratuit avant intervention.`,
     alternates: { canonical: urlCommune(c) },
     openGraph: {
       title: titre,
-      description: `Audit sur place à ${c.nom}, rapport complet et plan d'action priorisé. À partir de ${aPartirDe}.`,
+      description: `Audit sur place à ${c.nom}, rapport complet et plan d'action priorisé.`,
       url,
     },
   };

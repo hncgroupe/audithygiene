@@ -21,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
      declarer ici reviendrait a demander l'indexation de pages qu'on interdit
      d'indexer, et Search Console le compte comme une erreur. Elles restent
      liees depuis le pied de page. */
-  const staticPages = ['', '/methode', '/a-propos', '/contact', '/faq', '/blog', '/zones', '/points-de-controle', '/dossiers', '/audit-hygiene'].map(
+  const staticPages = ['', '/methode', '/a-propos', '/contact', '/faq', '/prix-audit-hygiene-restaurant', '/blog', '/zones', '/points-de-controle', '/themes', '/questions', '/dossiers', '/audit-hygiene'].map(
     (path) => ({
       url: `${siteUrl}${path}`,
       lastModified: now,

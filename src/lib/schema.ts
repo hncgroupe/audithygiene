@@ -1,5 +1,5 @@
 /** Générateurs de données structurées schema.org (rule no-fake-content : pas d'AggregateRating sans vrais avis). */
-import { DEPARTEMENTS, FORMULES, MARQUE } from './constants';
+import { DEPARTEMENTS, MARQUE } from './constants';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
@@ -17,24 +17,25 @@ export const ZONE_DESSERVIE = DEPARTEMENTS.map((d) => ({
   containedInPlace: { '@type': 'AdministrativeArea', name: 'Île-de-France' },
 }));
 
-/**
- * Les formules publiees, en `Offer`.
+/*
+ * TODO prix a confirmer.
  *
- * Les montants viennent de FORMULES, jamais recopies : ce sont les memes que
- * ceux affiches sur la page d'accueil. Ils sont hors taxes, et le devis est
- * etabli avant toute intervention, ce que `priceSpecification` doit dire.
+ * Il n'y a volontairement aucun `Offer` ici, et ce n'est pas un oubli.
+ *
+ * `src/lib/constants.ts` porte encore, sur FORMULES, la mention « prix a
+ * valider, placeholders, a ne pas afficher comme definitifs ». Le second
+ * palier repose de plus sur une grille d'affichage en `v0-draft` dont un point
+ * n'est rattache a aucun texte verifiable.
+ *
+ * Un prix pose en donnees structurees n'est pas un prix affiche sur une page :
+ * il part dans les moteurs de reponse, il est repris hors contexte, et il
+ * engage commercialement. Tant que les montants ne sont pas confirmes, on
+ * n'en publie aucun ici. Une page sans prix se corrige ; un prix faux
+ * recopie par une IA, beaucoup moins.
+ *
+ * Quand les montants seront valides : reintroduire un tableau d'`Offer` lu
+ * depuis FORMULES, et le brancher sur `makesOffer` et `offers` ci-dessous.
  */
-export const OFFRES_PUBLIEES = FORMULES.map((f) => ({
-  '@type': 'Offer' as const,
-  name: f.nom,
-  description: f.description,
-  price: f.prix.replace(/[^0-9]/g, ''),
-  priceCurrency: 'EUR',
-  valueAddedTaxIncluded: false,
-  availability: 'https://schema.org/InStock',
-  url: `${siteUrl}/#formules`,
-  seller: { '@type': 'Organization', '@id': `${siteUrl}/#organization` },
-}));
 
 export function localBusinessSchema(opts?: { areaServed?: string; name?: string; url?: string }) {
   return {
@@ -52,7 +53,6 @@ export function localBusinessSchema(opts?: { areaServed?: string; name?: string;
       : ZONE_DESSERVIE,
     provider: { '@id': `${siteUrl}/#organization` },
     serviceType: "Audit d'hygiène et HACCP pour la restauration",
-    makesOffer: OFFRES_PUBLIEES,
     knowsAbout: ['HACCP', 'Plan de Maîtrise Sanitaire', "Hygiène alimentaire", 'Restauration'],
   };
 }
@@ -107,7 +107,6 @@ export function serviceSchema() {
     },
     description:
       "Un auditeur contrôle votre établissement sur la base de la réglementation hygiène/HACCP et vous remet un rapport : notation, cas critiques, plan correctif.",
-    offers: OFFRES_PUBLIEES,
     termsOfService: `${siteUrl}/cgv`,
   };
 }

@@ -19,31 +19,38 @@
  */
 
 /**
- * Les familles retirees de l'index, et pourquoi.
+ * Les familles retirees de l'index.
  *
- * `points-de-controle` et `themes` sont la grille d'audit decoupee en URL. Ce
- * sont des intitules internes : personne ne tape « separation cru cuit
- * respectee » dans un moteur, ni « mentions valorisantes et etat des denrees ».
- * Elles n'ont aucune intention d'achat, elles sont les plus minces du site
- * (mediane 833 et 810 mots), et elles se disputent le meme sujet que les
- * dossiers de fond, qui eux sont trois a quatre fois plus longs et concluent
- * sur une prise de contact. Dix URL parlent des allergenes, douze de la chaine
- * du froid : Google en retient une et laisse les autres dehors.
+ * Vide, et c'est une decision, pas un oubli.
  *
- * Elles restent publiees, maillees et explorables : elles portent les
- * references reglementaires point par point, c'est la preuve du serieux du
- * cabinet, et un moteur de reponse peut les citer. Elles ne demandent
- * simplement plus a etre classees pour elles-memes.
+ * On a d'abord retire les 44 points de controle et les 17 themes, au motif que
+ * leurs intitules sont des libelles internes de grille que personne ne tape.
+ * Le raisonnement etait juste sur la demande, et faux sur la cause : ces pages
+ * recevaient deja une dizaine de liens entrants contextuels chacune. Ce qui
+ * les tenait hors de l'index n'etait pas leur sujet, c'etait qu'aucun lien ne
+ * descendait jusqu'a elles depuis l'accueil. Leur grappe entiere formait un
+ * ilot ferme.
  *
- * Pour reintegrer une famille : la retirer de cette liste, rebatir, et
- * resoumettre le sitemap. Rien d'autre a toucher.
+ * Un site voisin du meme groupe a mesure l'inverse exact de l'intuition : ses
+ * pages les moins indexables etaient ses pages a intention d'achat pure, et
+ * ses pages purement informatives, mieux maillees, etaient toutes indexees.
+ * L'intention n'explique pas l'indexation. Le maillage l'explique.
+ *
+ * Le client a tranche : ces deux familles sortent quand meme. La decision se
+ * tient sur la demande, pas sur le diagnostic. Personne ne cherche
+ * « separation cru cuit respectee », et dix URL parlaient deja des allergenes.
+ *
+ * Consequence a garder en tete au moment de mesurer : l'effet du maillage se
+ * lira sur les 289 pages qui restent declarees, communes, questions, dossiers,
+ * activites et departements. Les 61 pages sortent de l'experience, on ne
+ * saura pas si elles se seraient indexees une fois atteignables.
+ *
+ * Pour les reintegrer : vider cette liste, rebatir, resoumettre le sitemap.
+ * Le sitemap et les balises robots suivent tout seuls.
  */
-export const FAMILLES_HORS_INDEX = ['points-de-controle', 'themes'] as const;
+export const FAMILLES_HORS_INDEX: readonly string[] = ['points-de-controle', 'themes'];
 
-export type FamilleHorsIndex = (typeof FAMILLES_HORS_INDEX)[number];
-
-export const familleHorsIndex = (famille: string) =>
-  (FAMILLES_HORS_INDEX as readonly string[]).includes(famille);
+export const familleHorsIndex = (famille: string) => FAMILLES_HORS_INDEX.includes(famille);
 
 /**
  * Les pages legales.

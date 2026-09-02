@@ -110,7 +110,7 @@ export default async function QuestionPage({
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Accueil', url: siteUrl },
-          { name: 'Questions', url: `${siteUrl}/faq` },
+          { name: 'Questions', url: `${siteUrl}/questions` },
           { name: q.question, url },
         ])}
       />
@@ -123,7 +123,7 @@ export default async function QuestionPage({
               Accueil
             </Link>{' '}
             /{' '}
-            <Link href="/faq" className="hover:text-vert-700">
+            <Link href="/questions" className="hover:text-vert-700">
               Questions
             </Link>{' '}
             / <span className="text-ink/70">{q.rubrique}</span>

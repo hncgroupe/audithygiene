@@ -14,6 +14,7 @@ import { GRILLE_AFFICHAGE } from './grille-affichage';
 import { QUESTIONS_PSEO } from '@/data/questions-pseo';
 import { DOSSIERS as DOSSIERS_DE_FOND } from '@/data/dossiers';
 import { ACTIVITES_PSEO } from '@/data/activites-pseo';
+import { fusionnerAutoAudit } from './fusion-questions';
 
 const slugifier = (s: string) =>
   s
@@ -87,9 +88,14 @@ export const NB_AFFICHAGE = GRILLE_AFFICHAGE.reduce((a, t) => a + t.items.length
 export const pointParSlug = (slug: string) => POINTS.find((p) => p.slug === slug);
 export const themeParSlug = (slug: string) => THEMES.find((t) => t.slug === slug);
 
-/** Les questions autonomes, une par page. */
-export const QUESTIONS = QUESTIONS_PSEO;
-export const questionParSlug = (slug: string) => QUESTIONS_PSEO.find((q) => q.slug === slug);
+/**
+ * Les questions autonomes, une par page.
+ *
+ * Les quinze pages d'auto-audit n'en font plus qu'une : voir
+ * src/lib/fusion-questions.ts pour le detail et la raison.
+ */
+export const QUESTIONS = fusionnerAutoAudit(QUESTIONS_PSEO);
+export const questionParSlug = (slug: string) => QUESTIONS.find((q) => q.slug === slug);
 
 /** Les types d'etablissement, une page chacun. */
 export const ACTIVITES_PAGES = ACTIVITES_PSEO;

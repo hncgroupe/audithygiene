@@ -17,6 +17,12 @@ import { FORMULES, MARQUE } from '@/lib/constants';
  * Ce qu'il ne dit jamais : une garantie de resultat a un controle officiel, un
  * delai d'intervention qui n'est pas tenu par ecrit ailleurs, ou une zone que
  * le cabinet ne couvre pas.
+ *
+ * TODO prix a confirmer. Aucun montant n'est affiche ici, volontairement :
+ * FORMULES porte encore la mention « prix a valider, placeholders, a ne pas
+ * afficher comme definitifs ». Le bloc porte donc le nom des formules et ce
+ * qu'elles couvrent, et renvoie au devis. Quand les montants seront valides,
+ * remettre `f.prix` et `f.duree` dans les deux cartes.
  */
 export function DevisRapide({
   lieu,
@@ -41,19 +47,15 @@ export function DevisRapide({
             "Un auditeur se déplace, contrôle sur place, et vous repartez avec un rapport et un plan d'action que vous pouvez appliquer sans nous."}
         </p>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-ink/10 bg-white p-4">
-            <dt className="text-sm font-semibold text-ink">{essentiel.nom}</dt>
-            <dd className="mt-1 text-2xl font-bold text-ink">{essentiel.prix}</dd>
-            <dd className="mt-1 text-sm text-gris">{essentiel.duree}</dd>
-          </div>
-          <div className="rounded-xl border border-ink/10 bg-white p-4">
-            <dt className="text-sm font-semibold text-ink">{conformite.nom}</dt>
-            <dd className="mt-1 text-2xl font-bold text-ink">{conformite.prix}</dd>
-            <dd className="mt-1 text-sm text-gris">{conformite.duree}</dd>
-          </div>
+          {[essentiel, conformite].map((f) => (
+            <div key={f.id} className="rounded-xl border border-ink/10 bg-white p-4">
+              <dt className="text-sm font-semibold text-ink">{f.nom}</dt>
+              <dd className="mt-1 text-ink/75">{f.description}</dd>
+            </div>
+          ))}
         </dl>
         <p className="mt-4 text-sm text-gris">
-          Déplacement en Île-de-France compris. Devis établi avant toute intervention.
+          Déplacement en Île-de-France compris. Devis gratuit établi avant toute intervention.
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Link href="/#rdv" className="btn-primary">

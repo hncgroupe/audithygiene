@@ -65,7 +65,7 @@ export default async function ThemePage({ params }: { params: Promise<{ theme: s
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Accueil', url: siteUrl },
-          { name: 'La méthode', url: `${siteUrl}/methode` },
+          { name: 'Thèmes', url: `${siteUrl}/themes` },
           { name: t.theme, url },
         ])}
       />
@@ -80,8 +80,8 @@ export default async function ThemePage({ params }: { params: Promise<{ theme: s
               Accueil
             </Link>{' '}
             /{' '}
-            <Link href="/methode" className="hover:text-vert-700">
-              La méthode
+            <Link href="/themes" className="hover:text-vert-700">
+              Thèmes
             </Link>{' '}
             / <span className="text-ink/70">{t.theme}</span>
           </nav>

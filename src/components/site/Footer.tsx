@@ -32,7 +32,7 @@ export function Footer() {
           <h3 className="text-sm font-semibold text-white">Le service</h3>
           <ul className="mt-3 space-y-2 text-sm text-white/60">
             <li><Link href="/methode" className="hover:text-vert">Notre méthode</Link></li>
-            <li><Link href="/#formules" className="hover:text-vert">Formules</Link></li>
+            <li><Link href="/prix-audit-hygiene-restaurant" className="hover:text-vert">Tarifs et devis</Link></li>
             <li><Link href="/blog" className="hover:text-vert">Blog</Link></li>
             <li><Link href="/a-propos" className="hover:text-vert">À propos</Link></li>
             <li><Link href="/faq" className="hover:text-vert">FAQ</Link></li>
@@ -106,6 +106,8 @@ export function Footer() {
             <ul className="mt-3 space-y-2 text-sm text-white/60">
               <li><Link href="/dossiers" className="hover:text-vert">Les dossiers de fond</Link></li>
               <li><Link href="/points-de-controle" className="hover:text-vert">La grille de contrôle, point par point</Link></li>
+              <li><Link href="/themes" className="hover:text-vert">Les thèmes vérifiés en audit</Link></li>
+              <li><Link href="/questions" className="hover:text-vert">Toutes les questions, par rubrique</Link></li>
               <li><Link href="/methode" className="hover:text-vert">Le déroulé d&apos;un audit</Link></li>
               <li><Link href="/faq" className="hover:text-vert">Les questions des restaurateurs</Link></li>
             </ul>

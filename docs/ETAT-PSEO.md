@@ -98,44 +98,99 @@ les chiffres, et c'est eux que cherchent les restaurateurs.
 Search Console, fenêtre trois mois : 26 clics, 2 050 impressions, CTR 1,3 %,
 position moyenne 29,8. **202 pages non indexées pour 151 indexées.**
 
-La cause tient en un chiffre, mesuré sur le HTML rendu du build : **96 pages
-n'étaient atteignables par aucun lien depuis l'accueil**, et 134 pages de
-commune se trouvaient à quatre ou cinq clics. L'en-tête ne portait que cinq
-liens et le pied de page onze : `/audit-hygiene`, `/dossiers` et
-`/points-de-controle` n'avaient aucun lien entrant depuis le reste du site.
-Elles n'existaient que dans le sitemap. Google les explorait une fois et les
-laissait dehors.
+La cause n'était ni le contenu, ni l'intention des pages, ni le sitemap. Elle
+était dans le maillage, et elle se mesure sur le HTML rendu du build.
 
-Trois autres écarts s'y ajoutaient :
+**96 pages n'étaient atteignables par aucun lien depuis l'accueil.** L'en-tête
+portait cinq liens, le pied de page onze, et aucun des deux ne menait à
+`/audit-hygiene`, `/dossiers` ou `/points-de-controle`. Ces familles se
+liaient entre elles et vers leur propre hub : un îlot fermé, sans entrée.
+Elles n'existaient que dans le sitemap. Les 137 communes se trouvaient à
+quatre ou cinq clics, et le hub `/zones` à quatre, atteignable seulement par
+le fil d'Ariane d'une commune.
 
-- les trois pages légales portaient `index: false` **et** figuraient au
-  sitemap, ce qui est une instruction contradictoire ;
-- le gabarit de titre ajoutait « | audit hygiène » à chaque page, soit seize
-  caractères : **330 titres sur 351 dépassaient soixante caractères** ;
-- la méta description des 137 communes promettait « Contre-visite comprise »,
-  alors que la contre-visite ne fait pas partie de la prestation.
+**273 liens internes pointaient vers des adresses qui n'existent pas.** Le bloc
+« communes voisines » résolvait la voisine dans le jeu complet sans vérifier
+la vague : une commune ouverte liait une commune hors vague, dont la page
+n'est pas générée et répond 404. Le commentaire de `src/lib/vagues.ts`
+affirmait pourtant qu'aucun lien interne ne pointait vers une page hors vague.
+C'était faux, et cela brûlait du budget d'exploration.
 
-Après correction, mesuré sur le même build : **zéro page inatteignable**, toutes
-à un ou deux clics de l'accueil, **7 titres trop longs** au lieu de 330, et
-**287 URL au sitemap, toutes indexables, aucune en noindex**.
+**Deux pages de sommaire manquaient.** `/questions` et `/themes` répondaient
+404 alors que 87 pages vivaient dessous. Une famille que rien ne rassemble ne
+se rassemble pas toute seule.
+
+Trois contradictions s'y ajoutaient : les trois pages légales portaient
+`index: false` **et** figuraient au sitemap ; le gabarit de titre ajoutait
+« | audit hygiène » à chaque page, soit seize caractères, et **330 titres sur
+351** dépassaient soixante caractères ; la méta description des communes
+promettait « Contre-visite comprise », alors que la contre-visite ne fait pas
+partie de la prestation.
+
+### Après correction, mesuré sur le même build
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Pages inatteignables depuis l'accueil | 96 | **0** |
+| Profondeur maximale | 5 | **2** |
+| Liens internes vers un 404 | 273 | **0** |
+| Titres au delà de 60 caractères | 330 | **9** |
+| URL au sitemap portant un `noindex` | 3 | **0** |
+| Pages de sommaire manquantes | 2 | **0** |
 
 ## Ce qui entre dans l'index, et ce qui n'y entre pas
 
-`src/lib/indexation.ts` porte la règle. Deux états seulement, jamais
-d'intermédiaire : une page est au sitemap et indexable, ou elle porte un
-`noindex` assumé et sort du sitemap.
+`src/lib/indexation.ts` porte la règle. Deux états seulement : une page est au
+sitemap et indexable, ou elle porte un `noindex` assumé et sort du sitemap.
+Jamais les deux.
 
 Les 44 points de contrôle et les 17 thèmes sont **hors index**. Ce sont les
-intitulés internes de la grille : personne ne cherche « séparation cru cuit
-respectée ». Ils sont les plus minces du site (784 et 774 mots médians), ils
-n'ont aucune intention d'achat, et ils se disputent le sujet des dossiers de
-fond, trois à quatre fois plus longs. Dix URL traitent des allergènes, douze de
-la chaîne du froid. Ils restent publiés, maillés et explorables, parce qu'ils
-portent les références réglementaires point par point et que c'est la preuve du
-sérieux du cabinet.
+intitulés internes de la grille, que personne ne cherche, les plus minces du
+site, et dix URL parlaient déjà des allergènes, douze de la chaîne du froid.
+Ils restent publiés, maillés et explorables : ils portent les références
+réglementaires point par point. Leurs deux hubs, eux, restent indexés.
 
-Pour les réintégrer : les retirer de `FAMILLES_HORS_INDEX`, rebâtir, resoumettre
-le sitemap.
+Conséquence à garder en tête au moment de mesurer : l'effet du maillage se lira
+sur les 290 URL déclarées. Les 61 pages sortent de l'expérience.
+
+## Les prix, et pourquoi il n'y en a plus
+
+`src/lib/constants.ts` porte toujours, sur `FORMULES`, la mention « prix à
+valider, placeholders, à ne pas afficher comme définitifs ». Le second palier
+repose de plus sur une grille d'affichage en `v0-draft` dont un point n'est
+rattaché à aucun texte vérifiable.
+
+Un prix écrit dans une réponse de FAQ n'est pas un prix affiché sur une page :
+la FAQ alimente le bloc `FAQPage`, donc les moteurs de réponse, qui le
+reprennent hors contexte et sans date. Les montants ont donc été retirés des
+données structurées, des balises `title`, des méta descriptions, du bloc de
+devis, de la prose et de la FAQ des pages de commune, et de `FAQ_ITEMS`.
+Chaque emplacement porte un `TODO prix a confirmer` et la marche à suivre pour
+les rétablir.
+
+**Il reste un endroit où les montants s'affichent : le composant `Formules` de
+la page d'accueil.** C'est une section produit antérieure, lue depuis
+`FORMULES` et hors données structurées. Elle demande un arbitrage.
+
+## La fusion des pages d'auto-audit
+
+Quinze pages apprenaient au lecteur à auditer son établissement lui-même, zone
+par zone. Elles se disputaient la même requête et enseignaient au prospect à ne
+pas acheter. Elles n'en font plus qu'une, bâtie sur la seule question qui
+compte : ce qui se vérifie seul, et ce qui exige un tiers. Quatorze
+redirections permanentes pointent vers elle. Voir `src/lib/fusion-questions.ts`
+et `scripts/check-fusion.mjs`, qui vérifie que la liste des redirections de
+`next.config.mjs` reste identique à celle du module.
+
+Effet de bord voulu : quatorze places se libèrent dans la vague, et quatorze
+communes de plus s'ouvrent, de 137 à 151.
+
+## La page prix
+
+`/prix-audit-hygiene-restaurant` visait le seul trou commercial réel du site.
+Elle explique ce que couvre chaque formule, ce qui fait varier le montant et ce
+qui n'est jamais facturé en plus, puis conduit au devis. **Elle ne porte aucun
+chiffre**, pour la raison ci-dessus.
 
 ## Les vagues d'ouverture
 
