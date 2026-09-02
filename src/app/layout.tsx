@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: {
     /* TODO prix a confirmer : pas de montant dans la balise title tant que
        FORMULES porte la mention « a valider ». */
-    default: "Audit hygiène restaurant Île-de-France : rapport et plan d'action",
+    default: 'Audit hygiène restaurant Île-de-France : rapport et devis',
     /*
       Pas de suffixe de marque.
 
