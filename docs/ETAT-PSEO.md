@@ -153,24 +153,54 @@ réglementaires point par point. Leurs deux hubs, eux, restent indexés.
 Conséquence à garder en tête au moment de mesurer : l'effet du maillage se lira
 sur les 290 URL déclarées. Les 61 pages sortent de l'expérience.
 
-## Les prix, et pourquoi il n'y en a plus
+## Les prix, validés le 2 septembre 2026
 
-`src/lib/constants.ts` porte toujours, sur `FORMULES`, la mention « prix à
-valider, placeholders, à ne pas afficher comme définitifs ». Le second palier
-repose de plus sur une grille d'affichage en `v0-draft` dont un point n'est
-rattaché à aucun texte vérifiable.
+**490 € HT pour l'Audit Essentiel, 890 € HT pour l'Audit Conformité.** Deux
+prix pour deux prestations distinctes. Ce ne sont pas des valeurs provisoires.
 
-Un prix écrit dans une réponse de FAQ n'est pas un prix affiché sur une page :
-la FAQ alimente le bloc `FAQPage`, donc les moteurs de réponse, qui le
-reprennent hors contexte et sans date. Les montants ont donc été retirés des
-données structurées, des balises `title`, des méta descriptions, du bloc de
-devis, de la prose et de la FAQ des pages de commune, et de `FAQ_ITEMS`.
-Chaque emplacement porte un `TODO prix a confirmer` et la marche à suivre pour
-les rétablir.
+Le commentaire de `src/lib/constants.ts` disait l'inverse, « placeholders, à ne
+pas afficher comme définitifs », et il était périmé. Il a coûté un aller-retour
+complet : les montants ont été retirés de tout le site, puis remis. Le
+commentaire porte désormais la date de validation. Ce qui reste en `v0-draft`
+est la grille d'affichage, pas le tarif.
 
-**Il reste un endroit où les montants s'affichent : le composant `Formules` de
-la page d'accueil.** C'est une section produit antérieure, lue depuis
-`FORMULES` et hors données structurées. Elle demande un arbitrage.
+Les montants s'affichent partout : données structurées (`offers`,
+`makesOffer`), balise `title` de l'accueil, méta descriptions des communes et
+des départements, bloc de devis, prose et FAQ des 151 pages de commune,
+`FAQ_ITEMS`, page prix. Aucun n'est recopié à la main, tous se lisent depuis
+`FORMULES`.
+
+**Deux règles à tenir en modifiant un prix.**
+
+Les `Offer` portent `valueAddedTaxIncluded: false` et un `priceSpecification`
+explicite. Un moteur de réponse qui reprend « 490 » sans la mention ferait dire
+au site un prix qu'il ne pratique pas.
+
+Chaque montant écrit dans une réponse de FAQ est accompagné de « hors taxes »
+dans la même phrase. Une réponse de FAQ part dans le bloc `FAQPage`, donc en
+données structurées, et se lit hors contexte. Chercher `price` dans le JSON-LD
+ne montre pas ce chemin : le montant voyage dans `acceptedAnswer.text`.
+
+**Comment le vérifier**, sur le rendu et non sur le code, après toute
+modification touchant un prix :
+
+```
+node tmp/faq-prix.mjs      # montants servis dans les blocs FAQPage
+node tmp/jsonld-prix.mjs   # noeuds Offer et champs libres portant un montant
+```
+
+État au 2 septembre 2026 : les blocs `FAQPage` de 162 pages servent exactement
+490 et 890, tous avec la mention hors taxes, zéro montant orphelin. Les nœuds
+`Offer` sont présents sur 175 pages, tous à `valueAddedTaxIncluded: false`.
+
+## Le nommage des formules
+
+Les deux prestations s'appellent exactement **Audit Essentiel** (490 € HT) et
+**Audit Conformité** (890 € HT). Une troisième offre, **Réseau**, existe sur
+devis à partir de trois établissements et ne figure pas dans `FORMULES`.
+
+La FAQ demandait « la différence entre Essentiel et Complet ». Aucune formule
+ne s'appelle Complet : le nom est corrigé.
 
 ## La fusion des pages d'auto-audit
 
