@@ -1,7 +1,40 @@
 /** Générateurs de données structurées schema.org (rule no-fake-content : pas d'AggregateRating sans vrais avis). */
-import { MARQUE } from './constants';
+import { DEPARTEMENTS, FORMULES, MARQUE } from './constants';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
+
+/**
+ * La zone reellement desservie, en donnees et pas seulement en prose.
+ *
+ * Un moteur de reponse a qui on demande « qui fait un audit hygiene a Paris »
+ * lit `areaServed` avant de lire un paragraphe. Ecrire « France » quand le
+ * cabinet ne se deplace qu'en Ile-de-France est a la fois faux et inutile : le
+ * moteur ne peut pas rapprocher la reponse d'une ville.
+ */
+export const ZONE_DESSERVIE = DEPARTEMENTS.map((d) => ({
+  '@type': 'AdministrativeArea' as const,
+  name: `${d.nom} (${d.code})`,
+  containedInPlace: { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+}));
+
+/**
+ * Les formules publiees, en `Offer`.
+ *
+ * Les montants viennent de FORMULES, jamais recopies : ce sont les memes que
+ * ceux affiches sur la page d'accueil. Ils sont hors taxes, et le devis est
+ * etabli avant toute intervention, ce que `priceSpecification` doit dire.
+ */
+export const OFFRES_PUBLIEES = FORMULES.map((f) => ({
+  '@type': 'Offer' as const,
+  name: f.nom,
+  description: f.description,
+  price: f.prix.replace(/[^0-9]/g, ''),
+  priceCurrency: 'EUR',
+  valueAddedTaxIncluded: false,
+  availability: 'https://schema.org/InStock',
+  url: `${siteUrl}/#formules`,
+  seller: { '@type': 'Organization', '@id': `${siteUrl}/#organization` },
+}));
 
 export function localBusinessSchema(opts?: { areaServed?: string; name?: string; url?: string }) {
   return {
@@ -12,8 +45,14 @@ export function localBusinessSchema(opts?: { areaServed?: string; name?: string;
       "Audit hygiène et HACCP pour restaurants et CHR. Label privé indépendant. Notation, cas critiques, plan correctif.",
     url: opts?.url ?? siteUrl,
     email: MARQUE.email,
-    areaServed: opts?.areaServed ?? 'France',
+    /* Une page de commune passe sa propre zone : c'est elle qui compte pour une
+       requete locale. Sinon, les huit departements franciliens. */
+    areaServed: opts?.areaServed
+      ? [{ '@type': 'Place', name: opts.areaServed }, ...ZONE_DESSERVIE]
+      : ZONE_DESSERVIE,
+    provider: { '@id': `${siteUrl}/#organization` },
     serviceType: "Audit d'hygiène et HACCP pour la restauration",
+    makesOffer: OFFRES_PUBLIEES,
     knowsAbout: ['HACCP', 'Plan de Maîtrise Sanitaire', "Hygiène alimentaire", 'Restauration'],
   };
 }
@@ -29,7 +68,7 @@ export function organizationSchema() {
     logo: { '@type': 'ImageObject', url: `${siteUrl}/logo.png` },
     description:
       "Cabinet d'audit hygiène et HACCP pour restaurants et CHR. Label privé indépendant : notation, cas critiques, plan correctif.",
-    areaServed: { '@type': 'Country', name: 'France' },
+    areaServed: ZONE_DESSERVIE,
     knowsAbout: [
       'HACCP',
       'Plan de Maîtrise Sanitaire',
@@ -57,11 +96,19 @@ export function serviceSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
+    '@id': `${siteUrl}/#service`,
+    name: "Audit d'hygiène et HACCP en restaurant",
     serviceType: "Audit d'hygiène et HACCP",
-    provider: { '@type': 'ProfessionalService', name: MARQUE.nom, url: siteUrl },
-    areaServed: 'France',
+    provider: { '@type': 'ProfessionalService', name: MARQUE.nom, url: siteUrl, email: MARQUE.email },
+    areaServed: ZONE_DESSERVIE,
+    audience: {
+      '@type': 'BusinessAudience',
+      name: 'Restaurants, restauration rapide, dark kitchens, boulangeries, traiteurs, bars, hôtels-restaurants',
+    },
     description:
       "Un auditeur contrôle votre établissement sur la base de la réglementation hygiène/HACCP et vous remet un rapport : notation, cas critiques, plan correctif.",
+    offers: OFFRES_PUBLIEES,
+    termsOfService: `${siteUrl}/cgv`,
   };
 }
 

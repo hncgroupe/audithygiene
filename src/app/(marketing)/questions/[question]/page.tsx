@@ -14,6 +14,7 @@ import { QUESTIONS_OUVERTES, questionOuverte, COMMUNES_OUVERTES } from '@/lib/va
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { combinaison, graine, urlCommune } from '@/lib/communes';
 import { JsonLd } from '@/components/site/JsonLd';
+import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema } from '@/lib/schema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -27,17 +28,34 @@ function trouver(slug: string) {
   return q && questionOuverte(q.slug) ? q : undefined;
 }
 
+/**
+ * Les mots sur lesquels une question ne peut pas se terminer.
+ *
+ * Couper au mot pres ne suffit pas : « Papier ou numérique, qu'est-ce qui est
+ * accepté pour mes ? » est une phrase cassee, et une phrase cassee dans un
+ * resultat de recherche coute plus cher qu'un titre un peu plus court. On
+ * retire donc les mots outils tant que la fin reste bancale.
+ */
+const MOTS_SUSPENDUS = new Set([
+  'a', 'à', 'au', 'aux', 'avec', 'dans', 'de', 'des', 'du', 'en', 'et', 'la',
+  'le', 'les', 'ma', 'mes', 'mon', 'ou', 'par', 'pour', 'que', 'qui', 'sans',
+  'ses', 'son', 'sur', 'un', 'une', "d'", "l'", 'est', "s'est", 'ne', 'plus',
+]);
+
 /** Une balise title trop longue est coupée par Google, au mot près. */
 function titreCourt(question: string) {
   const nu = question.replace(/\s*\?$/, '');
   if (nu.length <= 58) return `${nu} ?`;
   const mots = nu.split(' ');
-  let court = '';
+  const gardes: string[] = [];
   for (const m of mots) {
-    if ((court + ' ' + m).trim().length > 56) break;
-    court = (court + ' ' + m).trim();
+    if ([...gardes, m].join(' ').length > 56) break;
+    gardes.push(m);
   }
-  return `${court} ?`;
+  while (gardes.length > 3 && MOTS_SUSPENDUS.has(gardes[gardes.length - 1].toLowerCase())) {
+    gardes.pop();
+  }
+  return `${gardes.join(' ')} ?`;
 }
 
 export async function generateMetadata({
@@ -115,7 +133,7 @@ export default async function QuestionPage({
             {q.question}
           </h1>
           {/* La reponse directe, avant tout developpement. */}
-          <p className="mt-6 max-w-3xl border-l-4 border-vert-500 pl-5 text-lg leading-relaxed text-ink/85">
+          <p className="mt-6 max-w-3xl text-lg leading-relaxed text-ink/85">
             {q.reponse}
           </p>
           <div className="mt-8">
@@ -125,6 +143,10 @@ export default async function QuestionPage({
           </div>
         </div>
       </section>
+
+      {/* Une reponse qui rassure et s'arrete la ne rapporte rien. Le prix et la
+          demande de devis suivent immediatement la reponse. */}
+      <DevisRapide contexte="Vous avez la réponse. Si vous voulez savoir où en est réellement votre établissement, un auditeur passe et vous le dit par écrit." />
 
       <section className="container-ah py-12">
         <h2 className="text-2xl font-bold tracking-tight text-ink">Le détail</h2>

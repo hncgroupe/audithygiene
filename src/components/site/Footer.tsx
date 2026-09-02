@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Logo } from './Logo';
-import { MENTION_LABEL_PRIVE } from '@/lib/constants';
+import { DEPARTEMENTS, MENTION_LABEL_PRIVE } from '@/lib/constants';
+import { ACTIVITES_OUVERTES } from '@/lib/vagues';
 
 export function Footer() {
+  /* Les six types d'etablissement qui portent la demande commerciale. Le reste
+     du catalogue s'atteint depuis le hub /audit-hygiene, lie juste au dessus. */
+  const activites = ACTIVITES_OUVERTES.slice(0, 6);
   return (
     <footer className="mt-24 border-t border-ink/10 bg-ink text-white/80">
       <div className="container-ah grid gap-10 py-14 md:grid-cols-4">
@@ -53,6 +57,59 @@ export function Footer() {
             <li><Link href="/confidentialite" className="hover:text-vert">Confidentialité</Link></li>
             <li><Link href="/cgv" className="hover:text-vert">CGV</Link></li>
           </ul>
+        </div>
+      </div>
+
+      {/*
+        Le maillage des familles programmatiques.
+
+        Sans ce bloc, /audit-hygiene, /dossiers et /points-de-controle n'ont
+        aucun lien entrant depuis le reste du site : ils ne sont atteignables
+        que par le sitemap, et Google les laisse en « explorée, actuellement
+        non indexée ». Les huit départements ouvrent l'accès aux communes, qui
+        passaient sinon en profondeur 4.
+      */}
+      <div className="border-t border-white/10">
+        <div className="container-ah grid gap-10 py-12 md:grid-cols-3">
+          <div>
+            <h3 className="text-sm font-semibold text-white">
+              <Link href="/zones" className="hover:text-vert">Audit hygiène près de chez vous</Link>
+            </h3>
+            <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/60">
+              {DEPARTEMENTS.map((d) => (
+                <li key={d.slug}>
+                  <Link href={`/zones/${d.slug}`} className="hover:text-vert">
+                    {d.nom} ({d.code})
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-white">
+              <Link href="/audit-hygiene" className="hover:text-vert">Par type d&apos;établissement</Link>
+            </h3>
+            <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/60">
+              {activites.map((a) => (
+                <li key={a.slug}>
+                  <Link href={`/audit-hygiene/${a.slug}`} className="hover:text-vert">
+                    {a.titre}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-white">Comprendre et se préparer</h3>
+            <ul className="mt-3 space-y-2 text-sm text-white/60">
+              <li><Link href="/dossiers" className="hover:text-vert">Les dossiers de fond</Link></li>
+              <li><Link href="/points-de-controle" className="hover:text-vert">La grille de contrôle, point par point</Link></li>
+              <li><Link href="/methode" className="hover:text-vert">Le déroulé d&apos;un audit</Link></li>
+              <li><Link href="/faq" className="hover:text-vert">Les questions des restaurateurs</Link></li>
+            </ul>
+          </div>
         </div>
       </div>
 

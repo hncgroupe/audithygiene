@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import { env } from '@/lib/env';
 import { JsonLd } from '@/components/site/JsonLd';
 import { organizationSchema, websiteSchema } from '@/lib/schema';
+import { FORMULES } from '@/lib/constants';
 
 // Style Stripe : grotesk propre, identique sur tous les appareils (une seule webfont).
 const display = Hanken_Grotesk({
@@ -17,8 +18,19 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
-    template: '%s | audit hygiène',
+    /* Le prix vient de FORMULES : c'est celui qu'affiche deja la page. */
+    default: `Audit hygiène restaurant Île-de-France, dès ${FORMULES[0].prix}`,
+    /*
+      Pas de suffixe de marque.
+
+      « | audit hygiène » ajoutait seize caracteres a chaque titre du site :
+      330 pages sur 351 depassaient la soixantaine de caracteres et se
+      faisaient couper, ou pire, reecrire par Google. Un suffixe de marque ne
+      se paie que quand la marque est deja cherchee, ce qui n'est pas encore le
+      cas ici. Chaque page reprend donc les mots de sa requete, et rien
+      d'autre.
+    */
+    template: '%s',
   },
   description:
     "Cabinet d'audit hygiène et HACCP pour restaurants et CHR en Île-de-France. Un auditeur contrôle votre établissement et vous remet un rapport complet : notation, cas critiques, plan correctif. Label privé indépendant.",

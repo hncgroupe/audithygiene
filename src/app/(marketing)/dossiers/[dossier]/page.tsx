@@ -13,6 +13,7 @@ import { DOSSIERS_OUVERTS, dossierOuvert, COMMUNES_OUVERTES } from '@/lib/vagues
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { combinaison, graine, urlCommune } from '@/lib/communes';
 import { JsonLd } from '@/components/site/JsonLd';
+import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema } from '@/lib/schema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -97,12 +98,17 @@ export default async function DossierPage({
             {d.titre}
           </h1>
           {/* La reponse directe, avant tout developpement. */}
-          <p className="mt-6 max-w-3xl border-l-4 border-vert-500 pl-5 text-lg leading-relaxed text-ink/85">
+          <p className="mt-6 max-w-3xl text-lg leading-relaxed text-ink/85">
             {d.reponse}
           </p>
           <p className="mt-4 max-w-3xl text-ink/70">{d.ouverture}</p>
         </div>
       </section>
+
+      {/* Avant le developpement, pas apres : un dossier fait trois a quatre
+          mille mots, et personne ne descend jusqu'en bas pour trouver comment
+          nous joindre. */}
+      <DevisRapide contexte="Ce dossier explique ce qui est attendu. Si vous préférez qu'un auditeur vienne le constater et vous dise où vous en êtes, la visite se demande ici." />
 
       {/* Le sommaire : sur une page de trois mille mots, il fait la difference
           entre une lecture et un rebond. */}

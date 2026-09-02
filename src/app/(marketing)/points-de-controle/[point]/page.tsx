@@ -15,6 +15,7 @@ import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { urlCommune } from '@/lib/communes';
 import { JsonLd } from '@/components/site/JsonLd';
 import { breadcrumbSchema, faqSchema } from '@/lib/schema';
+import { ROBOTS_HORS_INDEX } from '@/lib/indexation';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
@@ -27,6 +28,24 @@ function trouver(slug: string) {
   return p && pointOuvert(p.slug) ? p : undefined;
 }
 
+/**
+ * Une balise title coupee au mot pres.
+ *
+ * Google tronque au dela d'une soixantaine de caracteres, et les intitules de
+ * la grille sont longs : « prix des ventes a emporter et des points de vente
+ * sans service a table » fait quatre-vingts caracteres a lui seul.
+ */
+function titreCourt(intitule: string, suffixe = ' en audit hygiène') {
+  const budget = 60 - suffixe.length;
+  if (intitule.length <= budget) return intitule + suffixe;
+  let court = '';
+  for (const mot of intitule.split(' ')) {
+    if ((court + ' ' + mot).trim().length > budget) break;
+    court = (court + ' ' + mot).trim();
+  }
+  return (court || intitule.slice(0, budget)) + suffixe;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -36,9 +55,13 @@ export async function generateMetadata({
   const p = trouver(point);
   if (!p) return {};
   return {
-    title: `${p.intitule} : ce que vérifie un contrôle`,
+    title: titreCourt(p.intitule),
     description: `${p.explication} Le texte applicable, les écarts les plus fréquents et le correctif attendu, dans le thème ${p.theme}.`,
     alternates: { canonical: `/points-de-controle/${p.slug}` },
+    /* Page de preuve, pas page de recherche : l'intitule est un libelle interne
+       de grille, que personne ne tape. Elle reste publiee, maillee et citable,
+       mais ne demande pas son classement. Voir src/lib/indexation.ts. */
+    robots: ROBOTS_HORS_INDEX,
     openGraph: {
       title: p.intitule,
       description: p.pedagogie,

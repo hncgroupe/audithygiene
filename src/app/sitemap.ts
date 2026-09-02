@@ -10,13 +10,18 @@ import {
   QUESTIONS_OUVERTES,
   THEMES_OUVERTS,
 } from '@/lib/vagues';
+import { familleHorsIndex } from '@/lib/indexation';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const staticPages = ['', '/methode', '/a-propos', '/contact', '/faq', '/blog', '/zones', '/points-de-controle', '/dossiers', '/audit-hygiene', '/mentions-legales', '/confidentialite', '/cgv'].map(
+  /* Les pages legales portent `index: false` dans leur propre metadata : les
+     declarer ici reviendrait a demander l'indexation de pages qu'on interdit
+     d'indexer, et Search Console le compte comme une erreur. Elles restent
+     liees depuis le pied de page. */
+  const staticPages = ['', '/methode', '/a-propos', '/contact', '/faq', '/blog', '/zones', '/points-de-controle', '/dossiers', '/audit-hygiene'].map(
     (path) => ({
       url: `${siteUrl}${path}`,
       lastModified: now,
@@ -53,9 +58,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  /* Les familles hors index ne sont pas declarees : elles portent un noindex
+     assume, elles restent explorables et maillees, mais on ne demande pas leur
+     classement. Voir src/lib/indexation.ts pour le raisonnement. */
   const grillePages = [
-    ...THEMES_OUVERTS.map((t) => `/themes/${t.slug}`),
-    ...POINTS_OUVERTS.map((p) => `/points-de-controle/${p.slug}`),
+    ...(familleHorsIndex('themes') ? [] : THEMES_OUVERTS.map((t) => `/themes/${t.slug}`)),
+    ...(familleHorsIndex('points-de-controle')
+      ? []
+      : POINTS_OUVERTS.map((p) => `/points-de-controle/${p.slug}`)),
     ...QUESTIONS_OUVERTES.map((q) => `/questions/${q.slug}`),
     ...DOSSIERS_OUVERTS.map((d) => `/dossiers/${d.slug}`),
     ...ACTIVITES_OUVERTES.map((a) => `/audit-hygiene/${a.slug}`),

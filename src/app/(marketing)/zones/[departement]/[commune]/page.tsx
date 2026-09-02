@@ -10,8 +10,9 @@ import Link from 'next/link';
 import { commune, dep, depSlug, nombre, urlCommune } from '@/lib/communes';
 import { contenuCommune } from '@/lib/contenu-commune';
 import { communeOuverte, COMMUNES_OUVERTES } from '@/lib/vagues';
-import { DEPARTEMENTS, MENTION_LABEL_PRIVE } from '@/lib/constants';
+import { DEPARTEMENTS, FORMULES, MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { JsonLd } from '@/components/site/JsonLd';
+import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema, localBusinessSchema } from '@/lib/schema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -41,13 +42,23 @@ export async function generateMetadata({
   if (!c) return {};
   const url = `${siteUrl}${urlCommune(c)}`;
   const titre = `Audit hygiène restaurant ${c.nom} (${c.codePostal})`;
+  /* Le prix vient de FORMULES, jamais recopie a la main : deux chiffres
+     differents sur le meme site finissent toujours par arriver autrement. */
+  const aPartirDe = FORMULES[0].prix;
   return {
-    title: `${titre} : rapport et plan d'action`,
-    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport complet avec son plan d'action. Contre-visite comprise.`,
+    /* Google coupe une title au dela d'une soixantaine de caracteres, et le
+       template du layout ajoute encore « | audit hygiène ». Le nom de la
+       commune et le code postal sont ce qui doit survivre a la coupe. */
+    title: titre,
+    /* Ce que la prestation comprend reellement : l'audit et le rapport. Pas de
+       contre-visite, pas de suivi, pas de cloture de dossier. Le prix et le
+       devis figurent ici parce que c'est ce que cherche quelqu'un qui compare
+       avant d'appeler. */
+    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport avec son plan d'action. À partir de ${aPartirDe}, devis avant intervention.`,
     alternates: { canonical: urlCommune(c) },
     openGraph: {
       title: titre,
-      description: `Audit sur place à ${c.nom}, rapport complet et plan d'action priorisé.`,
+      description: `Audit sur place à ${c.nom}, rapport complet et plan d'action priorisé. À partir de ${aPartirDe}.`,
       url,
     },
   };
@@ -131,6 +142,14 @@ export default async function CommunePage({
           </ul>
         </div>
       </section>
+
+      {/* Le prix, tot. C'est la premiere question de quelqu'un qui compare deux
+          cabinets, et la lui faire chercher en bas de page la fait poser
+          ailleurs. */}
+      <DevisRapide
+        lieu={`à ${c.nom}`}
+        contexte={`Le déplacement à ${c.nom} est compris. L'auditeur vient sur place, contrôle, et vous remet le rapport et son plan d'action.`}
+      />
 
       {/* Les chiffres de la commune, en tete : ce sont eux qui distinguent cette
           page de toutes les autres, et ce que le lecteur verifie en premier. */}

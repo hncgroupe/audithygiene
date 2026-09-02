@@ -16,6 +16,7 @@ import { poidsEnMots } from '@/lib/contenu-grille';
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { urlCommune } from '@/lib/communes';
 import { JsonLd } from '@/components/site/JsonLd';
+import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema, localBusinessSchema } from '@/lib/schema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -95,7 +96,7 @@ export default async function ActivitePage({
           <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight text-ink sm:text-4xl">
             {a.titre}
           </h1>
-          <p className="mt-6 max-w-3xl border-l-4 border-vert-500 pl-5 text-lg leading-relaxed text-ink/85">
+          <p className="mt-6 max-w-3xl text-lg leading-relaxed text-ink/85">
             {a.reponse}
           </p>
           <p className="mt-4 max-w-3xl text-ink/70">{a.ouverture}</p>
@@ -106,6 +107,10 @@ export default async function ActivitePage({
           </div>
         </div>
       </section>
+
+      <DevisRapide
+        contexte={`La visite est la même quel que soit l'établissement : un auditeur passe, contrôle les points de la grille, et vous remet le rapport. Ce qui change en ${a.nom}, c'est le temps passé sur les points ci-dessous.`}
+      />
 
       {sensibles.length > 0 && (
         <section className="container-ah py-12">

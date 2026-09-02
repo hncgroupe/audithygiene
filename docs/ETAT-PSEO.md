@@ -30,8 +30,7 @@ Déplacement en Île-de-France compris, devis établi avant toute intervention.
 
 Le second volet relève de la **DGCCRF**, le premier de la **DDPP** : deux
 administrations, deux contrôles distincts, et c'est l'argument de vente. Sa
-grille est en cours de rédaction et **n'est pas publiée tant qu'elle n'est pas
-validée**.
+grille est écrite et publiée, en 17 points détaillés plus bas.
 
 Le prix vit dans `src/lib/constants.ts` et `src/lib/audit-config.ts`, et le
 corpus pSEO le lit depuis `FORMULES` : jamais de montant recopié à la main,
@@ -49,17 +48,37 @@ label privé indépendant, ni certification, ni agrément.
 
 ## Les familles de pages
 
-| Famille | Pages | Médiane | Plancher |
-|---|---|---|---|
-| Communes | 638 générées, 191 dans la vague 1 | 10 166 signes, 1 547 mots | 4 000 / 650 |
-| Questions autonomes | 70 | 6 654 signes, 1 040 mots | 3 000 / 500 |
-| Points de contrôle | 27 | 4 498 signes, 707 mots | 3 500 / 550 |
-| Thèmes de la grille | 12 | 4 421 signes, 726 mots | 3 500 / 550 |
-| Départements | 8 | 5 882 signes, 878 mots | 2 500 / 400 |
-| Blog, antérieur | 30 | 25 501 signes, 3 820 mots | 2 000 / 350 |
+| Famille | Générées | Vague 1 | Médiane | Plancher |
+|---|---|---|---|---|
+| Communes | 995 | 137 | 10 392 signes, 1 601 mots | 4 000 / 650 |
+| Questions autonomes | 70 | 70 | 6 695 signes, 1 042 mots | 3 000 / 500 |
+| Points de contrôle | 44 | 44 | 4 910 signes, 784 mots | 3 500 / 550 |
+| Dossiers de fond | 20 | 20 | 21 324 signes, 3 310 mots | 9 000 / 1 500 |
+| Thèmes de la grille | 17 | 17 | 4 710 signes, 774 mots | 3 500 / 550 |
+| Types d'établissement | 12 | 12 | 13 895 signes, 2 197 mots | 6 000 / 950 |
+| Départements | 8 | 8 | 5 865 signes, 902 mots | 2 500 / 400 |
+| Blog, antérieur | 30 | 30 | 25 789 signes, 3 891 mots | 2 000 / 350 |
 
-En cours de rédaction : 20 dossiers de fond et 12 pages par type
-d'établissement.
+**1 158 pages programmatiques générables, 300 ouvertes.** Il reste 858 communes,
+soit trois vagues de 300 ou cinq de 200. Les cinq autres familles sont
+intégralement ouvertes : elles passent en tête de l'ordre d'ouverture parce qu'elles reçoivent les liens des communes et n'ont besoin de rien pour exister.
+
+## Les deux volets de la grille
+
+La grille compte 44 points en 17 thèmes, répartis en deux volets qui
+correspondent à deux administrations :
+
+- **hygiène**, 27 points, contrôlés par les services vétérinaires (DDPP) ;
+- **affichage et information du consommateur**, 17 points, contrôlés par la
+  DGCCRF.
+
+Les deux services passent indépendamment l'un de l'autre. C'est ce qui fonde la
+formule Conformité à 890 euros, et personne d'autre ne vend les deux ensemble.
+
+Le volet affichage porte encore `GRILLE_AFFICHAGE_VERSION = 'v0-draft'`. Ses 17
+références ont été vérifiées texte par texte, mais un point, le panonceau
+extérieur de licence, est écrit sans source : aucun texte en vigueur ne l'impose
+de façon vérifiable, alors que toute la documentation professionnelle le répète.
 
 ## La couverture géographique
 
@@ -73,6 +92,50 @@ village à un seul commerce vaut mieux absent que mince.
 
 Paris ne répond pas sur son code commune : ses **vingt arrondissements** portent
 les chiffres, et c'est eux que cherchent les restaurateurs.
+
+## L'indexation, mesurée le 2 septembre 2026
+
+Search Console, fenêtre trois mois : 26 clics, 2 050 impressions, CTR 1,3 %,
+position moyenne 29,8. **202 pages non indexées pour 151 indexées.**
+
+La cause tient en un chiffre, mesuré sur le HTML rendu du build : **96 pages
+n'étaient atteignables par aucun lien depuis l'accueil**, et 134 pages de
+commune se trouvaient à quatre ou cinq clics. L'en-tête ne portait que cinq
+liens et le pied de page onze : `/audit-hygiene`, `/dossiers` et
+`/points-de-controle` n'avaient aucun lien entrant depuis le reste du site.
+Elles n'existaient que dans le sitemap. Google les explorait une fois et les
+laissait dehors.
+
+Trois autres écarts s'y ajoutaient :
+
+- les trois pages légales portaient `index: false` **et** figuraient au
+  sitemap, ce qui est une instruction contradictoire ;
+- le gabarit de titre ajoutait « | audit hygiène » à chaque page, soit seize
+  caractères : **330 titres sur 351 dépassaient soixante caractères** ;
+- la méta description des 137 communes promettait « Contre-visite comprise »,
+  alors que la contre-visite ne fait pas partie de la prestation.
+
+Après correction, mesuré sur le même build : **zéro page inatteignable**, toutes
+à un ou deux clics de l'accueil, **7 titres trop longs** au lieu de 330, et
+**287 URL au sitemap, toutes indexables, aucune en noindex**.
+
+## Ce qui entre dans l'index, et ce qui n'y entre pas
+
+`src/lib/indexation.ts` porte la règle. Deux états seulement, jamais
+d'intermédiaire : une page est au sitemap et indexable, ou elle porte un
+`noindex` assumé et sort du sitemap.
+
+Les 44 points de contrôle et les 17 thèmes sont **hors index**. Ce sont les
+intitulés internes de la grille : personne ne cherche « séparation cru cuit
+respectée ». Ils sont les plus minces du site (784 et 774 mots médians), ils
+n'ont aucune intention d'achat, et ils se disputent le sujet des dossiers de
+fond, trois à quatre fois plus longs. Dix URL traitent des allergènes, douze de
+la chaîne du froid. Ils restent publiés, maillés et explorables, parce qu'ils
+portent les références réglementaires point par point et que c'est la preuve du
+sérieux du cabinet.
+
+Pour les réintégrer : les retirer de `FAMILLES_HORS_INDEX`, rebâtir, resoumettre
+le sitemap.
 
 ## Les vagues d'ouverture
 

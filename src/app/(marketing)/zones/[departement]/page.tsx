@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { DEPARTEMENTS } from '@/lib/constants';
+import { DEPARTEMENTS, FORMULES } from '@/lib/constants';
 import { nombre, urlCommune } from '@/lib/communes';
 import { COMMUNES_OUVERTES } from '@/lib/vagues';
 import { contenuDepartement } from '@/lib/contenu-departement';
@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: { params: Promise<{ departeme
   const dept = getDept(departement);
   if (!dept) return {};
   return {
-    title: `Audit hygiène restaurant ${dept.nom} (${dept.code}) - HACCP`,
-    description: `Audit hygiène et HACCP pour restaurants en ${dept.nom} (${dept.code}). Un auditeur contrôle votre établissement et vous remet un rapport : notation, cas critiques, plan correctif. Label privé indépendant.`,
+    title: `Audit hygiène restaurant ${dept.nom} (${dept.code})`,
+    description: `Audit hygiène et HACCP pour restaurants en ${dept.nom} (${dept.code}). Un auditeur contrôle votre établissement et vous remet un rapport : notation, cas critiques, plan correctif. À partir de ${FORMULES[0].prix}, devis avant intervention.`,
     alternates: { canonical: `/zones/${dept.slug}` },
     openGraph: {
       title: `Audit hygiène restaurant ${dept.nom} (${dept.code})`,
