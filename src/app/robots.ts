@@ -8,22 +8,34 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
  * Perplexity, Google AI Overviews, Copilot/Bing, etc.).
  */
 const AI_AGENTS = [
+  // OpenAI : entrainement, recherche, et recuperation a la demande.
   'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
+  // Anthropic. `Claude-User` et `Claude-SearchBot` sont les agents recents,
+  // distincts de `ClaudeBot` : les omettre revient a les laisser hors regle.
   'ClaudeBot',
+  'Claude-User',
+  'Claude-SearchBot',
   'anthropic-ai',
   'Claude-Web',
+  // Perplexity.
   'PerplexityBot',
   'Perplexity-User',
+  // Google : `Google-Extended` gouverne Gemini et les AI Overviews.
   'Google-Extended',
+  // Apple, Amazon, Meta.
   'Applebot',
   'Applebot-Extended',
   'Amazonbot',
+  'Meta-ExternalAgent',
+  // Bing et Copilot.
   'Bingbot',
+  // Corpus ouverts et agregateurs.
   'CCBot',
   'cohere-ai',
-  'Meta-ExternalAgent',
+  'Bytespider',
+  'Diffbot',
   'DuckAssistBot',
   'YouBot',
 ];

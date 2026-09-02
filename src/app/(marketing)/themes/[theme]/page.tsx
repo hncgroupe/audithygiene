@@ -15,6 +15,7 @@ import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { urlCommune } from '@/lib/communes';
 import { JsonLd } from '@/components/site/JsonLd';
 import { breadcrumbSchema, faqSchema } from '@/lib/schema';
+import { ROBOTS_HORS_INDEX } from '@/lib/indexation';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 
@@ -36,9 +37,12 @@ export async function generateMetadata({
   const t = trouver(theme);
   if (!t) return {};
   return {
-    title: `${t.theme} : les points vérifiés en audit d'hygiène`,
+    title: `${t.theme} : les points vérifiés`.slice(0, 60),
     description: `Les ${t.items.length} points de contrôle du thème ${t.theme} : ce que l'auditeur vérifie, le texte applicable, les écarts fréquents et le correctif attendu.`,
     alternates: { canonical: `/themes/${t.slug}` },
+    /* Meme raisonnement que les points de controle : un intitule de grille
+       n'est pas une requete. Voir src/lib/indexation.ts. */
+    robots: ROBOTS_HORS_INDEX,
     openGraph: {
       title: `${t.theme} en audit d'hygiène`,
       description: `Les ${t.items.length} points vérifiés, texte réglementaire à l'appui.`,
@@ -61,7 +65,7 @@ export default async function ThemePage({ params }: { params: Promise<{ theme: s
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Accueil', url: siteUrl },
-          { name: 'La méthode', url: `${siteUrl}/methode` },
+          { name: 'Thèmes', url: `${siteUrl}/themes` },
           { name: t.theme, url },
         ])}
       />
@@ -76,8 +80,8 @@ export default async function ThemePage({ params }: { params: Promise<{ theme: s
               Accueil
             </Link>{' '}
             /{' '}
-            <Link href="/methode" className="hover:text-vert-700">
-              La méthode
+            <Link href="/themes" className="hover:text-vert-700">
+              Thèmes
             </Link>{' '}
             / <span className="text-ink/70">{t.theme}</span>
           </nav>

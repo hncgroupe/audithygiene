@@ -56,7 +56,10 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   // Prix et formules
   {
     q: "Combien coûte un audit ?",
-    a: "490 € HT pour l'Audit Essentiel, qui couvre les 27 points de la grille, et 890 € HT pour l'Audit Conformité, qui ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris. Le devis est gratuit et sans engagement, et il est établi avant toute intervention.",
+    /* TODO prix a confirmer : pas de montant ici. Cette reponse alimente le
+       bloc FAQPage de l'accueil et de la page FAQ, donc les moteurs de
+       reponse, et FORMULES porte encore la mention « prix a valider ». */
+    a: "Le montant dépend de la formule retenue et de ce qu'il y a à contrôler : le nombre de zones, d'enceintes froides et l'état de la documentation. L'Audit Essentiel couvre les 27 points de la grille, l'Audit Conformité y ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris. Le devis est gratuit, sans engagement, établi avant toute intervention et ferme.",
   },
   {
     q: "Quelle est la différence entre Essentiel et Complet ?",

@@ -12,6 +12,7 @@ import { contenuCommune } from '@/lib/contenu-commune';
 import { communeOuverte, COMMUNES_OUVERTES } from '@/lib/vagues';
 import { DEPARTEMENTS, MENTION_LABEL_PRIVE } from '@/lib/constants';
 import { JsonLd } from '@/components/site/JsonLd';
+import { DevisRapide } from '@/components/marketing/DevisRapide';
 import { breadcrumbSchema, faqSchema, localBusinessSchema } from '@/lib/schema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
@@ -42,8 +43,15 @@ export async function generateMetadata({
   const url = `${siteUrl}${urlCommune(c)}`;
   const titre = `Audit hygiène restaurant ${c.nom} (${c.codePostal})`;
   return {
-    title: `${titre} : rapport et plan d'action`,
-    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport complet avec son plan d'action. Contre-visite comprise.`,
+    /* Google coupe une title au dela d'une soixantaine de caracteres, et le
+       template du layout ajoute encore « | audit hygiène ». Le nom de la
+       commune et le code postal sont ce qui doit survivre a la coupe. */
+    title: titre,
+    /* Ce que la prestation comprend reellement : l'audit et le rapport. Pas de
+       contre-visite, pas de suivi, pas de cloture de dossier.
+       TODO prix a confirmer : aucun montant ici tant que FORMULES porte la
+       mention « a valider ». Le devis reste l'accroche commerciale. */
+    description: `Audit hygiène et HACCP à ${c.nom} : un auditeur contrôle sur place tous les points réglementaires, en toute discrétion, et vous remet un rapport avec son plan d'action. Devis gratuit avant intervention.`,
     alternates: { canonical: urlCommune(c) },
     openGraph: {
       title: titre,
@@ -131,6 +139,14 @@ export default async function CommunePage({
           </ul>
         </div>
       </section>
+
+      {/* Le prix, tot. C'est la premiere question de quelqu'un qui compare deux
+          cabinets, et la lui faire chercher en bas de page la fait poser
+          ailleurs. */}
+      <DevisRapide
+        lieu={`à ${c.nom}`}
+        contexte={`Le déplacement à ${c.nom} est compris. L'auditeur vient sur place, contrôle, et vous remet le rapport et son plan d'action.`}
+      />
 
       {/* Les chiffres de la commune, en tete : ce sont eux qui distinguent cette
           page de toutes les autres, et ce que le lecteur verifie en premier. */}

@@ -17,8 +17,20 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'audit hygiène - Audit hygiène & HACCP pour restaurants en Île-de-France',
-    template: '%s | audit hygiène',
+    /* TODO prix a confirmer : pas de montant dans la balise title tant que
+       FORMULES porte la mention « a valider ». */
+    default: "Audit hygiène restaurant Île-de-France : rapport et plan d'action",
+    /*
+      Pas de suffixe de marque.
+
+      « | audit hygiène » ajoutait seize caracteres a chaque titre du site :
+      330 pages sur 351 depassaient la soixantaine de caracteres et se
+      faisaient couper, ou pire, reecrire par Google. Un suffixe de marque ne
+      se paie que quand la marque est deja cherchee, ce qui n'est pas encore le
+      cas ici. Chaque page reprend donc les mots de sa requete, et rien
+      d'autre.
+    */
+    template: '%s',
   },
   description:
     "Cabinet d'audit hygiène et HACCP pour restaurants et CHR en Île-de-France. Un auditeur contrôle votre établissement et vous remet un rapport complet : notation, cas critiques, plan correctif. Label privé indépendant.",

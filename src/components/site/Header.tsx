@@ -6,7 +6,7 @@ import { Logo } from './Logo';
 
 const NAV = [
   { href: '/methode', label: 'Méthode' },
-  { href: '/#formules', label: 'Formules' },
+  { href: '/prix-audit-hygiene-restaurant', label: 'Tarifs' },
   { href: '/blog', label: 'Blog' },
   { href: '/a-propos', label: 'À propos' },
   { href: '/contact', label: 'Contact' },
