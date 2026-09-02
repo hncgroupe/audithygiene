@@ -1,4 +1,16 @@
 /** Contenus partagés du site (FAQ, déroulé) - réutilisés pour l'UI et le schema.org. */
+import { FORMULES } from './constants';
+
+/*
+  Les montants ne sont jamais ecrits a la main ici.
+
+  Cette FAQ alimente le bloc FAQPage de la page d'accueil et de /faq : un prix
+  saisi en dur finirait par diverger de FORMULES et le site servirait deux
+  chiffres differents aux moteurs de reponse. Prix valides par le client le
+  2 septembre 2026, voir src/lib/constants.ts.
+*/
+const ESSENTIEL = FORMULES.find((f) => f.id === 'essentiel');
+const CONFORMITE = FORMULES.find((f) => f.id === 'conformite');
 
 export const FAQ_ITEMS: { q: string; a: string }[] = [
   // Comprendre l'audit
@@ -56,13 +68,13 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   // Prix et formules
   {
     q: "Combien coûte un audit ?",
-    /* TODO prix a confirmer : pas de montant ici. Cette reponse alimente le
-       bloc FAQPage de l'accueil et de la page FAQ, donc les moteurs de
-       reponse, et FORMULES porte encore la mention « prix a valider ». */
-    a: "Le montant dépend de la formule retenue et de ce qu'il y a à contrôler : le nombre de zones, d'enceintes froides et l'état de la documentation. L'Audit Essentiel couvre les 27 points de la grille, l'Audit Conformité y ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris. Le devis est gratuit, sans engagement, établi avant toute intervention et ferme.",
+    a: `${ESSENTIEL?.prix} pour l'${ESSENTIEL?.nom}, qui couvre les 27 points de la grille, et ${CONFORMITE?.prix} pour l'${CONFORMITE?.nom}, qui ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris. Le devis est gratuit et sans engagement, et il est établi avant toute intervention.`,
   },
   {
-    q: "Quelle est la différence entre Essentiel et Complet ?",
+    /* « Complet » ne designe aucune formule : les deux s'appellent Audit
+       Essentiel et Audit Conformite. La question portait un nom qui n'existe
+       nulle part ailleurs sur le site. */
+    q: `Quelle est la différence entre l'${ESSENTIEL?.nom} et l'${CONFORMITE?.nom} ?`,
     a: "Les deux parcourent les 27 points de contrôle répartis en 12 thèmes : nous ne vendons pas d'audit partiel, qui rassurerait à tort. L'Audit Conformité ajoute un second volet, celui de l'affichage et de l'information du consommateur, qui relève de la DGCCRF et non des services vétérinaires. C'est un contrôle distinct, et un établissement irréprochable en cuisine peut se faire reprendre sur sa carte ou son affichage.",
   },
   {

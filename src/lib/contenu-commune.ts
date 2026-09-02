@@ -63,20 +63,20 @@ export type Contenu = {
 /* Le prix vient des formules affichees, jamais d'une reformulation : deux
    montants differents sur le meme site se reperent en trente secondes. */
 /*
-  TODO prix a confirmer.
+  Prix valides par le client le 2 septembre 2026, voir src/lib/constants.ts.
 
-  Les deux montants ne sont plus injectes dans la prose ni dans la FAQ des
-  pages de commune. La FAQ d'une page alimente son bloc FAQPage : un prix
-  ecrit la se retrouve en donnees structurees sur cent cinquante et une pages,
-  donc dans les moteurs de reponse, hors contexte et sans date. Or FORMULES
-  porte encore la mention « prix a valider, placeholders ».
-
-  Quand les montants seront confirmes, remettre :
-    const PRIX_ESSENTIEL = FORMULES.find((f) => f.id === 'essentiel')?.prix;
-    const PRIX_CONFORMITE = FORMULES.find((f) => f.id === 'conformite')?.prix;
+  Attention en modifiant ce fichier : la FAQ d'une page de commune alimente son
+  bloc FAQPage, donc les moteurs de reponse. Un montant ecrit ici part en
+  donnees structurees sur cent cinquante et une pages. C'est voulu, mais cela
+  veut dire que ces deux constantes doivent toujours venir de FORMULES et
+  jamais d'une saisie a la main.
 */
-const NOM_ESSENTIEL = FORMULES.find((f) => f.id === 'essentiel')?.nom || 'Audit Essentiel';
-const NOM_CONFORMITE = FORMULES.find((f) => f.id === 'conformite')?.nom || 'Audit Conformité';
+const ESSENTIEL = FORMULES.find((f) => f.id === 'essentiel');
+const CONFORMITE = FORMULES.find((f) => f.id === 'conformite');
+const NOM_ESSENTIEL = ESSENTIEL?.nom || 'Audit Essentiel';
+const NOM_CONFORMITE = CONFORMITE?.nom || 'Audit Conformité';
+const PRIX_ESSENTIEL = ESSENTIEL?.prix || '';
+const PRIX_CONFORMITE = CONFORMITE?.prix || '';
 
 const THEMES = GRILLE_AUDIT.map((t) => t.theme);
 const NB_POINTS = GRILLE_AUDIT.reduce((a, t) => a + t.items.length, 0);
@@ -150,7 +150,7 @@ const REQUETES: ((x: Chiffres) => { titre: string; texte: string })[] = [
   }),
   ({ c }) => ({
     titre: `Prix d'un audit d'hygiène à ${c.nom}`,
-    texte: `L'${NOM_ESSENTIEL} couvre les ${NB_POINTS} points de la grille. L'${NOM_CONFORMITE} y ajoute le volet affichage et information du consommateur, qui relève d'un contrôle distinct. Le déplacement à ${c.nom} est compris dans les deux cas. Le devis est établi avant toute intervention, sur votre situation réelle, et il n'y a rien à payer pour l'obtenir.`,
+    texte: `${PRIX_ESSENTIEL} pour l'${NOM_ESSENTIEL}, qui couvre les ${NB_POINTS} points de la grille, et ${PRIX_CONFORMITE} pour l'${NOM_CONFORMITE}, qui ajoute le volet affichage et information du consommateur. Le déplacement à ${c.nom} est compris. Le devis est établi avant toute intervention et il n'y a rien à payer pour l'obtenir.`,
   }),
   () => ({
     titre: `Qui contrôle les restaurants`,
@@ -230,7 +230,7 @@ const FAQ: ((x: Chiffres) => { question: string; reponse: string })[] = [
   }),
   ({ c }) => ({
     question: `Combien coûte un audit à ${c.nom} ?`,
-    reponse: `Le montant dépend de la formule et de ce qu'il y a à contrôler chez vous : le nombre de zones, d'enceintes froides et l'état de la documentation. L'${NOM_ESSENTIEL} et l'${NOM_CONFORMITE} parcourent l'un comme l'autre les ${NB_POINTS} points de la grille, nous ne vendons pas d'audit partiel ; le second ajoute le volet affichage et information du consommateur. Le déplacement en Île-de-France est compris et le devis, établi avant toute intervention, est gratuit et ferme.`,
+    reponse: `${PRIX_ESSENTIEL} pour l'${NOM_ESSENTIEL} et ${PRIX_CONFORMITE} pour l'${NOM_CONFORMITE}, déplacement en Île-de-France compris. Les deux parcourent les ${NB_POINTS} points de la grille : nous ne vendons pas d'audit partiel. Le second ajoute le volet affichage et information du consommateur, qui relève d'un contrôle distinct. Le devis est établi avant toute intervention et il est gratuit.`,
   }),
   () => ({
     question: `Faut-il un audit chaque année ?`,

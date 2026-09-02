@@ -32,8 +32,25 @@ export const DEPARTEMENTS: Departement[] = [
 ];
 
 /**
- * Formules - TODO : noms, contenu, durée, prix à valider (voir docs/BUSINESS_MODEL.md).
- * Les prix sont des placeholders, à ne pas afficher comme définitifs.
+ * Les formules.
+ *
+ * PRIX VALIDES PAR LE CLIENT LE 2 SEPTEMBRE 2026. Ce ne sont pas des
+ * placeholders : 490 EUR HT et 890 EUR HT sont les tarifs reels de deux
+ * prestations distinctes, et ils s'affichent partout, page d'accueil, pages de
+ * commune, page prix, FAQ et donnees structurees.
+ *
+ * L'ancien commentaire disait l'inverse et il etait perime. Il a coute un
+ * aller-retour complet : les montants ont ete retires de tout le site, puis
+ * remis. Si un doute revient sur ces valeurs, il se leve avec le client, pas en
+ * les effacant du corpus.
+ *
+ * Ce qui reste a valider n'est pas le prix mais la grille d'affichage
+ * (src/lib/grille-affichage.ts, GRILLE_AFFICHAGE_VERSION = 'v0-draft'), qui
+ * fonde le contenu de l'Audit Conformite. Voir docs/ETAT-PSEO.md.
+ *
+ * Regle inchangee : jamais de montant recopie a la main dans une page. Tout se
+ * lit depuis FORMULES, sans quoi deux chiffres differents finissent par
+ * cohabiter sur le meme site.
  */
 export interface Formule {
   id: string;

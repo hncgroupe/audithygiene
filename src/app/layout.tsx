@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import { env } from '@/lib/env';
 import { JsonLd } from '@/components/site/JsonLd';
 import { organizationSchema, websiteSchema } from '@/lib/schema';
+import { FORMULES } from '@/lib/constants';
 
 // Style Stripe : grotesk propre, identique sur tous les appareils (une seule webfont).
 const display = Hanken_Grotesk({
@@ -17,9 +18,10 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://audithygiene.fr';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    /* TODO prix a confirmer : pas de montant dans la balise title tant que
-       FORMULES porte la mention « a valider ». */
-    default: 'Audit hygiène restaurant Île-de-France : rapport et devis',
+    /* Le prix vient de FORMULES. Un tarif dans la balise title est ce qui
+       distingue un resultat de ses voisins sur une requete de comparaison, et
+       il tient sous la soixantaine de caracteres. */
+    default: `Audit hygiène restaurant Île-de-France, dès ${FORMULES[0].prix}`,
     /*
       Pas de suffixe de marque.
 

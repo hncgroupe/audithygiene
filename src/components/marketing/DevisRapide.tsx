@@ -18,11 +18,9 @@ import { FORMULES, MARQUE } from '@/lib/constants';
  * delai d'intervention qui n'est pas tenu par ecrit ailleurs, ou une zone que
  * le cabinet ne couvre pas.
  *
- * TODO prix a confirmer. Aucun montant n'est affiche ici, volontairement :
- * FORMULES porte encore la mention « prix a valider, placeholders, a ne pas
- * afficher comme definitifs ». Le bloc porte donc le nom des formules et ce
- * qu'elles couvrent, et renvoie au devis. Quand les montants seront valides,
- * remettre `f.prix` et `f.duree` dans les deux cartes.
+ * Les deux montants sont valides depuis le 2 septembre 2026 et viennent de
+ * FORMULES, jamais recopies. Ils sont hors taxes, et le bloc le dit : un tarif
+ * affiche sans la mention se lit comme un prix TTC.
  */
 export function DevisRapide({
   lieu,
@@ -50,12 +48,15 @@ export function DevisRapide({
           {[essentiel, conformite].map((f) => (
             <div key={f.id} className="rounded-xl border border-ink/10 bg-white p-4">
               <dt className="text-sm font-semibold text-ink">{f.nom}</dt>
-              <dd className="mt-1 text-ink/75">{f.description}</dd>
+              <dd className="mt-1 text-2xl font-bold text-ink">{f.prix}</dd>
+              <dd className="mt-1 text-sm text-gris">{f.duree}</dd>
+              <dd className="mt-2 text-sm text-ink/75">{f.description}</dd>
             </div>
           ))}
         </dl>
         <p className="mt-4 text-sm text-gris">
-          Déplacement en Île-de-France compris. Devis gratuit établi avant toute intervention.
+          Prix hors taxes. Déplacement en Île-de-France compris. Devis gratuit établi avant toute
+          intervention.
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Link href="/#rdv" className="btn-primary">

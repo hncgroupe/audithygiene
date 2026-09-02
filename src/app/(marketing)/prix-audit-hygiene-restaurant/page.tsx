@@ -6,20 +6,13 @@
  * les requetes les plus proches de l'achat du metier, et aucune adresse ne les
  * visait. Seule une ancre, /#formules, portait le sujet.
  *
- * TODO prix a confirmer.
+ * Les deux tarifs sont valides depuis le 2 septembre 2026 et s'affichent ici
+ * en clair. Une page prix sans prix ne convertit pas : quelqu'un qui tape
+ * « combien coute un audit hygiene » veut un chiffre, et s'il ne le trouve pas
+ * il retourne aux resultats.
  *
- * Cette page ne porte volontairement AUCUN montant. src/lib/constants.ts
- * indique encore, sur FORMULES, que les prix sont des placeholders a valider,
- * et le second palier repose sur une grille d'affichage en v0-draft dont un
- * point n'est rattache a aucun texte verifiable. Publier un chiffre non
- * confirme sur la page que Google servira aux requetes de prix, c'est le
- * diffuser partout et s'engager commercialement dessus.
- *
- * Elle explique donc ce qui fait varier un prix, ce que couvre chaque formule,
- * et conduit au devis. C'est ce que cherche quelqu'un qui compare : savoir ce
- * qu'il achete et obtenir un chiffre ferme pour son cas. Quand les montants
- * seront valides, ajouter ici un tableau lu depuis FORMULES et rebrancher
- * `offers` dans src/lib/schema.ts.
+ * Les montants viennent tous de FORMULES, jamais recopies a la main. Ils sont
+ * hors taxes, et la page le dit a chaque endroit ou un chiffre apparait.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -45,10 +38,17 @@ export const metadata: Metadata = {
   },
 };
 
+/*
+  Cette FAQ alimente le bloc FAQPage de la page : chaque reponse part en
+  donnees structurees et peut etre reprise telle quelle par un moteur de
+  reponse, hors contexte. Deux consequences tenues ici : tout montant vient de
+  FORMULES, et la mention « hors taxes » accompagne chaque chiffre, sans quoi
+  le tarif se lit comme un prix TTC partout ou il est recopie.
+*/
 const FAQ = [
   {
     q: "Combien coûte un audit hygiène pour un restaurant ?",
-    a: "Le montant dépend de la formule retenue et de l'établissement : sa surface, le nombre d'enceintes froides à contrôler, le nombre de zones de production, et le fait de couvrir ou non le volet affichage. Un devis est établi avant toute intervention, à partir de ces éléments, et il est ferme. Le déplacement en Île-de-France est compris.",
+    a: `${FORMULES[0].prix} pour l'${FORMULES[0].nom}, qui couvre les ${NB_HYGIENE} points d'hygiène des denrées et des locaux, et ${FORMULES[1].prix} pour l'${FORMULES[1].nom}, qui ajoute les ${NB_AFFICHAGE} points d'information du consommateur. Les deux tarifs sont hors taxes et comprennent le déplacement en Île-de-France. Le devis est gratuit et établi avant toute intervention.`,
   },
   {
     q: "Le déplacement est-il facturé en plus ?",
@@ -56,11 +56,11 @@ const FAQ = [
   },
   {
     q: "Quelle différence de prix entre les deux formules ?",
-    a: `L'Audit Essentiel couvre les ${NB_HYGIENE} points d'hygiène des denrées et des locaux, ceux que contrôlent ${VOLETS.hygiene.service}. L'Audit Conformité y ajoute les ${NB_AFFICHAGE} points d'information du consommateur, que contrôle ${VOLETS.affichage.service}. La seconde formule demande plus de temps sur place et un examen documentaire plus long, ce qui explique l'écart.`,
+    a: `${FORMULES[1].prix} contre ${FORMULES[0].prix}, hors taxes. L'${FORMULES[0].nom} couvre les ${NB_HYGIENE} points d'hygiène des denrées et des locaux, ceux que contrôlent ${VOLETS.hygiene.service}. L'${FORMULES[1].nom} y ajoute les ${NB_AFFICHAGE} points d'information du consommateur, que contrôle ${VOLETS.affichage.service}. La seconde formule demande plus de temps sur place, ${FORMULES[1].duree} contre ${FORMULES[0].duree}, et un examen documentaire plus long.`,
   },
   {
     q: "Y a-t-il un tarif dégressif pour plusieurs établissements ?",
-    a: "Oui. À partir de trois établissements, la prestation est établie sur devis avec une dégressivité. Les visites sont menées sur la même grille, ce qui permet de comparer les sites entre eux dans un rapport unique.",
+    a: `Oui. À partir de trois établissements, la prestation est établie sur devis avec une dégressivité, en dessous des ${FORMULES[0].prix} et ${FORMULES[1].prix} pratiqués à l'unité. Les visites sont menées sur la même grille, ce qui permet de comparer les sites entre eux dans un rapport unique.`,
   },
   {
     q: "Le rapport et le plan d'action sont-ils facturés séparément ?",
@@ -119,17 +119,19 @@ export default function PrixPage() {
             Combien coûte un audit hygiène en restaurant
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-relaxed text-ink/85">
-            Le prix d&apos;un audit hygiène dépend de deux choses : la formule retenue, et ce
-            qu&apos;il y a à contrôler chez vous. Un établissement de quarante couverts sans
-            réserve et une maison avec laboratoire, cellule et économat ne demandent pas le même
-            temps sur place. Le devis est donc établi avant toute intervention, à partir de votre
-            situation réelle, et il est ferme. Le déplacement en Île-de-France est compris, sans
-            frais kilométrique. Le rapport, la notation et le plan d&apos;action font partie de la
-            prestation : il n&apos;y a ni option ni supplément pour les obtenir.
+            Deux prix pour deux audits. L&apos;{FORMULES[0].nom} coûte{' '}
+            <strong className="font-bold">{FORMULES[0].prix}</strong> et couvre les {NB_HYGIENE}{' '}
+            points d&apos;hygiène des denrées et des locaux. L&apos;{FORMULES[1].nom} coûte{' '}
+            <strong className="font-bold">{FORMULES[1].prix}</strong> et y ajoute les{' '}
+            {NB_AFFICHAGE} points d&apos;information du consommateur, qui relèvent d&apos;un
+            second contrôle, mené par une autre administration. Les deux tarifs s&apos;entendent
+            hors taxes, déplacement en Île-de-France compris, sans frais kilométrique. Le rapport,
+            la notation et le plan d&apos;action font partie de la prestation : il n&apos;y a ni
+            option ni supplément pour les obtenir.
           </p>
           <p className="mt-4 max-w-3xl text-ink/70">
-            Cette page explique ce que couvre chaque formule et ce qui fait varier le montant, pour
-            que vous sachiez ce que vous comparez avant de demander un chiffre.
+            À partir de trois établissements, la prestation devient dégressive et s&apos;établit
+            sur devis. Le devis est gratuit, établi avant toute intervention, et il est ferme.
           </p>
         </div>
       </section>
@@ -142,7 +144,9 @@ export default function PrixPage() {
           {FORMULES.map((f) => (
             <div key={f.id} className="rounded-2xl border border-ink/10 p-6">
               <h3 className="text-lg font-bold text-ink">{f.nom}</h3>
-              <p className="mt-2 text-ink/75">{f.description}</p>
+              <p className="mt-2 text-3xl font-bold text-ink">{f.prix}</p>
+              <p className="mt-1 text-sm text-gris">{f.duree}</p>
+              <p className="mt-3 text-ink/75">{f.description}</p>
               <ul className="mt-4 space-y-2 text-sm text-ink/80">
                 {f.inclus.map((i) => (
                   <li key={i} className="flex gap-2">
@@ -153,7 +157,9 @@ export default function PrixPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-4 text-sm font-medium text-gris">Sur devis, établi avant intervention.</p>
+              <p className="mt-4 text-sm font-medium text-gris">
+                Prix hors taxes, déplacement en Île-de-France compris.
+              </p>
             </div>
           ))}
         </div>
