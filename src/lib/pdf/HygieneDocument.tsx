@@ -67,6 +67,13 @@ const DEG_A = '#10B981';
 const DEG_B = '#047857';
 const DEG_C = '#065F46';
 
+/* Hauteur d'une page A4 en points, et hauteur du bandeau de pied de page.
+   Le numero de page se place au « top » et non au « bottom » : un noeud fixe
+   ancre par le bas, dont le contenu est recalcule page apres page, fait diverger
+   le calcul de position et pdfkit refuse le nombre obtenu. */
+const A4_HAUTEUR = 841.89;
+const PIED_HAUTEUR = 34;
+
 const s = StyleSheet.create({
   page: {
     paddingTop: 46,
@@ -162,7 +169,7 @@ const s = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 34,
+    height: PIED_HAUTEUR,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 22,
@@ -176,7 +183,7 @@ const s = StyleSheet.create({
      dans un autre bloc fixe ne rejoue pas son rendu page après page. */
   numPage: {
     position: 'absolute',
-    bottom: 12,
+    top: A4_HAUTEUR - PIED_HAUTEUR + 11,
     right: 22,
     width: 70,
     textAlign: 'right',
