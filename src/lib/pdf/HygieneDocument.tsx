@@ -3,11 +3,14 @@
  *
  * Page 1 en synthèse : anneau de score, état des lieux, notation par thème sur
  * deux colonnes. Viennent ensuite les points à corriger (constat, risque, moyen
- * de correction, photos en bande sous le texte), le détail de tous les points,
- * puis la portée du rapport.
+ * de correction, photos en bande sous le texte), les risques et les suites
+ * possibles d'un contrôle officiel, le détail de tous les points, les références
+ * réglementaires, puis la portée du rapport.
  *
  * Pied de page sur toutes les pages : bandeau dégradé, logo blanc à gauche, nom
- * de l'établissement au centre, numéro de page à droite.
+ * de l'établissement au centre, numéro de page à droite. Le numéro est posé par
+ * NumeroPage, directement sur la page : imbriqué dans le bandeau, lui-même fixe,
+ * il ne se rejouait que sur la première page.
  */
 
 import {
@@ -27,6 +30,14 @@ import {
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import type { RapportHygiene, ActionCorrective } from '@/lib/rapport-hygiene';
 import { LIBELLE_CONFORMITE, COULEUR_CONFORMITE } from '@/lib/rapport-hygiene';
+import {
+  SUITES_CONTROLE,
+  RISQUES_SANITAIRES,
+  RISQUES_ETABLISSEMENT,
+  AVERTISSEMENT_SUITES,
+  suitesProbables,
+  lectureDuRisque,
+} from '@/lib/risques-sanctions';
 
 export interface HygienePdfData {
   etablissement: string;
@@ -159,8 +170,51 @@ const s = StyleSheet.create({
   bandeauFond: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   bandeauLogo: { width: 64, height: 12.8, objectFit: 'contain' },
   bandeauNom: { flex: 1, textAlign: 'center', fontSize: 8.5, color: '#FFFFFF' },
-  bandeauPage: { width: 70, textAlign: 'right', fontSize: 8.5, color: '#FFFFFF' },
+  bandeauPage: { width: 70 },
   bandeauMarque: { width: 64, fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#FFFFFF' },
+  /* Posé directement sur la page, jamais dans le bandeau : un bloc fixe imbriqué
+     dans un autre bloc fixe ne rejoue pas son rendu page après page. */
+  numPage: {
+    position: 'absolute',
+    bottom: 12,
+    right: 22,
+    width: 70,
+    textAlign: 'right',
+    fontSize: 8.5,
+    color: '#FFFFFF',
+  },
+
+  /* Risques et suites */
+  suite: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 9, borderTopWidth: 0.6, borderTopColor: FILET },
+  suiteRang: {
+    width: 17,
+    height: 17,
+    borderRadius: 8.5,
+    marginRight: 12,
+    textAlign: 'center',
+    paddingTop: 3.6,
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#FFFFFF',
+  },
+  suiteQuand: { fontSize: 8, color: GRIS_CLAIR, marginTop: 1 },
+  encart: {
+    marginTop: 14,
+    padding: 11,
+    borderWidth: 0.7,
+    borderColor: FILET_FORT,
+    borderRadius: 5,
+    backgroundColor: '#FAFBFB',
+  },
+  risqueLigne: { marginTop: 11 },
+  alerte: {
+    marginTop: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderLeftWidth: 2.5,
+    borderLeftColor: ROUGE,
+    backgroundColor: '#FEF4F4',
+  },
 });
 
 function couleurScore(n: number | null): string {
@@ -209,11 +263,32 @@ function Bandeau({ data }: { data: HygienePdfData }) {
         <Text style={s.bandeauMarque}>audit hygiène</Text>
       )}
       <Text style={s.bandeauNom}>{data.etablissement}</Text>
-      <Text
-        style={s.bandeauPage}
-        fixed
-        render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-      />
+      {/* Réserve la place du numéro, qui est posé par NumeroPage. */}
+      <View style={s.bandeauPage} />
+    </View>
+  );
+}
+
+/** Numéro de page en bas à droite, rejoué sur chaque page. */
+function NumeroPage() {
+  return (
+    <Text
+      style={s.numPage}
+      fixed
+      render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+    />
+  );
+}
+
+function LigneSuite({ rang, titre, quand, texte, couleur }: (typeof SUITES_CONTROLE)[number]) {
+  return (
+    <View style={s.suite} wrap={false}>
+      <Text style={[s.suiteRang, { backgroundColor: couleur }]}>{rang}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={s.h3}>{titre}</Text>
+        <Text style={s.suiteQuand}>{quand}</Text>
+        <Text style={[s.gris, { marginTop: 3 }]}>{texte}</Text>
+      </View>
     </View>
   );
 }
@@ -288,6 +363,16 @@ function Fiche({ a }: { a: ActionCorrective }) {
             </View>
           </View>
         )}
+
+        <View style={s.bloc}>
+          <Text style={s.cle}>Si ce point est retrouvé en contrôle</Text>
+          <Text style={s.petit}>
+            {suitesProbables(a.priorite)
+              .map((x) => x.titre.toLowerCase())
+              .join(', ')}
+            . Échelle complète et cadre page suivante.
+          </Text>
+        </View>
 
         {a.referenceRegl ? (
           <View style={s.bloc}>
@@ -409,6 +494,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         </View>
 
         <Bandeau data={data} />
+        <NumeroPage />
       </Page>
 
       {/* Points à corriger */}
@@ -444,6 +530,66 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         ) : null}
 
         <Bandeau data={data} />
+        <NumeroPage />
+      </Page>
+
+      {/* Risques et suites possibles */}
+      <Page size="A4" style={s.page}>
+        <Text style={s.sur}>Risques et suites</Text>
+        <Text style={[s.h2, { marginTop: 8 }]}>Ce qu&apos;un écart peut coûter</Text>
+        <Text style={s.lede}>{lectureDuRisque(r)}</Text>
+
+        {r.ncMajeures > 0 ? (
+          <View style={s.alerte}>
+            <Text style={[s.h3, { color: ROUGE }]}>
+              {r.ncMajeures} {r.ncMajeures > 1 ? 'points critiques' : 'point critique'} à traiter sous 48
+              heures
+            </Text>
+            <Text style={[s.gris, { marginTop: 2 }]}>
+              Un point critique ne se rattrape pas par une bonne note ailleurs. Le détail et le moyen de
+              correction figurent aux fiches précédentes.
+            </Text>
+          </View>
+        ) : null}
+
+        <View style={s.section}>
+          <Text style={s.h2}>Les suites d&apos;un contrôle officiel</Text>
+          <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
+            De la simple observation à la mesure de police, dans l&apos;ordre de gravité.
+          </Text>
+          <View style={{ marginTop: 10 }}>
+            {SUITES_CONTROLE.map((x) => (
+              <LigneSuite key={x.rang} {...x} />
+            ))}
+            <View style={s.filet} />
+          </View>
+          <View style={s.encart}>
+            <Text style={s.petit}>{AVERTISSEMENT_SUITES}</Text>
+          </View>
+        </View>
+
+        <View style={s.section} wrap={false}>
+          <Text style={s.h2}>Ce que risque le consommateur</Text>
+          {RISQUES_SANITAIRES.map((x) => (
+            <View key={x.titre} style={s.risqueLigne}>
+              <Text style={s.h3}>{x.titre}</Text>
+              <Text style={[s.gris, { marginTop: 2, maxWidth: 430 }]}>{x.texte}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={s.section} wrap={false}>
+          <Text style={s.h2}>Ce que risque l&apos;établissement</Text>
+          {RISQUES_ETABLISSEMENT.map((x) => (
+            <View key={x.titre} style={s.risqueLigne}>
+              <Text style={s.h3}>{x.titre}</Text>
+              <Text style={[s.gris, { marginTop: 2, maxWidth: 430 }]}>{x.texte}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Bandeau data={data} />
+        <NumeroPage />
       </Page>
 
       {/* Détail */}
@@ -482,6 +628,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         ))}
 
         <Bandeau data={data} />
+        <NumeroPage />
       </Page>
 
       {/* Références réglementaires */}
@@ -513,6 +660,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         )}
 
         <Bandeau data={data} />
+        <NumeroPage />
       </Page>
 
       {/* Portée */}
@@ -557,6 +705,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         </View>
 
         <Bandeau data={data} />
+        <NumeroPage />
       </Page>
     </Document>
   );

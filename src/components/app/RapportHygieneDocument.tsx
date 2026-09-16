@@ -9,6 +9,13 @@
 
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import {
+  SUITES_CONTROLE,
+  RISQUES_SANITAIRES,
+  RISQUES_ETABLISSEMENT,
+  AVERTISSEMENT_SUITES,
+  lectureDuRisque,
+} from '@/lib/risques-sanctions';
+import {
   LIBELLE_CONFORMITE,
   COULEUR_CONFORMITE,
   type RapportHygiene,
@@ -196,7 +203,7 @@ export function RapportHygieneDocument(p: RapportHygieneProps) {
   const r = p.rapport;
   const moitie = Math.ceil(r.themes.length / 2);
   const lieu = [p.type, p.adresse ?? p.ville].filter(Boolean).join(', ');
-  const total = r.actions.length > 0 ? 4 : 3;
+  const total = r.actions.length > 0 ? 5 : 4;
   let page = 0;
 
   return (
@@ -333,6 +340,88 @@ export function RapportHygieneDocument(p: RapportHygieneProps) {
           <Bandeau nom={p.etablissement} page={++page} total={total} />
         </section>
       )}
+
+      {/* Risques et suites possibles */}
+      <section className="break-before-page">
+        <div className="px-7 pt-12 sm:px-14">
+          <Cle>Risques et suites</Cle>
+          <h2 className="mt-2 text-[28px] font-semibold tracking-tight">
+            Ce qu&apos;un écart peut coûter
+          </h2>
+          <p className="mt-2 max-w-[58ch] text-[15px] leading-relaxed text-gris">
+            {lectureDuRisque(r)}
+          </p>
+
+          {r.ncMajeures > 0 && (
+            <div className="mt-6 border-l-[3px] border-[#DC2626] bg-[#FEF4F4] px-4 py-3">
+              <div className="text-[16px] font-semibold text-[#DC2626]">
+                {r.ncMajeures} {r.ncMajeures > 1 ? 'points critiques' : 'point critique'} à traiter sous
+                48 heures
+              </div>
+              <p className="mt-1 text-[15px] leading-relaxed text-gris">
+                Un point critique ne se rattrape pas par une bonne note ailleurs. Le détail et le moyen
+                de correction figurent aux fiches précédentes.
+              </p>
+            </div>
+          )}
+
+          <div className="mt-10">
+            <h3 className="text-[19px] font-semibold tracking-tight">
+              Les suites d&apos;un contrôle officiel
+            </h3>
+            <p className="mt-1.5 max-w-[58ch] text-[15px] leading-relaxed text-gris">
+              De la simple observation à la mesure de police, dans l&apos;ordre de gravité.
+            </p>
+            <div className="mt-4">
+              {SUITES_CONTROLE.map((x) => (
+                <div
+                  key={x.rang}
+                  className="flex items-start gap-3.5 border-t border-ink/[0.07] py-3.5 break-inside-avoid"
+                >
+                  <span
+                    className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                    style={{ backgroundColor: x.couleur }}
+                  >
+                    {x.rang}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[16px] font-semibold">{x.titre}</div>
+                    <div className="text-[12px] text-gris-light">{x.quand}</div>
+                    <p className="mt-1 max-w-[58ch] text-[15px] leading-relaxed text-gris">{x.texte}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="border-t border-ink/[0.07]" />
+            </div>
+            <p className="mt-4 max-w-[62ch] rounded-lg border border-ink/10 bg-ink/[0.02] px-4 py-3 text-[13px] leading-relaxed text-gris">
+              {AVERTISSEMENT_SUITES}
+            </p>
+          </div>
+
+          <div className="mt-10 break-inside-avoid">
+            <h3 className="text-[19px] font-semibold tracking-tight">Ce que risque le consommateur</h3>
+            {RISQUES_SANITAIRES.map((x) => (
+              <div key={x.titre} className="mt-4">
+                <div className="text-[16px] font-semibold">{x.titre}</div>
+                <p className="mt-1 max-w-[58ch] text-[15px] leading-relaxed text-gris">{x.texte}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 break-inside-avoid">
+            <h3 className="text-[19px] font-semibold tracking-tight">
+              Ce que risque l&apos;établissement
+            </h3>
+            {RISQUES_ETABLISSEMENT.map((x) => (
+              <div key={x.titre} className="mt-4">
+                <div className="text-[16px] font-semibold">{x.titre}</div>
+                <p className="mt-1 max-w-[58ch] text-[15px] leading-relaxed text-gris">{x.texte}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Bandeau nom={p.etablissement} page={++page} total={total} />
+      </section>
 
       {/* Détail */}
       <section className="break-before-page">
