@@ -112,7 +112,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const [holdingNext, setHoldingNext] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null); // appareil photo (capture)
+  const galerieRef = useRef<HTMLInputElement>(null); // import depuis la galerie / fichiers
   const syncing = useRef(false);
   const itemsRef = useRef<WizardItem[]>(initial); // dernier état connu (flush à la fermeture)
 
@@ -429,6 +430,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = '';
+    if (galerieRef.current) galerieRef.current.value = '';
   };
 
   const onDeletePhoto = async (photo: WizardPhoto) => {
@@ -691,11 +693,11 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     router.push('/app/audits');
   };
 
-  // Suivant cliquable si constat + photo (obligatoires sur chaque point). Note/motif optionnels.
+  // Suivant cliquable dès qu'un constat est posé. Photo, note et motif restent optionnels.
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
   const hasPhoto = !!current && current.photos.length > 0;
   const isNc = !!current && (current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE');
-  const canAdvance = !current || (hasConstat && hasPhoto);
+  const canAdvance = !current || hasConstat;
 
   // Tap = avancer si complet. Sinon, maintenir 3 s pour passer la question.
   const HOLD_MS = 3000;
@@ -948,6 +950,32 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </button>
     );
 
+  // Bouton import photo (galerie / fichiers de la tablette, sans appareil photo)
+  const importButton = () =>
+    current && (
+      <button
+        onClick={() => galerieRef.current?.click()}
+        disabled={uploading}
+        aria-label="Importer une photo"
+        title="Importer une photo depuis la tablette"
+        className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-ink/15 bg-white text-gris shadow transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 disabled:opacity-60"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-6 w-6"
+          aria-hidden="true"
+        >
+          <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+          <path d="M12 4v11m0-11-4 4m4-4 4 4" />
+        </svg>
+      </button>
+    );
+
   // Navigation : bouton + (ajout) à gauche, Précédent, Suivant
   const navButtons = () => (
     <div className="flex items-center gap-2">
@@ -1034,6 +1062,15 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             onChange={(e) => onUpload(e.target.files)}
             className="hidden"
           />
+          {/* Import depuis la galerie / les fichiers de la tablette (sans capture) */}
+          <input
+            ref={galerieRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => onUpload(e.target.files)}
+            className="hidden"
+          />
 
           {!isRecap && current && (
             <>
@@ -1076,7 +1113,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                       {constatButtons()}
                       {motifsChips()}
                     </div>
-                    <div className="mt-2 flex shrink-0 justify-end">
+                    <div className="mt-2 flex shrink-0 items-center justify-end gap-3">
+                      {importButton()}
                       <div className="relative">
                         {photoButton()}
                         {hasPhoto && (
@@ -1129,18 +1167,41 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         <div className="container-ah py-2.5">
           {!isRecap ? (
             <>
-              {/* Bouton photo pleine largeur : mobile uniquement (tablette : carte Photo à droite) */}
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="mb-2 w-full rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60 lg:hidden"
-              >
-                {uploading
-                  ? 'Ajout…'
-                  : current?.photos.length
-                    ? 'Ajouter une photo'
-                    : 'Prendre une photo'}
-              </button>
+              {/* Boutons photo : mobile uniquement (tablette : carte Photo à droite) */}
+              <div className="mb-2 flex items-center gap-2 lg:hidden">
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="flex-1 rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
+                >
+                  {uploading
+                    ? 'Ajout…'
+                    : current?.photos.length
+                      ? 'Ajouter une photo'
+                      : 'Prendre une photo'}
+                </button>
+                <button
+                  onClick={() => galerieRef.current?.click()}
+                  disabled={uploading}
+                  aria-label="Importer une photo"
+                  title="Importer une photo depuis la tablette"
+                  className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full border-2 border-ink/15 bg-white text-gris transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 disabled:opacity-60"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                    <path d="M12 4v11m0-11-4 4m4-4 4 4" />
+                  </svg>
+                </button>
+              </div>
               {navButtons()}
             </>
           ) : (
