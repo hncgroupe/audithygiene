@@ -1153,6 +1153,30 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   </div>
                 </div>
 
+                {done && (
+                  <div className="mt-5 rounded-2xl border border-ink/10 bg-white p-5 text-center shadow-card">
+                    <div className="text-base font-semibold text-vert-700">Audit terminé</div>
+                    <p className="mx-auto mt-1 max-w-sm text-sm text-gris">
+                      Le rapport reprend la note, les points à corriger avec le moyen de correction, et
+                      les photos prises sur place.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                      <a
+                        href={`/app/audits/${auditId}/rapport`}
+                        className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                      >
+                        Voir le rapport
+                      </a>
+                      <a
+                        href={`/app/audits/${auditId}/rapport/pdf`}
+                        className="rounded-full border border-ink/15 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                      >
+                        Télécharger le PDF
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {/* Sur mobile : ajout + checklist sous le score (sur tablette : barre latérale) */}
                 <div className="mt-5 lg:hidden">{renderAdd()}</div>
                 <div className="mt-6 lg:hidden">{renderChecklist()}</div>
@@ -1210,9 +1234,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                 Revenir
               </button>
               {done ? (
-                <span className="flex-1 rounded-full bg-vert-50 px-4 py-3 text-center text-sm font-semibold text-vert-700">
-                  ✓ Audit terminé
-                </span>
+                <a
+                  href={`/app/audits/${auditId}/rapport`}
+                  className="flex-[2] rounded-full bg-ink px-4 py-3 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Voir et télécharger le rapport
+                </a>
               ) : (
                 <button onClick={finir} disabled={finishing} className="btn-primary flex-1 disabled:opacity-60">
                   {finishing ? 'Finalisation…' : 'Terminer'}

@@ -11,7 +11,7 @@
  * extension.
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -22,8 +22,11 @@ const EXTENSIONS = [".ts", ".tsx", ".mjs", ".js", "/index.ts", "/index.tsx"];
 
 function premierExistant(base) {
   /* Un chemin qui porte deja son extension, un .json par exemple, se resout
-     tel quel : les suffixes ne servent qu'aux specificateurs nus. */
-  if (existsSync(base)) return pathToFileURL(base).href;
+     tel quel : les suffixes ne servent qu'aux specificateurs nus.
+     Un dossier, lui, n'est pas un module : « @/data/dossiers » existe sur le
+     disque mais doit se resoudre sur son index, pas sur le repertoire, sinon
+     Node tente de lire un dossier comme un fichier. */
+  if (existsSync(base) && !statSync(base).isDirectory()) return pathToFileURL(base).href;
   for (const suffixe of EXTENSIONS) {
     const chemin = `${base}${suffixe}`;
     if (existsSync(chemin)) return pathToFileURL(chemin).href;
