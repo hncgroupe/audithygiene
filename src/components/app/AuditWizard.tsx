@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { calculerNotation, type Conformite } from '@/lib/notation';
 import { Logo } from '@/components/site/Logo';
 import { enqueuePhoto, removePhoto, pendingForAudit, compressImage } from '@/lib/photo-queue';
+import { CONSTATS_GENERIQUES, MOTIFS_GENERIQUES } from '@/lib/grille-audit';
 
 export interface WizardConstat {
   label: string;
@@ -114,6 +115,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null); // appareil photo (capture)
   const galerieRef = useRef<HTMLInputElement>(null); // import depuis la galerie / fichiers
+  const [photoErreur, setPhotoErreur] = useState<string | null>(null);
   const syncing = useRef(false);
   const itemsRef = useRef<WizardItem[]>(initial); // dernier état connu (flush à la fermeture)
 
@@ -276,7 +278,10 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       fd.append('code', code);
       try {
         const res = await fetch(`/api/audits/${auditId}/photo`, { method: 'POST', body: fd });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          const detail = await res.json().catch(() => ({}));
+          throw new Error(detail?.error ?? `Erreur ${res.status}`);
+        }
         const data = await res.json();
         await removePhoto(localId);
         setItems((prev) =>
@@ -294,7 +299,10 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           )
         );
         return true;
-      } catch {
+      } catch (e) {
+        // La raison remonte à l'auditeur : une photo qui échoue en silence donne
+        // l'impression que l'application est bloquée.
+        setPhotoErreur(e instanceof Error && e.message ? e.message : 'Envoi impossible.');
         return false;
       }
     },
@@ -403,9 +411,14 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   // Enregistrement immédiat : aperçu instant, persistance locale, puis upload direct.
   const onUpload = async (files: FileList | null) => {
     if (!files || !current) return;
+    setPhotoErreur(null);
     setUploading(true);
     const code = current.code;
     for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) {
+        setPhotoErreur(`« ${file.name} » n'est pas une image. Photo, capture d'écran ou scan.`);
+        continue;
+      }
       const localId =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
@@ -547,8 +560,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         photoConseillee: false,
         conformite: 'NON_EVALUE',
         commentaire: null,
-        constats: [],
-        motifs: [],
+        constats: CONSTATS_GENERIQUES,
+        motifs: MOTIFS_GENERIQUES,
         photos: [],
       });
     } catch {
@@ -884,6 +897,20 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     ) : null;
 
   // Vignettes photos
+  const messagePhoto = () =>
+    photoErreur ? (
+      <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">
+        {photoErreur}
+        <button
+          type="button"
+          onClick={() => setPhotoErreur(null)}
+          className="ml-2 underline decoration-red-300 underline-offset-2"
+        >
+          masquer
+        </button>
+      </div>
+    ) : null;
+
   const photoThumbs = () =>
     current && current.photos.length > 0 ? (
       <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-3">
@@ -920,11 +947,12 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   // Bouton capture photo rond (tablette : épinglé en bas-droite, à portée du pouce)
   const photoButton = () =>
     current && (
-      <button
-        onClick={() => fileRef.current?.click()}
-        disabled={uploading}
+      <label
+        htmlFor="champ-photo-capture"
         aria-label={hasPhoto ? 'Ajouter une photo' : 'Prendre une photo'}
-        className={`grid h-20 w-20 shrink-0 place-items-center rounded-full shadow-lg transition-all active:scale-95 disabled:opacity-60 ${
+        className={`grid h-20 w-20 shrink-0 cursor-pointer place-items-center rounded-full shadow-lg transition-all active:scale-95 ${
+          uploading ? 'pointer-events-none opacity-60' : ''
+        } ${
           hasPhoto
             ? 'border-2 border-vert/50 bg-white text-vert-700'
             : 'bg-vert text-white hover:bg-vert-600'
@@ -947,18 +975,19 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             <circle cx="12" cy="13" r="4" />
           </svg>
         )}
-      </button>
+      </label>
     );
 
   // Bouton import photo (galerie / fichiers de la tablette, sans appareil photo)
   const importButton = () =>
     current && (
-      <button
-        onClick={() => galerieRef.current?.click()}
-        disabled={uploading}
+      <label
+        htmlFor="champ-photo-galerie"
         aria-label="Importer une photo"
         title="Importer une photo depuis la tablette"
-        className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-ink/15 bg-white text-gris shadow transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 disabled:opacity-60"
+        className={`grid h-12 w-12 shrink-0 cursor-pointer place-items-center rounded-full border-2 border-ink/15 bg-white text-gris shadow transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 ${
+          uploading ? 'pointer-events-none opacity-60' : ''
+        }`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -973,7 +1002,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
           <path d="M12 4v11m0-11-4 4m4-4 4 4" />
         </svg>
-      </button>
+      </label>
     );
 
   // Navigation : bouton + (ajout) à gauche, Précédent, Suivant
@@ -1054,22 +1083,24 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           </aside>
           {/* Input photo unique (déclenché depuis le footer mobile et la colonne contexte tablette) */}
           <input
+            id="champ-photo-capture"
             ref={fileRef}
             type="file"
             accept="image/*"
             capture="environment"
             multiple
             onChange={(e) => onUpload(e.target.files)}
-            className="hidden"
+            className="sr-only"
           />
           {/* Import depuis la galerie / les fichiers de la tablette (sans capture) */}
           <input
+            id="champ-photo-galerie"
             ref={galerieRef}
             type="file"
             accept="image/*"
             multiple
             onChange={(e) => onUpload(e.target.files)}
-            className="hidden"
+            className="sr-only"
           />
 
           {!isRecap && current && (
@@ -1080,6 +1111,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                   {repereTitre()}
                   <div className="mt-5">{constatButtons()}</div>
                   {isNc && <div className="mt-3">{contexteNc()}</div>}
+                  {messagePhoto() && <div className="mt-3">{messagePhoto()}</div>}
                   {photoThumbs() && <div className="mt-3">{photoThumbs()}</div>}
                 </div>
               </div>
@@ -1100,6 +1132,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                         {noteField()}
                       </div>
                     )}
+                    {messagePhoto()}
                     {photoThumbs() && (
                       <div className="rounded-2xl border border-ink/10 bg-white p-2.5 shadow-card">
                         {photoThumbs()}
@@ -1193,23 +1226,25 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
             <>
               {/* Boutons photo : mobile uniquement (tablette : carte Photo à droite) */}
               <div className="mb-2 flex items-center gap-2 lg:hidden">
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  disabled={uploading}
-                  className="flex-1 rounded-full bg-vert py-3.5 text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] disabled:opacity-60"
+                <label
+                  htmlFor="champ-photo-capture"
+                  className={`flex-1 cursor-pointer rounded-full bg-vert py-3.5 text-center text-base font-semibold text-white transition-all hover:bg-vert-600 active:scale-[0.99] ${
+                    uploading ? 'pointer-events-none opacity-60' : ''
+                  }`}
                 >
                   {uploading
                     ? 'Ajout…'
                     : current?.photos.length
                       ? 'Ajouter une photo'
                       : 'Prendre une photo'}
-                </button>
-                <button
-                  onClick={() => galerieRef.current?.click()}
-                  disabled={uploading}
+                </label>
+                <label
+                  htmlFor="champ-photo-galerie"
                   aria-label="Importer une photo"
                   title="Importer une photo depuis la tablette"
-                  className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full border-2 border-ink/15 bg-white text-gris transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 disabled:opacity-60"
+                  className={`grid h-[52px] w-[52px] shrink-0 cursor-pointer place-items-center rounded-full border-2 border-ink/15 bg-white text-gris transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 ${
+                    uploading ? 'pointer-events-none opacity-60' : ''
+                  }`}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -1224,7 +1259,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                     <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
                     <path d="M12 4v11m0-11-4 4m4-4 4 4" />
                   </svg>
-                </button>
+                </label>
               </div>
               {navButtons()}
             </>

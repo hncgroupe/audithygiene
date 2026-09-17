@@ -496,6 +496,40 @@ export const GRILLE_AUDIT: GrilleTheme[] = [
  * Affichés quand l'auditeur sélectionne « mineure » ou « critique » : un clic
  * ajoute le motif à la note ; l'auditeur peut compléter avec un détail libre.
  */
+/**
+ * Constats de repli, pour un point créé sur mesure pendant l'audit.
+ *
+ * Un point ajouté à la volée n'a pas de constats écrits dans la grille. Sans
+ * repli, l'auditeur se retrouve devant un écran vide et doit tout taper au
+ * clavier, debout dans une cuisine. Ces trois réponses valent pour n'importe
+ * quel point : elles posent la conformité et donnent au rapport de quoi écrire
+ * un risque et un moyen de correction.
+ */
+export const CONSTATS_GENERIQUES: GrilleConstat[] = [
+  { label: 'Conforme', conformite: 'CONFORME' },
+  {
+    label: 'Écart à régulariser',
+    conformite: 'NC_MINEURE',
+    pourquoi: "L'écart ne met pas directement la sécurité des denrées en jeu, mais il sort de ce qui est attendu et finit par se voir.",
+    correctif: "Corriger l'écart, puis garder une trace écrite ou une photo de la correction.",
+  },
+  {
+    label: 'Écart grave, à traiter tout de suite',
+    conformite: 'NC_MAJEURE',
+    pourquoi: "En l’état, le point fait peser un risque direct sur les denrées ou sur le consommateur.",
+    correctif: 'Traiter avant le prochain service, écarter les denrées concernées si besoin, et tracer ce qui a été fait.',
+  },
+  { label: 'Non applicable ici', conformite: 'NON_APPLICABLE' },
+];
+
+/** Motifs de repli, mêmes raisons que ci-dessus. */
+export const MOTIFS_GENERIQUES: string[] = [
+  'Pratique non conforme',
+  'Absence de trace écrite',
+  'Matériel en cause',
+  "Consigne non connue de l’équipe",
+];
+
 export const MOTIFS_PAR_CODE: Record<string, string[]> = {
   'FROID-01': ['Température au-dessus du seuil', 'Pas de thermomètre / défaillant', 'Enceinte surchargée', 'Joint de porte abîmé'],
   'FROID-02': ['Température > -18 °C', 'Givre excessif', 'Produits déjà décongelés', 'Appareil en panne'],
@@ -503,6 +537,8 @@ export const MOTIFS_PAR_CODE: Record<string, string[]> = {
   'TEMP-01': ['Pas de contrôle à cœur', 'Cuisson insuffisante', 'Barème non défini', 'Sonde absente'],
   'TEMP-02': ['Refroidissement à l’air libre', 'Pas de cellule', 'Durée trop longue', 'Aucune traçabilité'],
   'TEMP-03': ['Remontée trop lente', 'Maintien en zone à risque', 'Matériel inadapté', 'Pas de procédure'],
+  'TEMP-04': ['Huile foncée ou fumante', 'Aucun contrôle du bain', 'Contrôle non tracé', 'Vidange trop espacée', 'Dépôts au fond de la cuve'],
+  'FROID-04': ['Décongélation à température ambiante', 'Produit non daté', 'Recongélation', 'Décongélation sous eau', 'Jus de décongélation non évacué'],
   'TRAC-01': ['Produit périmé', 'Pas de date d’ouverture', 'Étiquetage illisible', 'DLC dépassée en stock'],
   'TRAC-02': ['Étiquettes non conservées', 'N° de lot absent', 'Conservation partielle', 'Aucune traçabilité amont'],
   'PERS-01': ['Tenue sale', 'Coiffe absente', 'Bijoux / montre', 'Tenue de ville en cuisine'],

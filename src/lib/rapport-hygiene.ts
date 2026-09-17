@@ -10,7 +10,7 @@
  */
 
 import { calculerNotation, type Conformite } from './notation';
-import { grilleByCode } from './grille-audit';
+import { grilleByCode, CONSTATS_GENERIQUES } from './grille-audit';
 
 export interface RapportPhoto {
   url: string;
@@ -124,7 +124,9 @@ export function niveauDe(score: number, ncMajeures: number): NiveauMaitrise {
 function grilleCorrectif(code: string, conformite: Conformite, grille: ReturnType<typeof grilleByCode>) {
   const base = code.replace(/-[A-Z0-9]{4}$/, '');
   const g = grille.get(code) ?? grille.get(base);
-  const c = g?.constats.find((x) => x.conformite === conformite);
+  const c =
+    g?.constats.find((x) => x.conformite === conformite) ??
+    CONSTATS_GENERIQUES.find((x) => x.conformite === conformite);
   return { risque: c?.pourquoi, correctif: c?.correctif, reference: g?.referenceRegl };
 }
 

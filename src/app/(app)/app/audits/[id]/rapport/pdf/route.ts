@@ -16,17 +16,20 @@ import type { Conformite } from '@/lib/notation';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/** Logo blanc du bandeau de pied de page, lu une fois puis gardé en mémoire. */
-let logoBlancCache: string | null | undefined;
-async function logoBlanc(): Promise<string | null> {
-  if (logoBlancCache !== undefined) return logoBlancCache;
+/** Images de marque, lues une fois puis gardées en mémoire. */
+const cacheImages = new Map<string, string | null>();
+async function imageMarque(fichier: string): Promise<string | null> {
+  const connu = cacheImages.get(fichier);
+  if (connu !== undefined) return connu;
+  let uri: string | null = null;
   try {
-    const buf = await readFile(join(process.cwd(), 'public', 'logo-blanc.png'));
-    logoBlancCache = `data:image/png;base64,${buf.toString('base64')}`;
+    const buf = await readFile(join(process.cwd(), 'public', fichier));
+    uri = `data:image/png;base64,${buf.toString('base64')}`;
   } catch {
-    logoBlancCache = null; // le pied de page retombe sur le nom en toutes lettres
+    uri = null; // le document retombe sur le nom en toutes lettres
   }
-  return logoBlancCache;
+  cacheImages.set(fichier, uri);
+  return uri;
 }
 
 /** Nom de fichier lisible et sans accent, pour tous les systèmes. */
@@ -93,7 +96,8 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
     reference: `AH-${audit.id.slice(-6).toUpperCase()}`,
     auditeur: audit.auditeur.name,
     grilleVersion: audit.grilleVersion,
-    logoBlanc: await logoBlanc(),
+    logoBlanc: await imageMarque('logo-blanc.png'),
+    logoMarque: await imageMarque('logo-wordmark.png'),
     logoClient: audit.establishment.logoUrl ? await getDataUri(audit.establishment.logoUrl) : null,
     rapport: assemblerRapportHygiene(entrees),
   };

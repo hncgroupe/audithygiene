@@ -2,7 +2,13 @@ import { notFound, redirect } from 'next/navigation';
 import { getCurrentDbUser, auditAccessWhere } from '@/lib/auth';
 import { AuditWizard, type WizardItem } from '@/components/app/AuditWizard';
 import { Resto360Wizard, type Resto360Item } from '@/components/app/Resto360Wizard';
-import { grilleByCode, flattenGrille, MOTIFS_PAR_CODE } from '@/lib/grille-audit';
+import {
+  grilleByCode,
+  flattenGrille,
+  MOTIFS_PAR_CODE,
+  CONSTATS_GENERIQUES,
+  MOTIFS_GENERIQUES,
+} from '@/lib/grille-audit';
 import { getSignedUrl } from '@/lib/supabase';
 import type { Conformite } from '@/lib/notation';
 
@@ -85,8 +91,13 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         photoConseillee: g?.photoConseillee,
         conformite: it.conformite as Conformite,
         commentaire: it.commentaire,
-        constats: g?.constats ?? [],
-        motifs: MOTIFS_PAR_CODE[it.code] ?? MOTIFS_PAR_CODE[baseCode(it.code)] ?? [],
+        // Un point créé sur mesure n'a pas d'entrée dans la grille : il reçoit les
+        // réponses de repli, pour ne pas laisser l'auditeur devant un écran vide.
+        constats: g?.constats?.length ? g.constats : CONSTATS_GENERIQUES,
+        motifs:
+          MOTIFS_PAR_CODE[it.code] ??
+          MOTIFS_PAR_CODE[baseCode(it.code)] ??
+          MOTIFS_GENERIQUES,
         photos,
       };
     })

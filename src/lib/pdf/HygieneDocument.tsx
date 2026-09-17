@@ -16,8 +16,6 @@
  *    couper. `minPresenceAhead` évite les titres orphelins en bas de page.
  */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import {
   Document,
   Page,
@@ -58,44 +56,29 @@ export interface HygienePdfData {
   logoBlanc?: string | null;
   /** Logo du client en data URI, posé sur la couverture. Facultatif. */
   logoClient?: string | null;
+  /** Logo de marque (wordmark vert) en data URI, en tête de couverture. */
+  logoMarque?: string | null;
   rapport: RapportHygiene;
 }
 
 /* ------------------------------------------------------------------ Polices */
 
-/**
- * La police de la marque, embarquée depuis public/fonts. Si les fichiers
- * manquent (dépôt partiel, environnement dégradé), le document retombe sur
- * Helvetica sans échouer.
+/*
+ * Le document suit la police de la marque : la pile système Apple à l'écran, et
+ * sa traduction imprimable ici. Helvetica est la police que cette pile désigne
+ * elle-même hors Apple, elle est présente dans tous les lecteurs PDF et n'a rien
+ * à embarquer : le fichier reste léger et s'ouvre partout à l'identique.
  */
-function chargerPolices(): string {
-  const dossier = join(process.cwd(), 'public', 'fonts');
-  const graisses = [400, 500, 600, 700] as const;
-  const chemins = Object.fromEntries(
-    graisses.map((g) => [g, join(dossier, `HankenGrotesk-${g}.ttf`)])
-  ) as Record<(typeof graisses)[number], string>;
-  // Lecture volontaire : si un fichier manque, on part sur Helvetica sans casser le rendu.
-  graisses.forEach((g) => readFileSync(chemins[g]));
-  try {
-    Font.register({
-      family: 'Hanken',
-      fonts: graisses.map((g) => ({
-        src: chemins[g],
-        fontWeight: g,
-      })),
-    });
-    // Le français se coupe mal automatiquement : on garde les mots entiers.
-    Font.registerHyphenationCallback((mot) => [mot]);
-    return 'Hanken';
-  } catch {
-    return 'Helvetica';
-  }
-}
+const FAMILLE = 'Helvetica';
 
-const FAMILLE = chargerPolices();
-const GRAS = FAMILLE === 'Hanken' ? {} : { fontFamily: 'Helvetica-Bold' as const };
+/*
+ * Pas de césure. Par défaut, le moteur coupe les mots en fin de ligne avec un
+ * algorithme anglais : « établis-sement », « tempéra-tures ». Rendre le mot
+ * entier laisse le texte respirer et fait tout de suite plus sérieux.
+ */
+Font.registerHyphenationCallback((mot) => [mot]);
 const poids = (g: 400 | 500 | 600 | 700) =>
-  FAMILLE === 'Hanken' ? { fontWeight: g } : g >= 600 ? GRAS : {};
+  g >= 600 ? ({ fontFamily: 'Helvetica-Bold' } as const) : ({} as const);
 
 /* ------------------------------------------------------------------ Palette */
 
@@ -103,16 +86,11 @@ const ENCRE = '#0C1B17';
 const GRIS = '#6B7D77';
 const GRIS_CLAIR = '#9AA8A3';
 const FILET = '#E2E9E6';
-const BRUME = '#F3F8F6';
+const FILET_FORT = '#CBD5D1';
 const VERT = '#10B981';
 const VERT_PROFOND = '#04543C';
 const ROUGE = '#DC2626';
 const AMBRE = '#B45309';
-
-const NUIT = '#04281F';
-const NUIT_FILET = '#14453A';
-const NUIT_TEXTE = '#A9DFCA';
-const VERT_CLAIR = '#34D399';
 
 const A4_HAUTEUR = 841.89;
 const PIED_HAUTEUR = 32;
@@ -141,24 +119,25 @@ const s = StyleSheet.create({
   },
 
   /* Couverture */
-  banniere: { backgroundColor: VERT_PROFOND, paddingHorizontal: MARGE, paddingTop: 42, paddingBottom: 34 },
+  banniere: { paddingHorizontal: MARGE, paddingTop: 46, paddingBottom: 0 },
   banniereRang: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  marqueBlanche: { fontSize: 11, color: '#FFFFFF', ...poids(600) },
-  marqueFine: { color: '#7FE3C0' },
-  banniereDate: { fontSize: 8.5, color: '#9FD8C3' },
-  titreCouverture: { fontSize: 31, color: '#FFFFFF', letterSpacing: -0.9, lineHeight: 1.12, marginTop: 26, ...poids(600) },
-  sousCouverture: { fontSize: 10.5, color: '#A9DFCA', marginTop: 8, maxWidth: 360 },
+  logoMarque: { width: 132, height: 26, objectFit: 'contain' },
+  separateurCouverture: { marginTop: 26, borderTopWidth: 0.7, borderTopColor: FILET },
+  marqueBlanche: { fontSize: 11, color: ENCRE, ...poids(600) },
+  marqueFine: { color: VERT },
+  banniereDate: { fontSize: 8.5, color: GRIS_CLAIR },
+  titreCouverture: { fontSize: 31, color: ENCRE, letterSpacing: -0.9, lineHeight: 1.12, marginTop: 20, ...poids(600) },
+  sousCouverture: { fontSize: 10.5, color: GRIS, marginTop: 8, maxWidth: 380 },
   confidentiel: {
     marginTop: 18,
     alignSelf: 'flex-start',
     borderWidth: 0.8,
-    borderColor: '#2E7D68',
+    borderColor: FILET_FORT,
     borderRadius: 20,
     paddingVertical: 3.5,
     paddingHorizontal: 11,
     fontSize: 7.5,
-    color: '#A9DFCA',
-    ...poids(500),
+    color: GRIS,
   },
 
   corpsCouverture: { paddingHorizontal: MARGE, paddingTop: 26 },
@@ -197,14 +176,14 @@ const s = StyleSheet.create({
   etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
   etageBande: { width: 4, height: 30, borderRadius: 2 },
   etageNiveau: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1 },
-  frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET, backgroundColor: BRUME, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
   verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
   verdictPastille: { width: 8, height: 8, borderRadius: 4, marginTop: 3, marginRight: 10 },
 
   /* Panneau de l'étoile */
-  panneau: { backgroundColor: NUIT, borderRadius: 10, paddingVertical: 20, paddingHorizontal: 22, alignItems: 'center' },
-  panneauTitre: { fontSize: 10.5, color: '#FFFFFF', alignSelf: 'flex-start', ...poids(600) },
-  panneauNote: { fontSize: 8, color: '#5E8F80', alignSelf: 'flex-start', marginTop: 2 },
+  panneau: { borderWidth: 0.7, borderColor: FILET, borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
+  panneauTitre: { fontSize: 10.5, color: ENCRE, alignSelf: 'flex-start', ...poids(600) },
+  panneauNote: { fontSize: 8, color: GRIS_CLAIR, alignSelf: 'flex-start', marginTop: 2 },
   panneauLegende: { flexDirection: 'row', marginTop: 4, alignSelf: 'flex-start' },
   legendePuce: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
 
@@ -231,7 +210,7 @@ const s = StyleSheet.create({
 
   /* Sommaire */
   sommaireLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderTopWidth: 0.7, borderTopColor: FILET },
-  sommaireRond: { width: 26, height: 26, borderRadius: 13, backgroundColor: BRUME, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  sommaireRond: { width: 26, height: 26, borderRadius: 13, borderWidth: 0.7, borderColor: FILET, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
   sommaireNum: { width: 20, fontSize: 9, color: GRIS_CLAIR, paddingTop: 3 },
 
   /* Thèmes */
@@ -252,6 +231,11 @@ const s = StyleSheet.create({
   ficheCorps: { marginTop: 11 },
   ficheCode: { fontSize: 8, color: GRIS_CLAIR, marginTop: 2 },
 
+  suivi: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTopWidth: 0.7, borderTopColor: FILET },
+  caseACocher: { width: 12, height: 12, borderWidth: 1, borderColor: GRIS, borderRadius: 2, marginRight: 8 },
+  suiviTexte: { fontSize: 8, color: GRIS, marginRight: 6 },
+  suiviLigne: { flex: 1, borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 10, marginRight: 10 },
+
   bandePhotos: { flexDirection: 'row', marginTop: 4 },
   photo: { width: 132, height: 94, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
 
@@ -265,11 +249,16 @@ const s = StyleSheet.create({
   suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 8, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
   suiteQuand: { fontSize: 8, color: GRIS_CLAIR, marginTop: 0.5 },
 
-  encart: { marginTop: 14, padding: 12, borderRadius: 6, backgroundColor: BRUME },
-  alerte: { marginTop: 16, padding: 12, borderRadius: 6, backgroundColor: '#FDF3F3', borderLeftWidth: 2.5, borderLeftColor: ROUGE },
+  encart: { marginTop: 14, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: FILET },
+  alerte: { marginTop: 16, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: '#F1C7C7', borderLeftWidth: 2.5, borderLeftColor: ROUGE },
 
   renvoi: { flexDirection: 'row', paddingVertical: 8, borderTopWidth: 0.7, borderTopColor: FILET },
   renvoiCode: { width: 66, fontSize: 8, color: GRIS_CLAIR, paddingTop: 1 },
+
+  cloture: { marginTop: 26, paddingTop: 16, borderTopWidth: 0.7, borderTopColor: FILET },
+  signatures: { flexDirection: 'row', marginTop: 34 },
+  signature: { flex: 1 },
+  signatureLigne: { borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 30, marginBottom: 4 },
 
   ligneMeta: { flexDirection: 'row', paddingVertical: 5, borderTopWidth: 0.7, borderTopColor: FILET },
   metaCle: { width: 130, color: GRIS },
@@ -601,9 +590,9 @@ function anneau(fraction: number, n: number): string {
 }
 
 function couleurSommet(score: number): string {
-  if (score >= 80) return VERT_CLAIR;
-  if (score >= 60) return '#FBBF24';
-  return '#F87171';
+  if (score >= 80) return VERT;
+  if (score >= 60) return '#F59E0B';
+  return ROUGE;
 }
 
 /**
@@ -623,7 +612,7 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
             key={f}
             points={anneau(f, n)}
             fill="none"
-            stroke={f === 1 ? '#1F5A4B' : NUIT_FILET}
+            stroke={f === 1 ? FILET_FORT : FILET}
             strokeWidth={f === 1 ? 1 : 0.7}
           />
         ))}
@@ -636,7 +625,7 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
               y1={RADAR_CY}
               x2={x}
               y2={y}
-              stroke={NUIT_FILET}
+              stroke={FILET}
               strokeWidth={0.7}
             />
           );
@@ -644,15 +633,23 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
         <Polygon
           points={polygone(scores)}
           fill={VERT}
-          fillOpacity={0.3}
-          stroke={VERT_CLAIR}
-          strokeWidth={1.6}
+          fillOpacity={0.14}
+          stroke={VERT_PROFOND}
+          strokeWidth={1.7}
           strokeLinejoin="round"
         />
         {themes.map((t, i) => {
           const [x, y] = pointRadar(i, n, (RADAR_R * Math.max(0, Math.min(100, t.score ?? 0))) / 100);
           return (
-            <Circle key={t.theme} cx={x} cy={y} r={2.8} fill={couleurSommet(t.score ?? 0)} />
+            <Circle
+              key={t.theme}
+              cx={x}
+              cy={y}
+              r={3}
+              fill="#FFFFFF"
+              stroke={couleurSommet(t.score ?? 0)}
+              strokeWidth={2}
+            />
           );
         })}
       </Svg>
@@ -668,10 +665,18 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
             key={t.theme}
             style={{ position: 'absolute', left: x - 33, top: y - 11, width: 66, alignItems: 'center' }}
           >
-            <Text style={{ fontSize: 7, color: NUIT_TEXTE, textAlign: 'center', lineHeight: 1.2 }}>
+            <Text style={{ fontSize: 8, color: GRIS, textAlign: 'center', lineHeight: 1.25 }}>
               {themeCourt(t.theme)}
             </Text>
-            <Text style={{ fontSize: 8.5, color: '#FFFFFF', textAlign: 'center', lineHeight: 1.2, ...poids(600) }}>
+            <Text
+              style={{
+                fontSize: 10,
+                color: couleurSommet(t.score ?? 0),
+                textAlign: 'center',
+                lineHeight: 1.25,
+                ...poids(700),
+              }}
+            >
               {Math.round(t.score ?? 0)}
             </Text>
           </View>
@@ -901,6 +906,15 @@ function Fiche({ a }: { a: ActionCorrective }) {
           </View>
         ) : null}
 
+        {/* De quoi cocher le point une fois corrigé, sur le rapport imprimé. */}
+        <View style={s.suivi}>
+          <View style={s.caseACocher} />
+          <Text style={s.suiviTexte}>Corrigé le</Text>
+          <View style={s.suiviLigne} />
+          <Text style={s.suiviTexte}>par</Text>
+          <View style={s.suiviLigne} />
+        </View>
+
         {referenceValide(a.referenceRegl) ? (
           <View style={s.bloc}>
             <Text style={s.cle}>Texte applicable</Text>
@@ -993,11 +1007,24 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
       <Page size="A4" style={s.pageCouverture} bookmark="Couverture">
         <View style={s.banniere}>
           <View style={s.banniereRang}>
-            <Text style={s.marqueBlanche}>
-              audit <Text style={s.marqueFine}>hygiène</Text>
-            </Text>
-            <Text style={s.banniereDate}>{data.reference}</Text>
+            {data.logoMarque ? (
+              <Image src={data.logoMarque} style={s.logoMarque} />
+            ) : (
+              <Text style={s.marqueBlanche}>
+                audit <Text style={s.marqueFine}>hygiène</Text>
+              </Text>
+            )}
+            {data.logoClient ? (
+              <View style={s.logoClientCadre}>
+                <Image src={data.logoClient} style={s.logoClientImage} />
+              </View>
+            ) : (
+              <Text style={s.banniereDate}>{data.reference}</Text>
+            )}
           </View>
+
+          {/* Le nom du client ne se colle pas sous la marque : un filet les sépare. */}
+          <View style={s.separateurCouverture} />
           <Text style={s.titreCouverture}>{data.etablissement}</Text>
           <Text style={s.sousCouverture}>
             Rapport d&apos;audit hygiène du {data.date}
@@ -1011,7 +1038,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         <View style={s.corpsCouverture}>
           <View style={s.jaugeRang}>
             <Jauge score={r.scoreGlobal} couleur={r.niveau.couleur} evalues={r.evalues} />
-            <View style={[s.jaugeTexte, data.logoClient ? { paddingRight: 14 } : {}]}>
+            <View style={s.jaugeTexte}>
               <Text style={[s.niveauTitre, { color: r.niveau.couleur }]}>{r.niveau.titre}</Text>
               <Text style={s.niveauPhrase}>{r.niveau.phrase}</Text>
               <View style={s.compteurs}>
@@ -1038,11 +1065,6 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
               </View>
             </View>
 
-            {data.logoClient ? (
-              <View style={s.logoClientCadre}>
-                <Image src={data.logoClient} style={s.logoClientImage} />
-              </View>
-            ) : null}
           </View>
 
           {priorites.length > 0 ? (
@@ -1083,7 +1105,6 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             <Champ nom="Points examinés" valeur={`${r.evalues} sur ${r.totalPoints}`} />
           </View>
 
-          <Text style={[s.petit, { marginTop: 16, maxWidth: 440 }]}>{MENTION_LABEL_PRIVE}</Text>
         </View>
 
         <Pied data={data} />
@@ -1103,13 +1124,13 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             <Etoile themes={themesNotes} />
             <View style={s.panneauLegende}>
               {[
-                { c: VERT_CLAIR, t: '80 et plus, tenu' },
-                { c: '#FBBF24', t: 'de 60 à 79, à consolider' },
-                { c: '#F87171', t: 'moins de 60, à reprendre' },
+                { c: VERT, t: '80 et plus, tenu' },
+                { c: '#F59E0B', t: 'de 60 à 79, à consolider' },
+                { c: ROUGE, t: 'moins de 60, à reprendre' },
               ].map((x) => (
                 <View key={x.t} style={s.legendePuce}>
                   <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: x.c, marginRight: 5 }} />
-                  <Text style={{ fontSize: 7.5, color: NUIT_TEXTE }}>{x.t}</Text>
+                  <Text style={{ fontSize: 7.5, color: GRIS }}>{x.t}</Text>
                 </View>
               ))}
             </View>
@@ -1241,7 +1262,8 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         <Pied data={data} />
       </Page>
 
-      {/* 03 · Points à corriger */}
+      {/* 03 · Points à corriger, seulement s'il y en a */}
+      {r.actions.length > 0 ? (
       <Page size="A4" style={s.page} bookmark="Points à corriger">
         <TeteSection
           titre={
@@ -1286,6 +1308,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
 
         <Pied data={data} />
       </Page>
+      ) : null}
 
       {/* 04 · Risques et suites */}
       <Page size="A4" style={s.page} bookmark="Risques et suites">
@@ -1397,7 +1420,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         />
 
         {r.themes.map((t) => (
-          <View key={t.theme} style={{ marginTop: 16 }} minPresenceAhead={60}>
+          <View key={t.theme} style={{ marginTop: 16 }} minPresenceAhead={44}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ width: 20 }}>
                 <Glyphe nom={iconeTheme(t.theme)} taille={13} couleur={ENCRE} />
@@ -1437,19 +1460,17 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         <Pied data={data} />
       </Page>
 
-      {/* 07 · Références */}
+      {/* 07 · Références, seulement s'il y a des textes à citer */}
+      {references.length > 0 ? (
       <Page size="A4" style={s.page} bookmark="Références réglementaires">
         <TeteSection
           titre="Les références réglementaires"
           chapeau="Le texte sur lequel s'appuie chaque point audité, dans sa version en vigueur à la date de la visite. Les points sans référence rattachée relèvent des bonnes pratiques d'hygiène."
         />
 
-        {references.length === 0 ? (
-          <Text style={[s.gris, { marginTop: 18 }]}>Aucune référence rattachée aux points audités.</Text>
-        ) : (
-          <View style={{ marginTop: 6 }}>
+        <View style={{ marginTop: 6 }}>
             {references.map((ref) => (
-              <View key={ref.code} style={s.renvoi} minPresenceAhead={40}>
+              <View key={ref.code} style={s.renvoi} minPresenceAhead={30}>
                 <Text style={s.renvoiCode}>{ref.code}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={s.h3}>{ref.intitule}</Text>
@@ -1457,12 +1478,12 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
                 </View>
               </View>
             ))}
-            <View style={s.filet} />
-          </View>
-        )}
+          <View style={s.filet} />
+        </View>
 
         <Pied data={data} />
       </Page>
+      ) : null}
 
       {/* 08 · Portée */}
       <Page size="A4" style={s.page} bookmark="Portée du rapport">
@@ -1503,7 +1524,28 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </Text>
         </View>
 
-        <View style={{ marginTop: 30 }}>
+        <View style={s.cloture} wrap={false}>
+          <Text style={{ ...poids(600), fontSize: 10.5 }}>
+            Fait à {data.ville ?? "l'établissement"}, le {data.date}
+          </Text>
+          <Text style={[s.gris, { marginTop: 3, maxWidth: 430 }]}>
+            Rapport établi par {data.auditeur}, auditeur, sur la grille {data.grilleVersion}, sous la
+            référence {data.reference}. {r.evalues} points examinés sur {r.totalPoints}, {r.nbPhotos}{' '}
+            {r.nbPhotos > 1 ? 'photos versées' : 'photo versée'} au dossier.
+          </Text>
+          <View style={s.signatures}>
+            <View style={s.signature}>
+              <View style={s.signatureLigne} />
+              <Text style={s.petit}>L&apos;auditeur, {data.auditeur}</Text>
+            </View>
+            <View style={[s.signature, { marginLeft: 26 }]}>
+              <View style={s.signatureLigne} />
+              <Text style={s.petit}>Pour l&apos;établissement, nom et qualité</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ marginTop: 26 }}>
           <Meta cle="Établissement" valeur={[data.etablissement, data.ville].filter(Boolean).join(', ')} />
           {data.adresse ? <Meta cle="Adresse" valeur={data.adresse} /> : null}
           <Meta cle="Référence" valeur={data.reference} />
