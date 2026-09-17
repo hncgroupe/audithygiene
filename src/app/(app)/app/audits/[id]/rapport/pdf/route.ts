@@ -94,6 +94,7 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
     auditeur: audit.auditeur.name,
     grilleVersion: audit.grilleVersion,
     logoBlanc: await logoBlanc(),
+    logoClient: audit.establishment.logoUrl ? await getDataUri(audit.establishment.logoUrl) : null,
     rapport: assemblerRapportHygiene(entrees),
   };
 

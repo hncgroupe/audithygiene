@@ -31,6 +31,8 @@ export interface RapportHygieneProps {
   reference: string;
   auditeur: string;
   grilleVersion: string;
+  /** Logo du client, URL signée. Facultatif. */
+  logoClient?: string | null;
   rapport: RapportHygiene;
 }
 
@@ -230,12 +232,26 @@ export function RapportHygieneDocument(p: RapportHygieneProps) {
             </Cle>
           </div>
 
+          {p.logoClient && (
+            <div className="mt-6 inline-flex items-center justify-center rounded-lg border border-ink/10 bg-white p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={p.logoClient}
+                alt={`Logo ${p.etablissement}`}
+                className="h-12 w-auto max-w-[160px] object-contain"
+              />
+            </div>
+          )}
+
           <h1 className="mt-6 text-[34px] font-semibold leading-tight tracking-tighter sm:text-[40px]">
             {p.etablissement}
           </h1>
           <p className="mt-2 max-w-[58ch] text-[15px] leading-relaxed text-gris">
             {lieu ? `${lieu}. ` : ''}Audit conduit par {p.auditeur}, grille {p.grilleVersion},{' '}
             {r.evalues} points examinés sur {r.totalPoints}.
+          </p>
+          <p className="mt-4 inline-block rounded-full border border-ink/15 px-3 py-1 text-[12px] text-gris">
+            Document confidentiel, destiné à l&apos;établissement audité
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-6">

@@ -54,6 +54,49 @@ export async function getDataUri(path: string): Promise<string | null> {
 }
 
 /**
+ * Enregistre le logo d'un établissement (dataURL base64) dans le bucket privé et
+ * renvoie son chemin de stockage. Le même chemin est réécrit à chaque fois, donc
+ * remplacer un logo ne laisse pas de fichier orphelin derrière lui.
+ * Renvoie null si l'image est absente, illisible ou trop lourde.
+ */
+export async function uploadLogoEtablissement(
+  estabId: string,
+  dataUrl: string
+): Promise<string | null> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return null;
+  const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(dataUrl.trim());
+  if (!m) return null;
+  const mime = m[1].toLowerCase();
+  const ext = (mime.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+  const buffer = Buffer.from(m[2], 'base64');
+  if (buffer.length === 0 || buffer.length > 2_000_000) return null; // garde-fou taille
+  const path = `etablissements/${estabId}/logo.${ext}`;
+  const { error } = await admin.storage
+    .from(env.storageBucket)
+    .upload(path, buffer, { contentType: mime, upsert: true });
+  if (error) {
+    console.error('[supabase] upload logo', error.message);
+    return null;
+  }
+  return path;
+}
+
+/**
+ * Supprime le logo d'un établissement du bucket.
+ */
+export async function supprimerLogoEtablissement(path: string): Promise<boolean> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return false;
+  const { error } = await admin.storage.from(env.storageBucket).remove([path]);
+  if (error) {
+    console.error('[supabase] remove logo', error.message);
+    return false;
+  }
+  return true;
+}
+
+/**
  * Upload d'un buffer PDF dans le bucket privé "rapports".
  */
 export async function uploadReport(path: string, buffer: Buffer): Promise<boolean> {

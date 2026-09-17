@@ -36,7 +36,7 @@ export interface GrilleTheme {
   items: GrilleItem[];
 }
 
-export const GRILLE_VERSION = 'v0-draft'; // non validée
+export const GRILLE_VERSION = 'v0-draft-2'; // non validée (v0-draft-2 : points friture TEMP-04 et décongélation FROID-04)
 
 export const GRILLE_AUDIT: GrilleTheme[] = [
   {
@@ -83,6 +83,20 @@ export const GRILLE_AUDIT: GrilleTheme[] = [
           { label: 'Aucun relevé tenu', conformite: 'NC_MAJEURE', pourquoi: 'Aucune preuve de maîtrise du froid : non-conformité documentaire majeure.', correctif: 'Instaurer immédiatement un enregistrement des températures, former l’équipe.' },
         ],
       },
+      {
+        code: 'FROID-04',
+        intitule: 'Décongélation maîtrisée et tracée',
+        explication: 'Demander où et comment les produits sont décongelés, et ce qui est noté. Vérifier qu’il n’y a pas de produit en décongélation à température ambiante, en bac d’eau ou sur un plan de travail. Contrôler l’étiquetage du produit décongelé : date de sortie du congélateur et nouvelle durée de vie.',
+        pedagogie: 'Un produit qui décongèle à l’air libre reste des heures dans la plage de température où les bactéries se multiplient, pendant que le cœur est encore glacé. En enceinte froide, la remontée est lente et le produit reste protégé. Et une fois décongelé, il ne se recongèle pas : c’est le point que les contrôles regardent en premier.',
+        referenceRegl: 'Règlement (CE) n° 852/2004, annexe II, chapitre IX, point 5 : les denrées susceptibles de favoriser la reproduction de micro-organismes pathogènes ne doivent pas être conservées à des températures pouvant entraîner un risque pour la santé, et la chaîne du froid ne doit pas être interrompue. Point 3 du même chapitre : protection contre toute contamination rendant les denrées impropres à la consommation ou dangereuses. Article 5 pour la fixation de la limite critique, la surveillance, l’action corrective et l’enregistrement. Bonne pratique et non texte : la méthode de décongélation retenue, la durée de vie du produit décongelé et son étiquetage relèvent du plan de maîtrise sanitaire et du guide de bonnes pratiques d’hygiène, à partir des indications du fabricant.',
+        ponderation: 3,
+        photoConseillee: true,
+        constats: [
+          { label: 'Décongélation en enceinte froide, produits datés', conformite: 'CONFORME' },
+          { label: 'Méthode correcte mais sans étiquetage ni trace', conformite: 'NC_MINEURE', pourquoi: 'Sans date de sortie ni durée de vie, plus personne ne sait depuis quand le produit est décongelé.', correctif: 'Étiqueter chaque produit mis à décongeler avec la date, et fixer la durée de vie après décongélation dans le plan de maîtrise sanitaire.' },
+          { label: 'Décongélation à température ambiante ou recongélation', conformite: 'NC_MAJEURE', pourquoi: 'Le produit séjourne dans la plage de multiplication des bactéries, et une recongélation aggrave encore la charge microbienne.', correctif: 'Décongeler en enceinte froide, jeter le produit décongelé à l’air libre ou recongelé, et écrire la procédure pour l’équipe.' },
+        ],
+      },
     ],
   },
   {
@@ -125,6 +139,20 @@ export const GRILLE_AUDIT: GrilleTheme[] = [
           { label: 'Remise en température rapide', conformite: 'CONFORME' },
           { label: 'Pratique à formaliser', conformite: 'NC_MINEURE', pourquoi: 'Absence de procédure claire : risque d’hétérogénéité selon l’opérateur.', correctif: 'Définir une consigne de remise en température et la tracer.' },
           { label: 'Maintien prolongé en zone à risque', conformite: 'NC_MAJEURE', pourquoi: 'Temps de passage long dans la plage de danger : prolifération microbienne.', correctif: 'Utiliser un matériel adapté pour une montée rapide, contrôler la température à cœur.' },
+        ],
+      },
+      {
+        code: 'TEMP-04',
+        intitule: 'État des bains de friture contrôlé et tracé',
+        explication: 'Demander comment l’état de l’huile est jugé : bandelettes, testeur de composés polaires, ou simple aspect. Vérifier la trace écrite des contrôles et des vidanges. Regarder la couleur, l’odeur, la fumée à chaud et les dépôts au fond de la cuve. TODO à valider : le seuil chiffré de composés polaires couramment cité en restauration (de l’ordre de 25 %) et le texte qui le fixe doivent être confirmés par le client ou l’expert avant d’être écrits dans la grille ou dans le rapport.',
+        pedagogie: 'Une huile de friture se dégrade à chaque service. En chauffant trop longtemps, elle s’oxyde et transmet aux aliments des composés indésirables, bien avant de sentir mauvais. Un contrôle simple et tracé évite de servir un bain usé et de jeter une cuve entière trop tard.',
+        referenceRegl: 'Règlement (CE) n° 852/2004, article 5 : procédures permanentes fondées sur les principes HACCP, avec limites critiques, surveillance, actions correctives et enregistrements. Annexe II, chapitre IX, point 3 : les denrées doivent être protégées de toute contamination susceptible de les rendre impropres à la consommation humaine ou dangereuses pour la santé. Bonne pratique et non texte : la fréquence de contrôle des bains, la méthode retenue et le critère de remplacement relèvent du plan de maîtrise sanitaire et du guide de bonnes pratiques d’hygiène du secteur, qui doivent les définir et les justifier.',
+        ponderation: 2,
+        photoConseillee: true,
+        constats: [
+          { label: 'Bain contrôlé, résultat tracé', conformite: 'CONFORME' },
+          { label: 'Contrôle fait mais non tracé', conformite: 'NC_MINEURE', pourquoi: 'Sans trace écrite, rien ne prouve que l’état du bain est suivi ni à quelle fréquence.', correctif: 'Noter chaque contrôle et chaque vidange sur une fiche de suivi, et fixer la fréquence dans le plan de maîtrise sanitaire.' },
+          { label: 'Huile visiblement dégradée, bain non changé', conformite: 'NC_MAJEURE', pourquoi: 'Une huile usée transmet aux aliments les composés issus de sa dégradation et rend les fritures impropres à la consommation.', correctif: 'Vidanger le bain, nettoyer la cuve, repartir sur une huile neuve et tracer le changement.' },
         ],
       },
     ],

@@ -29,6 +29,7 @@ import {
   Rect,
   Circle,
   Line,
+  Polygon,
   Font,
   StyleSheet,
 } from '@react-pdf/renderer';
@@ -55,6 +56,8 @@ export interface HygienePdfData {
   grilleVersion: string;
   /** Logo blanc en data URI, posé sur le bandeau du pied de page. */
   logoBlanc?: string | null;
+  /** Logo du client en data URI, posé sur la couverture. Facultatif. */
+  logoClient?: string | null;
   rapport: RapportHygiene;
 }
 
@@ -106,6 +109,11 @@ const VERT_PROFOND = '#04543C';
 const ROUGE = '#DC2626';
 const AMBRE = '#B45309';
 
+const NUIT = '#04281F';
+const NUIT_FILET = '#14453A';
+const NUIT_TEXTE = '#A9DFCA';
+const VERT_CLAIR = '#34D399';
+
 const A4_HAUTEUR = 841.89;
 const PIED_HAUTEUR = 32;
 const MARGE = 52;
@@ -140,9 +148,32 @@ const s = StyleSheet.create({
   banniereDate: { fontSize: 8.5, color: '#9FD8C3' },
   titreCouverture: { fontSize: 31, color: '#FFFFFF', letterSpacing: -0.9, lineHeight: 1.12, marginTop: 26, ...poids(600) },
   sousCouverture: { fontSize: 10.5, color: '#A9DFCA', marginTop: 8, maxWidth: 360 },
+  confidentiel: {
+    marginTop: 18,
+    alignSelf: 'flex-start',
+    borderWidth: 0.8,
+    borderColor: '#2E7D68',
+    borderRadius: 20,
+    paddingVertical: 3.5,
+    paddingHorizontal: 11,
+    fontSize: 7.5,
+    color: '#A9DFCA',
+    ...poids(500),
+  },
 
   corpsCouverture: { paddingHorizontal: MARGE, paddingTop: 26 },
   jaugeRang: { flexDirection: 'row', alignItems: 'flex-start' },
+  logoClientCadre: {
+    width: 104,
+    height: 60,
+    borderWidth: 0.7,
+    borderColor: FILET,
+    borderRadius: 6,
+    padding: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoClientImage: { maxWidth: 88, maxHeight: 44, objectFit: 'contain' },
   jaugeTexte: { flex: 1, paddingLeft: 26, paddingTop: 6 },
   niveauTitre: { fontSize: 19, letterSpacing: -0.4, ...poids(600) },
   niveauPhrase: { color: GRIS, marginTop: 8, maxWidth: 310, lineHeight: 1.5 },
@@ -160,6 +191,29 @@ const s = StyleSheet.create({
   champ: { width: '50%', marginBottom: 9 },
   champNom: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1 },
   champVal: { fontSize: 10, ...poids(500) },
+
+  /* Plan du froid */
+  frigo: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 8 },
+  etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
+  etageBande: { width: 4, height: 30, borderRadius: 2 },
+  etageNiveau: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1 },
+  frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET, backgroundColor: BRUME, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
+  verdictPastille: { width: 8, height: 8, borderRadius: 4, marginTop: 3, marginRight: 10 },
+
+  /* Panneau de l'étoile */
+  panneau: { backgroundColor: NUIT, borderRadius: 10, paddingVertical: 20, paddingHorizontal: 22, alignItems: 'center' },
+  panneauTitre: { fontSize: 10.5, color: '#FFFFFF', alignSelf: 'flex-start', ...poids(600) },
+  panneauNote: { fontSize: 8, color: '#5E8F80', alignSelf: 'flex-start', marginTop: 2 },
+  panneauLegende: { flexDirection: 'row', marginTop: 4, alignSelf: 'flex-start' },
+  legendePuce: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
+
+  colonnes: { flexDirection: 'row', marginTop: 24 },
+  colonne: { flex: 1 },
+  colonneGauche: { marginRight: 28 },
+
+  faible: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
+  faibleVal: { width: 26, textAlign: 'right', fontSize: 11, ...poids(600) },
 
   /* Titres de section */
   teteSection: { marginBottom: 20 },
@@ -184,7 +238,7 @@ const s = StyleSheet.create({
   thLigne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
   thIcone: { width: 20 },
   thNom: { flex: 1, fontSize: 9.5 },
-  thCompte: { width: 92, fontSize: 8, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
+  thCompte: { width: 80, fontSize: 8, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
   thBarreFond: { width: 76, height: 3, borderRadius: 1.5, backgroundColor: '#EDF2F0' },
   thBarre: { height: 3, borderRadius: 1.5 },
   thVal: { width: 26, textAlign: 'right', fontSize: 9.5, ...poids(600) },
@@ -300,6 +354,24 @@ const TRACES: Record<string, string> = {
   liste: 'M7.4 5.6h9.2 M7.4 10.5h9.2 M7.4 15.4h9.2 M4.4 5.6h.02 M4.4 10.5h.02 M4.4 15.4h.02',
 };
 
+/** Nom court du thème, pour les axes de l'étoile. */
+function themeCourt(theme: string): string {
+  const t = theme.toLowerCase();
+  if (t.includes('froid')) return 'Froid';
+  if (t.includes('cuisson') || t.includes('température')) return 'Cuisson';
+  if (t.includes('traça') || t.includes('dlc')) return 'Traçabilité';
+  if (t.includes('personnel')) return 'Personnel';
+  if (t.includes('nettoyage') || t.includes('désinfection')) return 'Nettoyage';
+  if (t.includes('nuisible')) return 'Nuisibles';
+  if (t.includes('stockage') || t.includes('marche en avant')) return 'Stockage';
+  if (t.includes('local') || t.includes('équipement')) return 'Locaux';
+  if (t.includes('déchet')) return 'Déchets';
+  if (t.includes('pms') || t.includes('maîtrise sanitaire')) return 'PMS';
+  if (t.includes('allerg')) return 'Allergènes';
+  if (t.includes('eau') || t.includes('glace')) return 'Eau';
+  return theme.length > 12 ? `${theme.slice(0, 11)}.` : theme;
+}
+
 /** Rattache un thème de la grille à son pictogramme, par mot-clé. */
 function iconeTheme(theme: string): string {
   const t = theme.toLowerCase();
@@ -391,7 +463,288 @@ function Jauge({ score, couleur, evalues }: { score: number; couleur: string; ev
   );
 }
 
+/* ------------------------------------------------- Plan de rangement du froid */
+
+/**
+ * L'ordre des étages d'une enceinte froide, du propre vers le sale en descendant :
+ * rien de cru ne doit se trouver au-dessus d'un produit prêt à manger, parce
+ * qu'un jus qui goutte ne remonte jamais.
+ *
+ * Le verdict affiché est celui du point de la grille qui juge la séparation
+ * cru/cuit sur cet audit. Si le point n'a pas été évalué, le plan reste un
+ * repère de rangement et ne prétend rien dire de l'établissement.
+ */
+const ETAGES = [
+  {
+    niveau: 'Étage du haut',
+    titre: 'Produits prêts à manger',
+    detail: 'Desserts, entremets, fromages entamés, produits finis filmés et datés.',
+    couleur: VERT,
+  },
+  {
+    niveau: 'Deuxième étage',
+    titre: 'Préparations cuites et refroidies',
+    detail: 'Plats de la veille, sauces, cuissons refroidies, le tout couvert et daté.',
+    couleur: '#3FBF8F',
+  },
+  {
+    niveau: 'Troisième étage',
+    titre: 'Crus préparés',
+    detail: 'Viandes et poissons portionnés, marinades, en bacs fermés.',
+    couleur: '#F59E0B',
+  },
+  {
+    niveau: 'Bas et bac',
+    titre: 'Crus bruts et légumes terreux',
+    detail: 'Viandes et poissons non travaillés, légumes non lavés, dans le bac du bas.',
+    couleur: ROUGE,
+  },
+];
+
+function PlanDuFroid({ r }: { r: RapportHygiene }) {
+  const point = r.themes
+    .flatMap((t) => t.items)
+    .find((i) => i.code.startsWith('STOCK-01'));
+  const evalue =
+    point && point.conformite !== 'NON_EVALUE' && point.conformite !== 'NON_APPLICABLE';
+
+  return (
+    <View style={s.section} minPresenceAhead={160}>
+      <Text style={s.h2}>L&apos;ordre des étages, dans le froid</Text>
+      <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
+        Le propre en haut, le cru en bas : un jus qui goutte ne remonte jamais. C&apos;est le seul
+        rangement qui protège les produits prêts à manger.
+      </Text>
+
+      {/* Les quatre étages tiennent sur une seule page : coupés, ils perdent leur sens d'ordre. */}
+      <View style={s.frigo} wrap={false}>
+        {ETAGES.map((e, i) => (
+          <View
+            key={e.titre}
+            style={[
+              s.etage,
+              i === 0 ? { borderTopWidth: 0 } : {},
+            ]}
+          >
+            <View style={[s.etageBande, { backgroundColor: e.couleur }]} />
+            <View style={{ flex: 1, paddingLeft: 12 }}>
+              <Text style={s.etageNiveau}>{e.niveau}</Text>
+              <Text style={{ ...poids(600), fontSize: 10 }}>{e.titre}</Text>
+              <Text style={[s.petit, { marginTop: 1 }]}>{e.detail}</Text>
+            </View>
+          </View>
+        ))}
+        <View style={s.frigoPied}>
+          <Text style={[s.petit, { color: GRIS }]}>
+            Tout se range couvert et daté. Rien à même le sol, rien contre la grille de
+            ventilation.
+          </Text>
+        </View>
+      </View>
+
+      <View style={[s.verdictRang, evalue ? {} : { borderColor: FILET }]}>
+        <View
+          style={[
+            s.verdictPastille,
+            { backgroundColor: point ? COULEUR_CONFORMITE[point.conformite] : GRIS_CLAIR },
+          ]}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...poids(600), fontSize: 10 }}>
+            {point
+              ? `Sur cet audit : ${LIBELLE_CONFORMITE[point.conformite].toLowerCase()}`
+              : 'Séparation cru/cuit non examinée sur cet audit'}
+          </Text>
+          <Text style={[s.petit, { marginTop: 1 }]}>
+            {point?.commentaire?.trim()
+              ? point.commentaire
+              : evalue
+                ? point?.intitule
+                : 'Le plan ci-dessus reste le repère de rangement à appliquer.'}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 /* --------------------------------------------------------------- Fragments */
+
+/* --------------------------------------------------- Étoile des thèmes (radar) */
+
+const RADAR_L = 436;
+const RADAR_H = 300;
+const RADAR_CX = RADAR_L / 2;
+const RADAR_CY = RADAR_H / 2 - 2;
+const RADAR_R = 94;
+
+/** Point d'un axe, en partant du haut et dans le sens horaire. */
+function pointRadar(i: number, n: number, rayon: number): [number, number] {
+  const angle = -Math.PI / 2 + (2 * Math.PI * i) / n;
+  return [RADAR_CX + rayon * Math.cos(angle), RADAR_CY + rayon * Math.sin(angle)];
+}
+
+function polygone(scores: number[]): string {
+  return scores
+    .map((sc, i) => {
+      const [x, y] = pointRadar(i, scores.length, (RADAR_R * Math.max(0, Math.min(100, sc))) / 100);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
+function anneau(fraction: number, n: number): string {
+  return Array.from({ length: n }, (_, i) => {
+    const [x, y] = pointRadar(i, n, RADAR_R * fraction);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function couleurSommet(score: number): string {
+  if (score >= 80) return VERT_CLAIR;
+  if (score >= 60) return '#FBBF24';
+  return '#F87171';
+}
+
+/**
+ * L'étoile des thèmes : un axe par thème noté, un anneau tous les 25 points.
+ * Elle ne montre que les thèmes réellement évalués. Faire figurer un thème non
+ * évalué à zéro laisserait croire à un échec là où rien n'a été regardé.
+ */
+function Etoile({ themes }: { themes: RapportTheme[] }) {
+  const n = themes.length;
+  const scores = themes.map((t) => t.score ?? 0);
+
+  return (
+    <View style={{ width: RADAR_L, height: RADAR_H, position: 'relative' }}>
+      <Svg width={RADAR_L} height={RADAR_H} viewBox={`0 0 ${RADAR_L} ${RADAR_H}`}>
+        {[0.25, 0.5, 0.75, 1].map((f) => (
+          <Polygon
+            key={f}
+            points={anneau(f, n)}
+            fill="none"
+            stroke={f === 1 ? '#1F5A4B' : NUIT_FILET}
+            strokeWidth={f === 1 ? 1 : 0.7}
+          />
+        ))}
+        {themes.map((t, i) => {
+          const [x, y] = pointRadar(i, n, RADAR_R);
+          return (
+            <Line
+              key={t.theme}
+              x1={RADAR_CX}
+              y1={RADAR_CY}
+              x2={x}
+              y2={y}
+              stroke={NUIT_FILET}
+              strokeWidth={0.7}
+            />
+          );
+        })}
+        <Polygon
+          points={polygone(scores)}
+          fill={VERT}
+          fillOpacity={0.3}
+          stroke={VERT_CLAIR}
+          strokeWidth={1.6}
+          strokeLinejoin="round"
+        />
+        {themes.map((t, i) => {
+          const [x, y] = pointRadar(i, n, (RADAR_R * Math.max(0, Math.min(100, t.score ?? 0))) / 100);
+          return (
+            <Circle key={t.theme} cx={x} cy={y} r={2.8} fill={couleurSommet(t.score ?? 0)} />
+          );
+        })}
+      </Svg>
+
+      {themes.map((t, i) => {
+        /* Étiquettes posées sur une ellipse, plus large que haute : à douze axes,
+           un cercle rapproche trop les étiquettes du haut et du bas. */
+        const angle = -Math.PI / 2 + (2 * Math.PI * i) / n;
+        const x = RADAR_CX + (RADAR_R + 40) * Math.cos(angle);
+        const y = RADAR_CY + (RADAR_R + 17) * Math.sin(angle);
+        return (
+          <View
+            key={t.theme}
+            style={{ position: 'absolute', left: x - 33, top: y - 11, width: 66, alignItems: 'center' }}
+          >
+            <Text style={{ fontSize: 7, color: NUIT_TEXTE, textAlign: 'center', lineHeight: 1.2 }}>
+              {themeCourt(t.theme)}
+            </Text>
+            <Text style={{ fontSize: 8.5, color: '#FFFFFF', textAlign: 'center', lineHeight: 1.2, ...poids(600) }}>
+              {Math.round(t.score ?? 0)}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+/* ------------------------------------------------ Répartition et carte des points */
+
+/** Les points audités en une barre : conformes, écarts, critiques, écartés du calcul. */
+function Repartition({ r }: { r: RapportHygiene }) {
+  const parts = [
+    { nom: 'conformes', n: r.conformes, couleur: VERT },
+    { nom: 'écarts mineurs', n: r.ncMineures, couleur: '#F59E0B' },
+    { nom: 'points critiques', n: r.ncMajeures, couleur: ROUGE },
+    { nom: 'hors calcul', n: r.nonApplicables + r.nonEvalues, couleur: '#D7DEDB' },
+  ].filter((x) => x.n > 0);
+  const total = parts.reduce((t, x) => t + x.n, 0) || 1;
+
+  return (
+    <View>
+      <View style={{ flexDirection: 'row', height: 9, borderRadius: 4.5, marginTop: 10 }}>
+        {parts.map((x, i) => (
+          <View
+            key={x.nom}
+            style={{
+              width: `${(x.n / total) * 100}%`,
+              backgroundColor: x.couleur,
+              borderTopLeftRadius: i === 0 ? 4.5 : 0,
+              borderBottomLeftRadius: i === 0 ? 4.5 : 0,
+              borderTopRightRadius: i === parts.length - 1 ? 4.5 : 0,
+              borderBottomRightRadius: i === parts.length - 1 ? 4.5 : 0,
+            }}
+          />
+        ))}
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 }}>
+        {parts.map((x) => (
+          <View key={x.nom} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16, marginBottom: 4 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: x.couleur, marginRight: 5 }} />
+            <Text style={{ fontSize: 8.5 }}>
+              <Text style={{ ...poids(600) }}>{x.n}</Text>
+              <Text style={{ color: GRIS }}> {x.nom}</Text>
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/** Un carré par point audité, dans l'ordre de la grille : l'état du thème d'un coup d'oeil. */
+function Pastilles({ t }: { t: RapportTheme }) {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 86 }}>
+      {t.items.map((i) => (
+        <View
+          key={i.code}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 1.5,
+            marginRight: 2.5,
+            marginBottom: 2.5,
+            backgroundColor: COULEUR_CONFORMITE[i.conformite],
+          }}
+        />
+      ))}
+    </View>
+  );
+}
 
 function Bandeau({ data }: { data: HygienePdfData }) {
   return (
@@ -467,6 +820,7 @@ function LigneTheme({ t }: { t: RapportTheme }) {
         <Glyphe nom={iconeTheme(t.theme)} taille={13} couleur={t.score === null ? GRIS_CLAIR : ENCRE} />
       </View>
       <Text style={s.thNom}>{t.theme}</Text>
+      <Pastilles t={t} />
       <Text style={s.thCompte}>
         {t.score === null
           ? 'non évalué'
@@ -623,6 +977,11 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
   /* Les trois premières choses à faire, reprises en couverture. */
   const priorites = [...r.actionsImmediates, ...r.actionsTrente].slice(0, 3);
 
+  /* L'étoile a besoin d'au moins trois axes pour dessiner une surface. */
+  const themesNotes = r.themes.filter((t) => t.score !== null);
+  const themesSansNote = r.themes.filter((t) => t.score === null);
+  const plusFaibles = themesClasses.filter((t) => t.score !== null).slice(0, 4);
+
   return (
     <Document
       title={`Rapport d'audit hygiène, ${data.etablissement}`}
@@ -644,12 +1003,15 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             Rapport d&apos;audit hygiène du {data.date}
             {lieu ? `, ${lieu}` : ''}.
           </Text>
+          <Text style={s.confidentiel}>
+            Document confidentiel, destiné à l&apos;établissement audité
+          </Text>
         </View>
 
         <View style={s.corpsCouverture}>
           <View style={s.jaugeRang}>
             <Jauge score={r.scoreGlobal} couleur={r.niveau.couleur} evalues={r.evalues} />
-            <View style={s.jaugeTexte}>
+            <View style={[s.jaugeTexte, data.logoClient ? { paddingRight: 14 } : {}]}>
               <Text style={[s.niveauTitre, { color: r.niveau.couleur }]}>{r.niveau.titre}</Text>
               <Text style={s.niveauPhrase}>{r.niveau.phrase}</Text>
               <View style={s.compteurs}>
@@ -675,6 +1037,12 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
                 </View>
               </View>
             </View>
+
+            {data.logoClient ? (
+              <View style={s.logoClientCadre}>
+                <Image src={data.logoClient} style={s.logoClientImage} />
+              </View>
+            ) : null}
           </View>
 
           {priorites.length > 0 ? (
@@ -721,7 +1089,90 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         <Pied data={data} />
       </Page>
 
-      {/* 02 · Sommaire */}
+      {/* 02 · Vue d'ensemble */}
+      <Page size="A4" style={s.page} bookmark="Le résultat en un coup d'oeil">
+        <TeteSection
+          titre="Le résultat en un coup d'oeil"
+          chapeau="L'étoile donne la forme de l'établissement : plus la surface est large, plus la maîtrise est homogène. Un creux marque un thème à reprendre."
+        />
+
+        {themesNotes.length >= 3 ? (
+          <View style={s.panneau}>
+            <Text style={s.panneauTitre}>Maîtrise par thème</Text>
+            <Text style={s.panneauNote}>un anneau tous les 25 points, le bord extérieur vaut 100</Text>
+            <Etoile themes={themesNotes} />
+            <View style={s.panneauLegende}>
+              {[
+                { c: VERT_CLAIR, t: '80 et plus, tenu' },
+                { c: '#FBBF24', t: 'de 60 à 79, à consolider' },
+                { c: '#F87171', t: 'moins de 60, à reprendre' },
+              ].map((x) => (
+                <View key={x.t} style={s.legendePuce}>
+                  <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: x.c, marginRight: 5 }} />
+                  <Text style={{ fontSize: 7.5, color: NUIT_TEXTE }}>{x.t}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={s.encart}>
+            <Text style={s.petit}>
+              L&apos;étoile des thèmes demande au moins trois thèmes notés. Cet audit en compte{' '}
+              {themesNotes.length} : les notes se lisent directement dans la liste des thèmes.
+            </Text>
+          </View>
+        )}
+
+        {themesSansNote.length > 0 ? (
+          <Text style={[s.petit, { marginTop: 10 }]}>
+            Hors étoile, sans point évalué : {themesSansNote.map((t) => t.theme).join(', ')}.
+          </Text>
+        ) : null}
+
+        <View style={s.colonnes}>
+          <View style={[s.colonne, s.colonneGauche]}>
+            <Text style={s.h2}>Où vont les points</Text>
+            <Text style={[s.gris, { marginTop: 4 }]}>
+              Les {r.totalPoints} points de la grille, par état constaté.
+            </Text>
+            <Repartition r={r} />
+          </View>
+
+          <View style={s.colonne}>
+            <Text style={s.h2}>Les thèmes les plus faibles</Text>
+            <Text style={[s.gris, { marginTop: 4 }]}>
+              Par ordre de priorité, c&apos;est là que le travail paie le plus vite.
+            </Text>
+            <View style={{ marginTop: 10 }}>
+              {plusFaibles.map((t) => (
+                <View key={t.theme} style={s.faible} wrap={false}>
+                  <View style={{ width: 18, paddingTop: 1 }}>
+                    <Glyphe nom={iconeTheme(t.theme)} taille={12} couleur={couleurScore(t.score)} />
+                  </View>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={{ ...poids(500) }}>{t.theme}</Text>
+                    <Text style={s.petit}>
+                      {t.ncMajeures > 0
+                        ? `${t.ncMajeures} critique${t.ncMajeures > 1 ? 's' : ''}`
+                        : t.ncMineures > 0
+                          ? `${t.ncMineures} écart${t.ncMineures > 1 ? 's' : ''} mineur${t.ncMineures > 1 ? 's' : ''}`
+                          : 'aucun écart'}
+                    </Text>
+                  </View>
+                  <Text style={[s.faibleVal, { color: couleurScore(t.score) }]}>
+                    {Math.round(t.score ?? 0)}
+                  </Text>
+                </View>
+              ))}
+              <View style={s.filet} />
+            </View>
+          </View>
+        </View>
+
+        <Pied data={data} />
+      </Page>
+
+      {/* 03 · Sommaire */}
       <Page size="A4" style={s.page} bookmark="Sommaire">
         <TeteSection
           titre="Ce que contient ce rapport"
@@ -905,6 +1356,8 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={s.filet} />
         </View>
 
+        <PlanDuFroid r={r} />
+
         {r.pointsForts.length > 0 ? (
           <View style={s.section}>
             <Text style={s.h2}>Ce qui est déjà tenu</Text>
@@ -1030,6 +1483,15 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             {MENTION_LABEL_PRIVE} Ce rapport ne garantit pas le résultat d&apos;un contrôle officiel et ne
             remplace ni le plan de maîtrise sanitaire, ni les analyses, ni la formation obligatoire du
             personnel.
+          </Text>
+        </View>
+
+        <View style={{ marginTop: 18 }}>
+          <Text style={s.h2}>À qui il appartient</Text>
+          <Text style={[s.gris, { marginTop: 5, maxWidth: 430 }]}>
+            Document confidentiel. Il est établi pour l&apos;établissement audité et ses
+            responsables. Sa diffusion à un tiers, bailleur, franchiseur, assureur ou autre, relève
+            de la seule décision de l&apos;établissement.
           </Text>
         </View>
 
