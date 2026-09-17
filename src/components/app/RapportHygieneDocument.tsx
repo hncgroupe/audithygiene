@@ -44,6 +44,16 @@ function couleurScore(score: number | null): string {
   return ROUGE;
 }
 
+/**
+ * Une référence encore marquée TODO est une amorce interne, pas du texte validé
+ * (rule methodology-guard). Elle ne s'affiche pas dans le rapport client.
+ */
+function referenceValide(texte?: string | null): texte is string {
+  if (!texte) return false;
+  const t = texte.trim();
+  return t.length > 12 && !t.toUpperCase().startsWith('TODO');
+}
+
 function Cle({ children }: { children: React.ReactNode }) {
   return <div className="text-[10px] uppercase tracking-[0.12em] text-gris-light">{children}</div>;
 }
@@ -188,7 +198,7 @@ function Fiche({ a }: { a: ActionCorrective }) {
           </div>
         )}
 
-        {a.referenceRegl && (
+        {referenceValide(a.referenceRegl) && (
           <div>
             <Cle>Référence</Cle>
             <p className="mt-1 text-[12px] leading-relaxed text-gris">{a.referenceRegl}</p>

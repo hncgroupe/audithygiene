@@ -27,6 +27,12 @@ const AUTO_AUDIT_ABSORBEES = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  /* La route du rapport PDF lit ses polices et son logo sur le disque. Sans cette
+     liste, ces fichiers ne sont pas embarques dans la fonction serveur et le PDF
+     repart en Helvetica sans logo. */
+  outputFileTracingIncludes: {
+    '/app/audits/[id]/rapport/pdf': ['./public/fonts/**', './public/logo-blanc.png'],
+  },
   poweredByHeader: false,
   images: {
     formats: ['image/avif', 'image/webp'],
