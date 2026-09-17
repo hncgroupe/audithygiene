@@ -75,6 +75,7 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
       conformite: it.conformite as Conformite,
       ponderation: it.ponderation,
       commentaire: it.commentaire,
+      materiel: it.materiel,
       photos: (await Promise.all(it.photoUrls.map((p) => getDataUri(p))))
         .filter((u): u is string => Boolean(u))
         .map((url) => ({ url })),
@@ -98,6 +99,7 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
     grilleVersion: audit.grilleVersion,
     logoBlanc: await imageMarque('logo-blanc.png'),
     logoMarque: await imageMarque('logo-wordmark.png'),
+    dateCourte: (audit.dateAudit ?? audit.createdAt).toLocaleDateString('fr-FR'),
     logoClient: audit.establishment.logoUrl ? await getDataUri(audit.establishment.logoUrl) : null,
     rapport: assemblerRapportHygiene(entrees),
   };

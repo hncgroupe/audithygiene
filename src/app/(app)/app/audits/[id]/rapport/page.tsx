@@ -48,6 +48,7 @@ export default async function RapportResto360Page({ params }: { params: Promise<
           conformite: it.conformite as Conformite,
           ponderation: it.ponderation,
           commentaire: it.commentaire,
+          materiel: it.materiel,
           photos: (
             await Promise.all(it.photoUrls.map((path) => getSignedUrl(path, 60 * 60 * 8)))
           )

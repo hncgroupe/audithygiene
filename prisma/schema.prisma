@@ -255,6 +255,8 @@ model AuditItem {
   groupe         String?        // sous-groupe du pilier (auditresto360)
   ponderation    Int            @default(1)
   commentaire    String?
+  // Matériel à acheter noté par l'auditeur sur ce point, texte libre.
+  materiel       String?
   photoUrls      String[]       @default([])
   // État libre lié à l'item : checklists cochées, flag « sur mesure », etc.
   meta           Json?

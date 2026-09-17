@@ -58,6 +58,8 @@ export interface HygienePdfData {
   logoClient?: string | null;
   /** Logo de marque (wordmark vert) en data URI, en tête de couverture. */
   logoMarque?: string | null;
+  /** Date en chiffres, pour le relevé de couverture où la place manque. */
+  dateCourte?: string | null;
   rapport: RapportHygiene;
 }
 
@@ -92,6 +94,13 @@ const VERT_PROFOND = '#04543C';
 const ROUGE = '#DC2626';
 const AMBRE = '#B45309';
 
+/* Demi-cadran de la couverture. */
+const CADRAN_L = 226;
+const CADRAN_H = 132;
+const CADRAN_CX = CADRAN_L / 2;
+const CADRAN_CY = 116;
+const CADRAN_R = 88;
+
 const A4_HAUTEUR = 841.89;
 const PIED_HAUTEUR = 32;
 const MARGE = 52;
@@ -103,15 +112,15 @@ const s = StyleSheet.create({
     paddingTop: 44,
     paddingBottom: 60,
     paddingHorizontal: MARGE,
-    fontSize: 7,
+    fontSize: 7.7,
     lineHeight: 1.5,
     color: ENCRE,
     fontFamily: FAMILLE,
     ...poids(400),
   },
   pageCouverture: {
-    paddingBottom: 60,
-    fontSize: 7,
+    paddingBottom: 42,
+    fontSize: 7.7,
     lineHeight: 1.5,
     color: ENCRE,
     fontFamily: FAMILLE,
@@ -123,29 +132,56 @@ const s = StyleSheet.create({
   banniereRang: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   logoMarque: { width: 132, height: 26, objectFit: 'contain' },
   separateurCouverture: { marginTop: 20, borderTopWidth: 0.7, borderTopColor: FILET },
-  rangTitre: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-  marqueBlanche: { fontSize: 8.8, color: ENCRE, ...poids(600) },
+  rangLogoClient: { alignItems: 'center', marginTop: 18 },
+  marqueBlanche: { fontSize: 9.7, color: ENCRE, ...poids(600) },
   marqueFine: { color: VERT },
-  banniereDate: { fontSize: 6.8, color: GRIS_CLAIR },
-  titreCouverture: { fontSize: 23, color: ENCRE, letterSpacing: -0.8, lineHeight: 1.12, ...poids(600) },
-  sousCouverture: { fontSize: 7.6, color: GRIS, marginTop: 8, maxWidth: 380 },
+  banniereDate: { fontSize: 7.5, color: GRIS_CLAIR },
+  titreCouverture: { fontSize: 33, color: ENCRE, letterSpacing: -0.8, lineHeight: 1.12, marginTop: 14, textAlign: 'center', ...poids(600) },
+  sousCouverture: { fontSize: 12.1, color: GRIS, marginTop: 10, textAlign: 'center', ...poids(500) },
   confidentiel: {
-    marginTop: 18,
-    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 0.8,
     borderColor: FILET_FORT,
     borderRadius: 20,
-    paddingVertical: 3.5,
-    paddingHorizontal: 11,
-    fontSize: 6,
-    color: GRIS,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
   },
+  confidentielTexte: { fontSize: 7.7, color: GRIS, marginLeft: 6, marginTop: 2, textAlign: 'center' },
 
   corpsCouverture: { paddingHorizontal: MARGE, paddingTop: 20 },
+  mentionPied: {
+    position: 'absolute',
+    bottom: 14,
+    left: 24,
+    right: 24,
+    textAlign: 'center',
+    fontSize: 7.3,
+    color: GRIS_CLAIR,
+  },
+  blocScore: { marginTop: 20, borderWidth: 0.8, borderColor: FILET, borderRadius: 9 },
+  cadranRang: { flexDirection: 'row', alignItems: 'center', padding: 18, paddingBottom: 14 },
+  cadranBoite: { width: CADRAN_L, height: CADRAN_H, position: 'relative' },
+  cadranBorne: { position: 'absolute', width: 24, textAlign: 'center', fontSize: 7.5, color: GRIS_CLAIR },
+  cadranTexte: { flex: 1, paddingLeft: 22 },
+  scoreNombre: { fontSize: 50, letterSpacing: -1.6, lineHeight: 1, ...poids(700) },
+  scoreSur: { fontSize: 12.5, color: GRIS, marginLeft: 9, marginBottom: 6 },
+  scoreNiveau: { fontSize: 14.5, marginTop: 8, letterSpacing: -0.2, ...poids(700) },
+  scorePhrase: { fontSize: 9.8, lineHeight: 1.45, color: GRIS, marginTop: 6, maxWidth: 240 },
+
+  etats: { flexDirection: 'row', borderTopWidth: 0.8, borderTopColor: FILET },
+  etatCase: { flex: 1, paddingVertical: 13, paddingHorizontal: 10, borderRightWidth: 0.8, borderRightColor: FILET, alignItems: 'center' },
+  etatTete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  etatPastille: { width: 7, height: 7, borderRadius: 1.5, marginRight: 6 },
+  etatMot: { fontSize: 8.8, lineHeight: 1, letterSpacing: 0.2, textAlign: 'center', ...poids(700) },
+  etatNombre: { fontSize: 24.2, lineHeight: 1.15, marginTop: 6, letterSpacing: -0.6, textAlign: 'center', ...poids(700) },
+  etatQuoi: { fontSize: 7.6, lineHeight: 1.35, color: GRIS, marginTop: 3, textAlign: 'center' },
+
   jaugeRang: { flexDirection: 'row', alignItems: 'flex-start' },
   logoClientCadre: {
-    width: 74,
-    height: 44,
+    width: 96,
+    height: 54,
     borderWidth: 0.7,
     borderColor: FILET,
     borderRadius: 6,
@@ -153,113 +189,167 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoClientImage: { maxWidth: 62, maxHeight: 32, objectFit: 'contain' },
+  logoClientImage: { maxWidth: 80, maxHeight: 40, objectFit: 'contain' },
   jaugeTexte: { flex: 1, paddingLeft: 26, paddingTop: 6 },
-  niveauTitre: { fontSize: 13.6, letterSpacing: -0.4, ...poids(600) },
+  niveauTitre: { fontSize: 15, letterSpacing: -0.4, ...poids(600) },
   niveauPhrase: { color: GRIS, marginTop: 8, maxWidth: 310, lineHeight: 1.5 },
 
+  compteursCadre: { flexDirection: 'row', marginTop: 12, borderWidth: 0.8, borderColor: FILET, borderRadius: 8 },
+  compteurCase: { flex: 1, paddingVertical: 12, paddingHorizontal: 12, borderRightWidth: 0.7, borderRightColor: FILET },
   compteurs: { flexDirection: 'row', marginTop: 16 },
   compteur: { marginRight: 26 },
-  compteurVal: { fontSize: 13.6, letterSpacing: -0.4, lineHeight: 1, ...poids(600) },
-  compteurNom: { fontSize: 6.4, color: GRIS, marginTop: 3 },
+  compteurVal: { fontSize: 15, letterSpacing: -0.4, lineHeight: 1, ...poids(600) },
+  compteurNom: { fontSize: 7, color: GRIS, marginTop: 3 },
 
   premier: { marginTop: 18, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 12 },
   premierLigne: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 7 },
-  premierDelai: { width: 74, fontSize: 6.4, color: GRIS, textAlign: 'right' },
+  premierDelai: { width: 74, fontSize: 7, color: GRIS, textAlign: 'right' },
 
-  ficheEtab: { marginTop: 18, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 12, flexDirection: 'row', flexWrap: 'wrap' },
-  champ: { width: '50%', marginBottom: 7 },
-  champNom: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1 },
-  champVal: { fontSize: 7.6, ...poids(500) },
+  /* Ancré au bas de la page, pas poussé par le flux : dans ce moteur, un « vide
+     qui grandit » ne pousse rien du tout. */
+  releve: { position: 'absolute', left: MARGE, right: MARGE, bottom: 44 },
+  releveCol: { paddingHorizontal: 8, paddingTop: 9, paddingBottom: 11 },
+  releveColPale: { backgroundColor: '#F7FAF9' },
+  releveTitre: { fontSize: 7, color: GRIS_CLAIR, letterSpacing: 0.3, textTransform: 'uppercase', textAlign: 'center' },
+  releveFilet: { borderBottomWidth: 0.8, borderBottomColor: FILET_FORT, marginTop: 6, marginBottom: 9 },
+  releveVal: { fontSize: 10.5, lineHeight: 1.25, textAlign: 'center', ...poids(700) },
+  releveSous: { fontSize: 8.1, color: GRIS, marginTop: 1.5, textAlign: 'center', ...poids(400) },
 
-  /* Plan du froid */
-  frigo: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 8 },
+  photo: { width: 124, height: 88, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
+  panneauNote: { fontSize: 8.6, color: GRIS_CLAIR, alignSelf: 'center', marginTop: 3, marginBottom: 6 },
+  ptTexte: { flex: 1, paddingRight: 10 },
   etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
-  etageBande: { width: 4, height: 30, borderRadius: 2 },
-  etageNiveau: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1 },
-  frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
-  verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
-  verdictPastille: { width: 8, height: 8, borderRadius: 4, marginTop: 3, marginRight: 10 },
-
-  /* Panneau de l'étoile */
-  panneau: { borderWidth: 0.7, borderColor: FILET, borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
-  panneauTitre: { fontSize: 8.4, color: ENCRE, alignSelf: 'flex-start', ...poids(600) },
-  panneauNote: { fontSize: 6.4, color: GRIS_CLAIR, alignSelf: 'flex-start', marginTop: 2 },
-  panneauLegende: { flexDirection: 'row', marginTop: 4, alignSelf: 'flex-start' },
-  legendePuce: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
-
-  colonnes: { flexDirection: 'row', marginTop: 24 },
-  colonne: { flex: 1 },
-  colonneGauche: { marginRight: 28 },
-
-  faible: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
-  faibleVal: { width: 26, textAlign: 'right', fontSize: 8.8, ...poids(600) },
-
-  /* Titres de section */
-  chapitre: { marginTop: 30 },
-  teteSection: { marginBottom: 16 },
-  regle: { width: 26, height: 2, backgroundColor: VERT, marginBottom: 12 },
-  h1: { fontSize: 15.2, letterSpacing: -0.6, lineHeight: 1.2, ...poids(600) },
-  h2: { fontSize: 9.2, letterSpacing: -0.2, ...poids(600) },
-  h3: { fontSize: 7.6, ...poids(600) },
-  chapeau: { color: GRIS, marginTop: 7, maxWidth: 430 },
-  gris: { color: GRIS },
-  petit: { fontSize: 6.4, color: GRIS, lineHeight: 1.5 },
-  filet: { borderTopWidth: 0.7, borderTopColor: FILET },
-  bloc: { marginTop: 7 },
-  cle: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1.5 },
-  section: { marginTop: 22 },
-
-  /* Sommaire */
-  sommaireLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderTopWidth: 0.7, borderTopColor: FILET },
-  sommaireRond: { width: 26, height: 26, borderRadius: 13, borderWidth: 0.7, borderColor: FILET, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  sommaireNum: { width: 20, fontSize: 7.2, color: GRIS_CLAIR, paddingTop: 3 },
-
-  /* Thèmes */
-  thLigne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5.5, borderTopWidth: 0.7, borderTopColor: FILET },
-  thIcone: { width: 20 },
-  thNom: { flex: 1, fontSize: 7.2 },
-  thCompte: { width: 80, fontSize: 6.4, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
-  thBarreFond: { width: 76, height: 3, borderRadius: 1.5, backgroundColor: '#EDF2F0' },
+  renvoiCode: { width: 66, fontSize: 7, color: GRIS_CLAIR, paddingTop: 1 },
+  ficheMeta: { fontSize: 7, color: GRIS, marginTop: 1.5 },
+  petit: { fontSize: 7, color: GRIS, lineHeight: 1.5 },
+  jeton: { borderRadius: 9, paddingVertical: 2.5, paddingHorizontal: 8, fontSize: 6.6, color: '#FFFFFF', ...poids(600) },
   thBarre: { height: 3, borderRadius: 1.5 },
-  thVal: { width: 26, textAlign: 'right', fontSize: 7.2, ...poids(600) },
-
-  /* Fiches d'action */
-  fiche: { marginTop: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6, padding: 12 },
+  frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
+  correctionCle: { fontSize: 6.6, color: GRIS, marginBottom: 2 },
+  cle: { fontSize: 6.6, color: GRIS_CLAIR, marginBottom: 1.5 },
+  sommaireNum: { width: 20, fontSize: 7.9, color: GRIS_CLAIR, paddingTop: 3 },
+  thBarreFond: { width: 76, height: 3, borderRadius: 1.5, backgroundColor: '#EDF2F0' },
   ficheTete: { flexDirection: 'row', alignItems: 'flex-start' },
-  ficheTitre: { fontSize: 8.4, letterSpacing: -0.2, lineHeight: 1.3, ...poids(600) },
-  ficheMeta: { fontSize: 6.4, color: GRIS, marginTop: 1.5 },
-  jeton: { borderRadius: 9, paddingVertical: 2.5, paddingHorizontal: 8, fontSize: 6, color: '#FFFFFF', ...poids(600) },
+  regle: { width: 26, height: 2, backgroundColor: VERT, marginBottom: 12 },
+  correctionTexte: { fontSize: 8.4, lineHeight: 1.45, ...poids(500) },
+  ficheTitre: { fontSize: 9.2, letterSpacing: -0.2, lineHeight: 1.3, ...poids(600) },
+  frigo: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 8 },
+  cloture: { marginTop: 26, paddingTop: 16, borderTopWidth: 0.7, borderTopColor: FILET },
   ficheCorps: { marginTop: 11 },
-  ficheCode: { fontSize: 6.4, color: GRIS_CLAIR, marginTop: 2 },
+  panneauLegende: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTopWidth: 0.7, borderTopColor: FILET, alignSelf: 'stretch' },
+  legendeTexte: { fontSize: 9.5 },
+  h3: { fontSize: 8.4, ...poids(600) },
+  verdictPastille: { width: 8, height: 8, borderRadius: 4, marginTop: 3, marginRight: 10 },
+  h1: { fontSize: 21, letterSpacing: -0.6, lineHeight: 1.2, textAlign: 'center', ...poids(600) },
+  thCompte: { width: 80, fontSize: 7, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
+  sommaireLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderTopWidth: 0.7, borderTopColor: FILET },
+  chapeau: { color: GRIS, marginTop: 5, maxWidth: 440, textAlign: 'center' },
+  renvoi: { flexDirection: 'row', paddingVertical: 6, borderTopWidth: 0.7, borderTopColor: FILET },
+  etageNiveau: { fontSize: 6.6, color: GRIS_CLAIR, marginBottom: 1 },
+  teteSection: { marginBottom: 18, alignItems: 'center' },
+  panneauTitre: { fontSize: 10.5, color: ENCRE, alignSelf: 'center', ...poids(600) },
+  legendePuce: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 12 },
+  suite: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
+  faible: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
+  signature: { flex: 1 },
+  ptEtat: { width: 116, textAlign: 'right', fontSize: 7, color: GRIS },
+  faibleVal: { width: 26, textAlign: 'right', fontSize: 9.7, ...poids(600) },
+  signatures: { flexDirection: 'row', marginTop: 34 },
+  ptLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 3.5, borderTopWidth: 0.7, borderTopColor: FILET },
+  colonne: { flex: 1 },
+  etapes: { marginTop: 9, paddingTop: 8, borderTopWidth: 0.7, borderTopColor: FILET },
+  etape: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
+  etapeNum: { width: 13, fontSize: 7.4, lineHeight: 1.45, color: GRIS_CLAIR, ...poids(700) },
+  etapeTexte: { flex: 1, fontSize: 8.8, lineHeight: 1.45, ...poids(400) },
+  achatGrille: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 4 },
+  achatCarte: { width: '49%', minHeight: 52, flexDirection: 'row', alignItems: 'center', marginBottom: 9, borderWidth: 0.8, borderColor: FILET, borderRadius: 9, paddingVertical: 10, paddingHorizontal: 12 },
+  achatCase: { width: 11, height: 11, borderWidth: 1, borderColor: GRIS, borderRadius: 2.5, marginRight: 11 },
+  achatNom: { fontSize: 9.6, lineHeight: 1.3, ...poids(600) },
+  achatPoints: { fontSize: 7.2, lineHeight: 1.35, color: GRIS_CLAIR, marginTop: 2.5 },
+  achatRang: { width: 16, fontSize: 7.6, lineHeight: 1, color: GRIS_CLAIR, textAlign: 'right', marginLeft: 8 },
+
+  materiel: { marginTop: 9, borderWidth: 0.8, borderColor: FILET_FORT, borderRadius: 6, borderStyle: 'dashed', paddingVertical: 8, paddingHorizontal: 11 },
+  materielCle: { fontSize: 7, letterSpacing: 0.9, textTransform: 'uppercase', color: GRIS, lineHeight: 1, ...poids(700) },
+  materielListe: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 5 },
+  materielItem: { fontSize: 8.4, lineHeight: 1.3, marginRight: 8, marginBottom: 2, ...poids(500) },
 
   correction: { marginTop: 9, borderWidth: 0.8, borderColor: ENCRE, borderRadius: 5, paddingVertical: 8, paddingHorizontal: 10 },
-  correctionCle: { fontSize: 6, color: GRIS, marginBottom: 2 },
-  correctionTexte: { fontSize: 7.6, lineHeight: 1.45, ...poids(700) },
-
-  bandePhotos: { flexDirection: 'row', marginTop: 4 },
-  photo: { width: 124, height: 88, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
-
-  /* Détail */
-  ptLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 3.5, borderTopWidth: 0.7, borderTopColor: FILET },
-  ptTexte: { flex: 1, paddingRight: 10 },
-  ptEtat: { width: 116, textAlign: 'right', fontSize: 6.4, color: GRIS },
-
-  /* Suites de contrôle */
-  suite: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
-  suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 6.4, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
-  suiteQuand: { fontSize: 6.4, color: GRIS_CLAIR, marginTop: 0.5 },
-
+  gris: { color: GRIS },
+  thIcone: { width: 20 },
+  panneau: { borderWidth: 0.7, borderColor: FILET, borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
+  verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
+  bloc: { marginTop: 7 },
+  fiche: { marginTop: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6, padding: 12 },
+  signatureLigne: { borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 30, marginBottom: 4 },
+  colonneGauche: { marginRight: 28 },
+  filet: { borderTopWidth: 0.7, borderTopColor: FILET },
+  etageBande: { width: 4, height: 30, borderRadius: 2 },
+  colonnes: { flexDirection: 'row', marginTop: 24 },
+  sommaireRond: { width: 26, height: 26, borderRadius: 13, borderWidth: 0.7, borderColor: FILET, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  thNom: { flex: 1, fontSize: 7.9 },
   encart: { marginTop: 14, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: FILET },
   alerte: { marginTop: 16, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: '#F1C7C7', borderLeftWidth: 2.5, borderLeftColor: ROUGE },
+  suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 7, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
+  thVal: { width: 26, textAlign: 'right', fontSize: 7.9, ...poids(600) },
+  bandePhotos: { flexDirection: 'row', marginTop: 4 },
+  suiteQuand: { fontSize: 7, color: GRIS_CLAIR, marginTop: 0.5 },
+  chapitre: { marginTop: 30 },
+  section: { marginTop: 22 },
+  h2: { fontSize: 10.1, letterSpacing: -0.2, ...poids(600) },
+  thLigne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5.5, borderTopWidth: 0.7, borderTopColor: FILET },
 
-  renvoi: { flexDirection: 'row', paddingVertical: 6, borderTopWidth: 0.7, borderTopColor: FILET },
-  renvoiCode: { width: 66, fontSize: 6.4, color: GRIS_CLAIR, paddingTop: 1 },
+  modeEmploi: { marginTop: 4, marginBottom: 14, borderWidth: 0.7, borderColor: FILET, borderRadius: 7, padding: 12 },
+  modeTitre: { fontSize: 10.5, marginBottom: 6, ...poids(700) },
+  modeLigne: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 3 },
+  modePuce: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: VERT, marginTop: 5, marginRight: 7 },
+  modeTexte: { flex: 1, fontSize: 8.8, lineHeight: 1.45, color: GRIS },
 
-  cloture: { marginTop: 26, paddingTop: 16, borderTopWidth: 0.7, borderTopColor: FILET },
-  signatures: { flexDirection: 'row', marginTop: 34 },
-  signature: { flex: 1 },
-  signatureLigne: { borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 30, marginBottom: 4 },
+  recapEntete: { flexDirection: 'row', alignItems: 'flex-end', borderBottomWidth: 1, borderBottomColor: ENCRE, paddingBottom: 5 },
+  recapTitre: { fontSize: 8, lineHeight: 1.15, color: GRIS_CLAIR, letterSpacing: 0.3, textTransform: 'uppercase', textAlign: 'center' },
+  recapLigne: { paddingVertical: 8.5, paddingHorizontal: 2 },
+  recapRangee: { flexDirection: 'row', alignItems: 'center' },
+  recapNom: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingRight: 10 },
+  recapAlerte: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: ROUGE, marginRight: 8 },
+  recapAlerteVide: { width: 7, marginRight: 8 },
+  recapNomTexte: { fontSize: 11, marginLeft: 8 },
+  recapVal: { fontSize: 11, textAlign: 'center' },
+  recapNote: { fontSize: 13, width: 26, textAlign: 'right', ...poids(700) },
+  fiche3Grille: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  fiche3: { width: '49%', marginTop: 5, borderWidth: 0.8, borderColor: FILET, borderRadius: 7 },
+  fiche3Bandeau: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5, paddingHorizontal: 9, borderBottomWidth: 0.8, borderBottomColor: FILET },
+  /* lineHeight à 1 : sans lui, le chiffre hérite de l'interligne de la page et
+     se décale vers le bas dans sa pastille. */
+  fiche3Numero: { width: 18, borderRadius: 4, paddingTop: 3, paddingBottom: 3, fontSize: 7.6, lineHeight: 1,
+    textAlign: 'center', color: '#FFFFFF', marginRight: 8, ...poids(700) },
+  fiche3Etat: { flex: 1, fontSize: 7, lineHeight: 1, letterSpacing: 0.5, textTransform: 'uppercase', ...poids(700) },
+  fiche3Code: { fontSize: 6.6, lineHeight: 1, letterSpacing: 0.4, color: GRIS_CLAIR, ...poids(500) },
+  fiche3Titre: { fontSize: 8.8, lineHeight: 1.25, ...poids(600) },
+  fiche3Zone: { paddingVertical: 5, paddingHorizontal: 9 },
+  fiche3Bas: { paddingVertical: 6, paddingHorizontal: 9, borderTopWidth: 0.8, borderTopColor: FILET, backgroundColor: '#F5F8F7', borderBottomLeftRadius: 7, borderBottomRightRadius: 7 },
+  fiche3Probleme: { fontSize: 8, lineHeight: 1.3, color: GRIS, marginTop: 1.5 },
+  fiche3Cle: { fontSize: 6.4, lineHeight: 1, letterSpacing: 0.8, textTransform: 'uppercase', color: GRIS_CLAIR, ...poids(600) },
+  fiche3Correction: { fontSize: 8.4, lineHeight: 1.3, marginTop: 1.5, ...poids(500) },
+
+  plan: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 9, borderTopWidth: 0.7, borderTopColor: FILET },
+  planNumero: { width: 24, fontSize: 9, color: GRIS_CLAIR, paddingTop: 2.5, ...poids(600) },
+  planTete: { flexDirection: 'row', alignItems: 'center' },
+  planJeton: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 7, fontSize: 7.4, color: '#FFFFFF', marginRight: 9, ...poids(700) },
+  planIntitule: { flex: 1, fontSize: 11, ...poids(600) },
+  planLigne: { marginTop: 4, marginLeft: 0 },
+  planCle: { fontSize: 8.6, color: GRIS_CLAIR },
+  planTexte: { fontSize: 9.4, color: ENCRE },
+  planFaire: { fontSize: 9.4, color: ENCRE, ...poids(700) },
+
+  definitions: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 7, paddingVertical: 10, paddingHorizontal: 12, alignSelf: 'stretch' },
+  definition: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 3 },
+  definitionPuce: { width: 7, height: 7, borderRadius: 1.5, marginTop: 3.5, marginRight: 8 },
+  definitionTexte: { flex: 1, fontSize: 8.4, lineHeight: 1.4 },
+
+  recapEtat: { fontSize: 7.6, borderWidth: 0.8, borderRadius: 9, paddingVertical: 2, paddingHorizontal: 7, textAlign: 'center', ...poids(600) },
+  recapNoteBloc: { width: 110, flexDirection: 'row', alignItems: 'center' },
+  recapBarreFond: { flex: 1, height: 6.5, borderRadius: 3.25, backgroundColor: '#EDF2F0', marginRight: 10 },
+  recapBarre: { height: 6.5, borderRadius: 3.25 },
+  recapTotal: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 1.2, borderTopColor: ENCRE, paddingTop: 10, paddingHorizontal: 2 },
 
   ligneMeta: { flexDirection: 'row', paddingVertical: 5, borderTopWidth: 0.7, borderTopColor: FILET },
   metaCle: { width: 130, color: GRIS },
@@ -271,14 +361,14 @@ const s = StyleSheet.create({
     left: 0,
     right: 0,
     height: PIED_HAUTEUR,
-    backgroundColor: VERT_PROFOND,
+    backgroundColor: VERT,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 22,
   },
   bandeauLogo: { width: 60, height: 12, objectFit: 'contain' },
-  bandeauMarque: { width: 60, fontSize: 6.8, color: '#FFFFFF', ...poids(600) },
-  bandeauNom: { flex: 1, textAlign: 'center', fontSize: 6.4, color: '#BFE7D7' },
+  bandeauMarque: { width: 60, fontSize: 7.5, color: '#FFFFFF', ...poids(600) },
+  bandeauNom: { flex: 1, textAlign: 'center', fontSize: 7, lineHeight: 1, color: '#EAFBF3' },
   bandeauPage: { width: 60 },
   numPage: {
     position: 'absolute',
@@ -286,8 +376,9 @@ const s = StyleSheet.create({
     right: 22,
     width: 60,
     textAlign: 'right',
-    fontSize: 6.4,
-    color: '#BFE7D7',
+    fontSize: 7,
+    lineHeight: 1,
+    color: '#EAFBF3',
   },
 });
 
@@ -341,6 +432,7 @@ const TRACES: Record<string, string> = {
   loupe: 'M9.4 3.6a5.8 5.8 0 1 1 0 11.6 5.8 5.8 0 0 1 0-11.6Z M13.6 13.6l3.8 3.8',
   balance: 'M10.5 3.6v13.6 M5.4 6.2h10.2 M5.4 6.2 3 11.4h4.8Z M15.6 6.2 13.2 11.4H18Z',
   bouclier: 'M10.5 3.2 16.8 5.6v4.8c0 3.6-2.5 6-6.3 7.4-3.8-1.4-6.3-3.8-6.3-7.4V5.6Z M7.9 10.4l1.9 1.9 3.3-3.4',
+  cadenas: 'M6.4 9.2h8.2a1.4 1.4 0 0 1 1.4 1.4v5.2a1.4 1.4 0 0 1-1.4 1.4H6.4A1.4 1.4 0 0 1 5 15.8v-5.2a1.4 1.4 0 0 1 1.4-1.4Z M7.6 9.2V7a2.9 2.9 0 0 1 5.8 0v2.2 M10.5 12.2v2.2',
   liste: 'M7.4 5.6h9.2 M7.4 10.5h9.2 M7.4 15.4h9.2 M4.4 5.6h.02 M4.4 10.5h.02 M4.4 15.4h.02',
 };
 
@@ -400,54 +492,124 @@ function Glyphe({ nom, taille = 13, couleur = ENCRE }: { nom: string; taille?: n
   );
 }
 
-/* ------------------------------------------------------------- Jauge de score */
+/* ------------------------------------------------------------- Bloc de score */
+
+/** Point du cadran pour une note sur 100, en partant de la gauche. */
+function pointCadran(note: number, rayon = CADRAN_R): [number, number] {
+  const angle = Math.PI - (Math.max(0, Math.min(100, note)) / 100) * Math.PI;
+  return [CADRAN_CX + rayon * Math.cos(angle), CADRAN_CY - rayon * Math.sin(angle)];
+}
+
+/** Arc du cadran entre deux notes. */
+function arcCadran(de: number, a: number): string {
+  const [x1, y1] = pointCadran(de);
+  const [x2, y2] = pointCadran(a);
+  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${CADRAN_R} ${CADRAN_R} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
 
 /**
- * Le score en thermomètre plutôt qu'en anneau : c'est l'instrument du métier,
- * celui que l'auditeur a sorti de sa poche toute la visite.
+ * La note sur un demi-cadran : les trois zones en fond pâle, et par-dessus un arc
+ * plein qui part de zéro et s'arrête à la note. On lit du même coup où on en est
+ * et la distance qui reste à parcourir.
  */
-function Jauge({ score, couleur, evalues }: { score: number; couleur: string; evalues: number }) {
-  const h = 112; // hauteur de la colonne graduée
-  const hautX = 26;
-  const part = Math.max(0, Math.min(100, score)) / 100;
-  const remplie = evalues === 0 ? 0 : Math.max(4, h * part);
-  const graduations = [0, 25, 50, 75, 100];
+function Cadran({ r }: { r: RapportHygiene }) {
+  const note = Math.max(0, Math.min(100, r.scoreGlobal));
+  const [ax, ay] = pointCadran(note);
 
   return (
-    <View style={{ width: 118, flexDirection: 'row' }}>
-      <Svg width={52} height={h + 46} viewBox={`0 0 52 ${h + 46}`}>
-        {/* tube */}
-        <Rect x={hautX - 9} y={2} width={18} height={h + 10} rx={9} fill="#EDF2F0" />
-        {/* colonne */}
-        <Rect
-          x={hautX - 5.5}
-          y={2 + (h - remplie) + 6}
-          width={11}
-          height={remplie}
-          rx={5.5}
-          fill={evalues === 0 ? '#D7DEDB' : couleur}
-        />
-        {/* réservoir */}
-        <Circle cx={hautX} cy={h + 26} r={15} fill={evalues === 0 ? '#D7DEDB' : couleur} />
-        <Circle cx={hautX} cy={h + 26} r={8.5} fill="#FFFFFF" fillOpacity={0.22} />
-        {/* graduations */}
-        {graduations.map((g) => (
-          <Line
-            key={g}
-            x1={hautX + 12}
-            y1={2 + 6 + h - (h * g) / 100}
-            x2={hautX + (g % 50 === 0 ? 22 : 17)}
-            y2={2 + 6 + h - (h * g) / 100}
-            stroke={g % 50 === 0 ? '#9AA8A3' : '#CBD6D2'}
-            strokeWidth={g % 50 === 0 ? 1 : 0.7}
+    <Svg width={CADRAN_L} height={CADRAN_H} viewBox={`0 0 ${CADRAN_L} ${CADRAN_H}`}>
+      <Path d={arcCadran(0, 60)} stroke="#FADCDC" strokeWidth={19} fill="none" strokeLinecap="butt" />
+      <Path d={arcCadran(60, 80)} stroke="#FCEBCB" strokeWidth={19} fill="none" strokeLinecap="butt" />
+      <Path d={arcCadran(80, 100)} stroke="#D5F0E4" strokeWidth={19} fill="none" strokeLinecap="butt" />
+      {r.evalues > 0 ? (
+        <>
+          <Path
+            d={arcCadran(0, note)}
+            stroke={r.niveau.couleur}
+            strokeWidth={8.5}
+            fill="none"
+            strokeLinecap="round"
           />
-        ))}
-      </Svg>
-      <View style={{ paddingTop: 2, paddingLeft: 2 }}>
-        <Text style={{ fontSize: 27.2, letterSpacing: -1.4, lineHeight: 1, ...poids(700) }}>
-          {evalues === 0 ? '·' : Math.round(score)}
-        </Text>
-        <Text style={{ fontSize: 6.4, color: GRIS, marginTop: 2 }}>sur 100</Text>
+          <Circle cx={ax} cy={ay} r={6} fill="#FFFFFF" stroke={r.niveau.couleur} strokeWidth={3} />
+        </>
+      ) : null}
+    </Svg>
+  );
+}
+
+/** Une case d'état : un carré de couleur, le nombre, le mot. */
+function Etat({
+  nombre,
+  mot,
+  quoi,
+  couleur,
+  dernier,
+}: {
+  nombre: number;
+  mot: string;
+  quoi: string;
+  couleur: string;
+  dernier?: boolean;
+}) {
+  return (
+    <View style={[s.etatCase, dernier ? { borderRightWidth: 0 } : {}]}>
+      <View style={s.etatTete}>
+        <View style={[s.etatPastille, { backgroundColor: couleur }]} />
+        <Text style={[s.etatMot, { color: couleur }]}>{mot}</Text>
+      </View>
+      <Text style={s.etatNombre}>{nombre}</Text>
+      <Text style={s.etatQuoi}>{quoi}</Text>
+    </View>
+  );
+}
+
+function BlocScore({ r }: { r: RapportHygiene }) {
+  return (
+    <View style={s.blocScore}>
+      <View style={s.cadranRang}>
+        <View style={s.cadranBoite}>
+          <Cadran r={r} />
+          {[
+            { n: 0, t: '0' },
+            { n: 60, t: '60' },
+            { n: 80, t: '80' },
+            { n: 100, t: '100' },
+          ].map((b) => {
+            const [x, y] = pointCadran(b.n, CADRAN_R + 13);
+            return (
+              <Text key={b.t} style={[s.cadranBorne, { left: x - 12, top: y - 4 }]}>
+                {b.t}
+              </Text>
+            );
+          })}
+        </View>
+
+        <View style={s.cadranTexte}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+            <Text style={[s.scoreNombre, { color: r.niveau.couleur }]}>
+              {r.evalues === 0 ? '·' : Math.round(r.scoreGlobal)}
+            </Text>
+            <Text style={s.scoreSur}>sur 100</Text>
+          </View>
+          <Text style={[s.scoreNiveau, { color: r.niveau.couleur }]}>{r.niveau.titre}</Text>
+        </View>
+      </View>
+
+      <View style={s.etats}>
+        <Etat nombre={r.conformes} mot="Conforme" quoi="points tenus le jour de la visite" couleur={VERT} />
+        <Etat
+          nombre={r.ncMineures}
+          mot="Non conforme"
+          quoi="écarts à régulariser sous 30 jours"
+          couleur={AMBRE}
+        />
+        <Etat
+          nombre={r.ncMajeures}
+          mot="Critique"
+          quoi="peut conduire à une fermeture en contrôle"
+          couleur={ROUGE}
+          dernier
+        />
       </View>
     </View>
   );
@@ -518,7 +680,7 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
             <View style={[s.etageBande, { backgroundColor: e.couleur }]} />
             <View style={{ flex: 1, paddingLeft: 12 }}>
               <Text style={s.etageNiveau}>{e.niveau}</Text>
-              <Text style={{ ...poids(600), fontSize: 8 }}>{e.titre}</Text>
+              <Text style={{ ...poids(600), fontSize: 8.8 }}>{e.titre}</Text>
               <Text style={[s.petit, { marginTop: 1 }]}>{e.detail}</Text>
             </View>
           </View>
@@ -539,7 +701,7 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
           ]}
         />
         <View style={{ flex: 1 }}>
-          <Text style={{ ...poids(600), fontSize: 8 }}>
+          <Text style={{ ...poids(600), fontSize: 8.8 }}>
             {point
               ? `Sur cet audit : ${LIBELLE_CONFORMITE[point.conformite].toLowerCase()}`
               : 'Séparation cru/cuit non examinée sur cet audit'}
@@ -561,11 +723,11 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
 
 /* --------------------------------------------------- Étoile des thèmes (radar) */
 
-const RADAR_L = 436;
-const RADAR_H = 300;
+const RADAR_L = 450;
+const RADAR_H = 352;
 const RADAR_CX = RADAR_L / 2;
-const RADAR_CY = RADAR_H / 2 - 2;
-const RADAR_R = 94;
+const RADAR_CY = RADAR_H / 2 - 4;
+const RADAR_R = 118;
 
 /** Point d'un axe, en partant du haut et dans le sens horaire. */
 function pointRadar(i: number, n: number, rayon: number): [number, number] {
@@ -658,19 +820,19 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
         /* Étiquettes posées sur une ellipse, plus large que haute : à douze axes,
            un cercle rapproche trop les étiquettes du haut et du bas. */
         const angle = -Math.PI / 2 + (2 * Math.PI * i) / n;
-        const x = RADAR_CX + (RADAR_R + 40) * Math.cos(angle);
-        const y = RADAR_CY + (RADAR_R + 17) * Math.sin(angle);
+        const x = RADAR_CX + (RADAR_R + 42) * Math.cos(angle);
+        const y = RADAR_CY + (RADAR_R + 20) * Math.sin(angle);
         return (
           <View
             key={t.theme}
             style={{ position: 'absolute', left: x - 33, top: y - 11, width: 66, alignItems: 'center' }}
           >
-            <Text style={{ fontSize: 6.4, color: GRIS, textAlign: 'center', lineHeight: 1.25 }}>
+            <Text style={{ fontSize: 8.8, color: GRIS, textAlign: 'center', lineHeight: 1.25 }}>
               {themeCourt(t.theme)}
             </Text>
             <Text
               style={{
-                fontSize: 8,
+                fontSize: 12.1,
                 color: couleurSommet(t.score ?? 0),
                 textAlign: 'center',
                 lineHeight: 1.25,
@@ -719,7 +881,7 @@ function Repartition({ r }: { r: RapportHygiene }) {
         {parts.map((x) => (
           <View key={x.nom} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16, marginBottom: 4 }}>
             <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: x.couleur, marginRight: 5 }} />
-            <Text style={{ fontSize: 6.8 }}>
+            <Text style={{ fontSize: 7.5 }}>
               <Text style={{ ...poids(600) }}>{x.n}</Text>
               <Text style={{ color: GRIS }}> {x.nom}</Text>
             </Text>
@@ -797,19 +959,20 @@ const signet = (titre: string): any => ({ bookmark: titre });
 
 function TeteSection({ titre, chapeau }: { titre: string; chapeau?: string }) {
   return (
-    <View style={s.teteSection} minPresenceAhead={70}>
-      <View style={s.regle} />
+    <View style={s.teteSection} minPresenceAhead={130}>
       <Text style={s.h1}>{titre}</Text>
-      {chapeau ? <Text style={s.chapeau}>{chapeau}</Text> : null}
-    </View>
-  );
-}
-
-function Champ({ nom, valeur }: { nom: string; valeur: string }) {
-  return (
-    <View style={s.champ}>
-      <Text style={s.champNom}>{nom}</Text>
-      <Text style={s.champVal}>{valeur}</Text>
+      {chapeau
+        ? chapeau
+            .split('. ')
+            .filter(Boolean)
+            .map((bout, i, tout) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Text key={i} style={s.chapeau}>
+                {bout}
+                {i < tout.length - 1 ? '.' : ''}
+              </Text>
+            ))
+        : null}
     </View>
   );
 }
@@ -867,7 +1030,7 @@ function Fiche({ a }: { a: ActionCorrective }) {
           </Text>
         </View>
         <Text style={[s.jeton, { backgroundColor: critique ? ROUGE : AMBRE }]}>
-          {critique ? 'Sous 48 h' : 'Sous 30 jours'}
+          {critique ? 'Critique' : 'Non conforme'}
         </Text>
       </View>
 
@@ -886,7 +1049,38 @@ function Fiche({ a }: { a: ActionCorrective }) {
         <View style={s.correction}>
           <Text style={s.correctionCle}>À faire</Text>
           <Text style={s.correctionTexte}>{a.correctif}</Text>
+
+          {a.etapes.length > 0 ? (
+            <View style={s.etapes}>
+              {a.etapes.map((etape, n) => (
+                <View key={etape} style={s.etape}>
+                  <Text style={s.etapeNum}>{n + 1}</Text>
+                  <Text style={s.etapeTexte}>{etape}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
+
+        {a.materiel.length > 0 ? (
+          <View style={s.materiel} wrap={false}>
+            <Text style={s.materielCle}>Matériel à prévoir</Text>
+            <View style={s.materielListe}>
+              {a.materiel.map((m) => (
+                <Text key={m} style={s.materielItem}>
+                  {m}
+                </Text>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {a.preuve ? (
+          <View style={s.bloc}>
+            <Text style={s.cle}>Ce qui servira de preuve</Text>
+            <Text style={s.petit}>{a.preuve}</Text>
+          </View>
+        ) : null}
 
         {a.photos.length > 0 && (
           /* Le libellé et la bande de photos tiennent ensemble : séparés, le
@@ -967,6 +1161,14 @@ function LigneSommaire({
 
 /* ------------------------------------------------------------------ Document */
 
+function equilibrer<T>(liste: T[], plafond: number): T[][] {
+  const nb = Math.max(1, Math.ceil(liste.length / plafond));
+  const parPage = Math.ceil(liste.length / nb);
+  const pages: T[][] = [];
+  for (let i = 0; i < liste.length; i += parPage) pages.push(liste.slice(i, i + parPage));
+  return pages;
+}
+
 export function HygieneDocument({ data }: { data: HygienePdfData }) {
   const r = data.rapport;
   const references = r.themes
@@ -974,7 +1176,6 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
     .filter((i) => referenceValide(i.referenceRegl))
     .map((i) => ({ code: i.code, intitule: i.intitule, texte: i.referenceRegl as string }));
 
-  const lieu = [data.type, data.ville].filter(Boolean).join(', ');
 
   /* Les thèmes notés d'abord, du plus faible au plus solide : on lit ce qui
      appelle du travail avant ce qui est tenu. Les thèmes sans point évalué
@@ -1013,106 +1214,64 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
                 audit <Text style={s.marqueFine}>hygiène</Text>
               </Text>
             )}
-            <Text style={s.banniereDate}>{data.reference}</Text>
+            <View style={s.confidentiel}>
+              <Glyphe nom="cadenas" taille={9} couleur={GRIS} />
+              <Text style={s.confidentielTexte}>
+                Document confidentiel, destiné à l&apos;établissement audité
+              </Text>
+            </View>
           </View>
 
           {/* Le nom du client ne se colle pas sous la marque : un filet les sépare. */}
           <View style={s.separateurCouverture} />
-          <View style={s.rangTitre}>
-            {data.logoClient ? (
+          {data.logoClient ? (
+            <View style={s.rangLogoClient}>
               <View style={s.logoClientCadre}>
                 <Image src={data.logoClient} style={s.logoClientImage} />
               </View>
-            ) : null}
-            <Text style={[s.titreCouverture, data.logoClient ? { marginLeft: 14 } : {}]}>
-              {data.etablissement}
-            </Text>
-          </View>
-          <Text style={s.sousCouverture}>
-            Rapport d&apos;audit hygiène du {data.date}
-            {lieu ? `, ${lieu}` : ''}.
-          </Text>
-          <Text style={s.confidentiel}>
-            Document confidentiel, destiné à l&apos;établissement audité
-          </Text>
+            </View>
+          ) : null}
+          <Text style={s.titreCouverture}>{data.etablissement}</Text>
+          <Text style={s.sousCouverture}>Rapport d&apos;audit hygiène du {data.date}</Text>
         </View>
 
         <View style={s.corpsCouverture}>
-          <View style={s.jaugeRang}>
-            <Jauge score={r.scoreGlobal} couleur={r.niveau.couleur} evalues={r.evalues} />
-            <View style={s.jaugeTexte}>
-              <Text style={[s.niveauTitre, { color: r.niveau.couleur }]}>{r.niveau.titre}</Text>
-              <Text style={s.niveauPhrase}>{r.niveau.phrase}</Text>
-              <View style={s.compteurs}>
-                <View style={s.compteur}>
-                  <Text style={[s.compteurVal, { color: VERT }]}>{r.conformes}</Text>
-                  <Text style={s.compteurNom}>conformes</Text>
-                </View>
-                <View style={s.compteur}>
-                  <Text style={[s.compteurVal, { color: r.ncMineures ? AMBRE : GRIS_CLAIR }]}>
-                    {r.ncMineures}
-                  </Text>
-                  <Text style={s.compteurNom}>écarts mineurs</Text>
-                </View>
-                <View style={s.compteur}>
-                  <Text style={[s.compteurVal, { color: r.ncMajeures ? ROUGE : GRIS_CLAIR }]}>
-                    {r.ncMajeures}
-                  </Text>
-                  <Text style={s.compteurNom}>points critiques</Text>
-                </View>
-                <View style={s.compteur}>
-                  <Text style={[s.compteurVal, { color: GRIS_CLAIR }]}>{r.nbPhotos}</Text>
-                  <Text style={s.compteurNom}>photos</Text>
-                </View>
-              </View>
-            </View>
-
-          </View>
-
-          {priorites.length > 0 ? (
-            <View style={s.premier}>
-              <Text style={s.h2}>À faire en premier</Text>
-              {priorites.map((a) => (
-                <View key={a.code} style={s.premierLigne}>
-                  <View style={{ width: 20, paddingTop: 1 }}>
-                    <Glyphe
-                      nom={iconeTheme(a.theme)}
-                      taille={12}
-                      couleur={a.priorite === 'IMMEDIAT' ? ROUGE : AMBRE}
-                    />
-                  </View>
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <Text style={{ ...poids(500) }}>{a.intitule}</Text>
-                    <Text style={s.petit}>{a.theme}</Text>
-                  </View>
-                  <Text style={s.premierDelai}>{a.delai.toLowerCase()}</Text>
-                </View>
-              ))}
-              {r.actions.length > priorites.length ? (
-                <Text style={[s.petit, { marginTop: 9 }]}>
-                  et {r.actions.length - priorites.length} autre
-                  {r.actions.length - priorites.length > 1 ? 's points' : ' point'} à corriger,
-                  détaillés en partie 1.
-                </Text>
-              ) : null}
-            </View>
-          ) : null}
-
-          <View style={s.ficheEtab}>
-            <Champ nom="Adresse" valeur={data.adresse ?? data.ville ?? 'Non renseignée'} />
-            <Champ nom="Type" valeur={data.type ?? 'Non renseigné'} />
-            <Champ nom="Date de la visite" valeur={data.date} />
-            <Champ nom="Auditeur" valeur={data.auditeur} />
-            <Champ nom="Grille appliquée" valeur={data.grilleVersion} />
-            <Champ nom="Points examinés" valeur={`${r.evalues} sur ${r.totalPoints}`} />
-            <Champ nom="Référence du rapport" valeur={data.reference} />
-          </View>
-
-          <Text style={[s.petit, { marginTop: 14, maxWidth: 430 }]}>{MENTION_LABEL_PRIVE}</Text>
+          <BlocScore r={r} />
 
         </View>
 
-        <Pied data={data} />
+        {/* Relevé en colonnes : une colonne sur deux prend un fond très pâle, et
+            chaque colonne porte son titre et sa valeur, donc rien ne peut se
+            décaler entre les deux lignes. */}
+        <View style={s.releve}>
+          <View style={{ flexDirection: 'row' }}>
+            {[
+              {
+                titre: 'Établissement',
+                valeur: data.adresse ?? data.ville ?? 'Non renseignée',
+                sous: data.adresse ? data.ville : null,
+                largeur: '28%',
+              },
+              { titre: 'Type', valeur: data.type ?? 'Non renseigné', sous: null, largeur: '14%' },
+              { titre: 'Visite', valeur: data.dateCourte ?? data.date, sous: null, largeur: '14%' },
+              { titre: 'Auditeur', valeur: data.auditeur, sous: null, largeur: '18%' },
+              { titre: 'Points', valeur: `${r.evalues} / ${r.totalPoints}`, sous: null, largeur: '11%' },
+              { titre: 'Référence', valeur: data.reference, sous: null, largeur: '15%' },
+            ].map((c, i) => (
+              <View
+                key={c.titre}
+                style={[s.releveCol, { width: c.largeur }, i % 2 === 0 ? s.releveColPale : {}]}
+              >
+                <Text style={s.releveTitre}>{c.titre}</Text>
+                <View style={s.releveFilet} />
+                <Text style={s.releveVal}>{c.valeur}</Text>
+                {c.sous ? <Text style={s.releveSous}>{c.sous}</Text> : null}
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <Text style={s.mentionPied}>{MENTION_LABEL_PRIVE}</Text>
       </Page>
 
       {/* Le corps du rapport coule d'une partie à l'autre : ouvrir une page
@@ -1125,6 +1284,21 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           chapeau="L'étoile donne la forme de l'établissement : plus la surface est large, plus la maîtrise est homogène. Un creux marque un thème à reprendre."
         />
 
+        <View style={s.modeEmploi}>
+          <Text style={s.modeTitre}>Comment lire la toile</Text>
+          {[
+            'Un axe par thème noté. Plus le sommet est loin du centre, mieux le thème est tenu.',
+            'Un anneau tous les 25 points. Le bord extérieur vaut 100, le centre vaut 0.',
+            'La couleur du sommet donne le niveau : vert à partir de 80, ambre de 60 à 79, rouge en dessous.',
+            'Un creux vers le centre est un thème à reprendre. Une surface large et régulière est une maison tenue.',
+          ].map((ligne) => (
+            <View key={ligne} style={s.modeLigne}>
+              <View style={s.modePuce} />
+              <Text style={s.modeTexte}>{ligne}</Text>
+            </View>
+          ))}
+        </View>
+
         {themesNotes.length >= 3 ? (
           <View style={s.panneau}>
             <Text style={s.panneauTitre}>Maîtrise par thème</Text>
@@ -1132,13 +1306,16 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             <Etoile themes={themesNotes} />
             <View style={s.panneauLegende}>
               {[
-                { c: VERT, t: '80 et plus, tenu' },
-                { c: '#F59E0B', t: 'de 60 à 79, à consolider' },
-                { c: ROUGE, t: 'moins de 60, à reprendre' },
+                { c: VERT, n: '80 et plus', t: 'le thème est tenu' },
+                { c: AMBRE, n: '60 à 79', t: 'à consolider' },
+                { c: ROUGE, n: 'moins de 60', t: 'à reprendre' },
               ].map((x) => (
-                <View key={x.t} style={s.legendePuce}>
-                  <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: x.c, marginRight: 5 }} />
-                  <Text style={{ fontSize: 6, color: GRIS }}>{x.t}</Text>
+                <View key={x.n} style={s.legendePuce}>
+                  <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: x.c, marginRight: 7 }} />
+                  <Text style={s.legendeTexte}>
+                    <Text style={{ color: x.c, ...poids(700) }}>{x.n}</Text>
+                    <Text style={{ color: GRIS }}>{` · ${x.t}`}</Text>
+                  </Text>
                 </View>
               ))}
             </View>
@@ -1158,45 +1335,166 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </Text>
         ) : null}
 
-        <View style={s.colonnes}>
-          <View style={[s.colonne, s.colonneGauche]}>
-            <Text style={s.h2}>Où vont les points</Text>
-            <Text style={[s.gris, { marginTop: 4 }]}>
-              Les {r.totalPoints} points de la grille, par état constaté.
-            </Text>
-            <Repartition r={r} />
+        <View style={s.section} break>
+          <Text style={s.h1}>La notation par thème</Text>
+
+          <View style={s.definitions}>
+            {[
+              { c: VERT, mot: 'Conforme', t: 'le point est en règle.' },
+              { c: AMBRE, mot: 'Non conforme', t: 'écart sans danger immédiat, à régulariser.' },
+              {
+                c: ROUGE,
+                mot: 'Critique',
+                t: 'danger pour les denrées. Peut conduire à une fermeture en contrôle.',
+              },
+            ].map((d) => (
+              <View key={d.mot} style={s.definition}>
+                <View style={[s.definitionPuce, { backgroundColor: d.c }]} />
+                <Text style={s.definitionTexte}>
+                  <Text style={{ color: d.c, ...poids(700) }}>{d.mot}</Text>
+                  <Text style={{ color: GRIS }}>{` : ${d.t}`}</Text>
+                </Text>
+              </View>
+            ))}
           </View>
 
-          <View style={s.colonne}>
-            <Text style={s.h2}>Les thèmes les plus faibles</Text>
-            <Text style={[s.gris, { marginTop: 4 }]}>
-              Par ordre de priorité, c&apos;est là que le travail paie le plus vite.
-            </Text>
-            <View style={{ marginTop: 10 }}>
-              {plusFaibles.map((t) => (
-                <View key={t.theme} style={s.faible} wrap={false}>
-                  <View style={{ width: 18, paddingTop: 1 }}>
-                    <Glyphe nom={iconeTheme(t.theme)} taille={12} couleur={couleurScore(t.score)} />
+          <View style={{ marginTop: 12 }}>
+            <View style={s.recapEntete}>
+              <Text style={[s.recapTitre, { flex: 1, textAlign: 'left' }]}>Thème</Text>
+              <Text style={[s.recapTitre, { width: 54 }]}>Points vérifiés</Text>
+              <Text style={[s.recapTitre, { width: 54 }]}>Conformes</Text>
+              <Text style={[s.recapTitre, { width: 60 }]}>Non conformes</Text>
+              <Text style={[s.recapTitre, { width: 74, color: ROUGE }]}>Critique</Text>
+              <Text style={[s.recapTitre, { width: 110 }]}>Note sur 100</Text>
+            </View>
+
+            {themesClasses.map((t, i) => {
+              const evalues = t.conformes + t.ncMineures + t.ncMajeures;
+              const note = t.score === null ? 0 : Math.round(t.score);
+              /* Un point rouge en tête de ligne dès qu'un point critique est présent. */
+              const critiques = t.ncMajeures;
+              return (
+                <View
+                  key={t.theme}
+                  style={[s.recapLigne, i % 2 === 1 ? { backgroundColor: '#F7FAF9' } : {}]}
+                  wrap={false}
+                >
+                  <View style={s.recapRangee}>
+                  <View style={s.recapNom}>
+                    {critiques > 0 ? <View style={s.recapAlerte} /> : <View style={s.recapAlerteVide} />}
+                    <Glyphe
+                      nom={iconeTheme(t.theme)}
+                      taille={11}
+                      couleur={t.score === null ? GRIS_CLAIR : ENCRE}
+                    />
+                    <Text style={s.recapNomTexte}>{t.theme}</Text>
                   </View>
-                  <View style={{ flex: 1, paddingRight: 8 }}>
-                    <Text style={{ ...poids(500) }}>{t.theme}</Text>
-                    <Text style={s.petit}>
-                      {t.ncMajeures > 0
-                        ? `${t.ncMajeures} critique${t.ncMajeures > 1 ? 's' : ''}`
-                        : t.ncMineures > 0
-                          ? `${t.ncMineures} écart${t.ncMineures > 1 ? 's' : ''} mineur${t.ncMineures > 1 ? 's' : ''}`
-                          : 'aucun écart'}
+
+                  <Text style={[s.recapVal, { width: 54, color: GRIS }]}>{evalues || '·'}</Text>
+                  <Text style={[s.recapVal, { width: 54, color: t.conformes ? VERT : GRIS_CLAIR }]}>
+                    {t.conformes || '·'}
+                  </Text>
+                  <Text style={[s.recapVal, { width: 60, color: t.ncMineures ? AMBRE : GRIS_CLAIR }]}>
+                    {t.ncMineures || '·'}
+                  </Text>
+                  <Text style={[s.recapVal, { width: 74, color: t.ncMajeures ? ROUGE : GRIS_CLAIR }]}>
+                    {t.ncMajeures || '·'}
+                  </Text>
+
+                  <View style={s.recapNoteBloc}>
+                    <View style={s.recapBarreFond}>
+                      <View
+                        style={[
+                          s.recapBarre,
+                          {
+                            width: `${t.score === null ? 0 : Math.max(2, note)}%`,
+                            backgroundColor: couleurScore(t.score),
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        s.recapNote,
+                        { color: t.score === null ? GRIS_CLAIR : couleurScore(t.score) },
+                      ]}
+                    >
+                      {t.score === null ? '·' : note}
                     </Text>
                   </View>
-                  <Text style={[s.faibleVal, { color: couleurScore(t.score) }]}>
-                    {Math.round(t.score ?? 0)}
-                  </Text>
+                  </View>
                 </View>
-              ))}
-              <View style={s.filet} />
+              );
+            })}
+
+            <View style={s.recapTotal}>
+              <Text style={[s.recapNomTexte, { flex: 1, marginLeft: 0, ...poids(700) }]}>
+                Ensemble de l&apos;audit
+              </Text>
+              <Text style={[s.recapVal, { width: 54, ...poids(700) }]}>{r.evalues}</Text>
+              <Text style={[s.recapVal, { width: 54, color: VERT, ...poids(700) }]}>{r.conformes}</Text>
+              <Text style={[s.recapVal, { width: 60, color: AMBRE, ...poids(700) }]}>{r.ncMineures}</Text>
+              <Text style={[s.recapVal, { width: 74, color: ROUGE, ...poids(700) }]}>{r.ncMajeures}</Text>
+              <View style={s.recapNoteBloc}>
+                <View style={s.recapBarreFond}>
+                  <View
+                    style={[
+                      s.recapBarre,
+                      { width: `${Math.max(2, Math.round(r.scoreGlobal))}%`, backgroundColor: r.niveau.couleur },
+                    ]}
+                  />
+                </View>
+                <Text style={[s.recapNote, { color: r.niveau.couleur }]}>
+                  {r.evalues === 0 ? '·' : Math.round(r.scoreGlobal)}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
+
+        {r.actions.length > 0 ? (
+          <View break>
+            <TeteSection
+              titre="Plan de mise en conformité"
+              chapeau="Point par point : le constat de l'auditeur et la correction attendue. Les non-conformités majeures d'abord."
+            />
+
+            <View style={s.fiche3Grille}>
+            {r.actions.map((a, i) => {
+              const critique = a.priorite === 'IMMEDIAT';
+              const couleur = critique ? ROUGE : AMBRE;
+              return (
+                <View key={a.code} style={s.fiche3} wrap={false}>
+                  <View style={s.fiche3Bandeau}>
+                    <Text style={[s.fiche3Numero, { backgroundColor: couleur }]}>
+                      {String(i + 1).padStart(2, '0')}
+                    </Text>
+                    <Text style={[s.fiche3Etat, { color: couleur }]}>
+                      {critique ? 'Critique' : 'Non conforme'}
+                    </Text>
+                    <Text style={s.fiche3Code}>{a.code.replace(/-[A-Z0-9]{4}$/, '')}</Text>
+                  </View>
+
+                  <View style={{ paddingHorizontal: 9, paddingTop: 5 }}>
+                    <Text style={s.fiche3Titre}>{a.intitule}</Text>
+                  </View>
+
+                  <View style={s.fiche3Zone}>
+                    <Text style={s.fiche3Cle}>Constaté</Text>
+                    <Text style={s.fiche3Probleme}>{a.constat?.trim() || a.risque}</Text>
+                  </View>
+
+                  <View style={s.fiche3Bas}>
+                    <Text style={s.fiche3Cle}>Correction</Text>
+                    <Text style={s.fiche3Correction}>{a.correctif}</Text>
+                  </View>
+                </View>
+              );
+            })}
+            </View>
+          </View>
+        ) : null}
+
 
       </View>
 
@@ -1288,7 +1586,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={{ marginTop: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[s.jeton, { backgroundColor: ROUGE }]}>Sous 48 heures</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 6.8 }]}>
+              <Text style={[s.gris, { marginLeft: 10, fontSize: 7.5 }]}>
                 impact sanitaire direct, à traiter avant le prochain service
               </Text>
             </View>
@@ -1302,13 +1600,43 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={{ marginTop: r.actionsImmediates.length > 0 ? 26 : 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[s.jeton, { backgroundColor: AMBRE }]}>Sous 30 jours</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 6.8 }]}>
+              <Text style={[s.gris, { marginLeft: 10, fontSize: 7.5 }]}>
                 écarts sans danger immédiat, à régulariser
               </Text>
             </View>
             {r.actionsTrente.map((a) => (
               <Fiche key={a.code} a={a} />
             ))}
+          </View>
+        ) : null}
+
+        {r.materielAPrevoir.length > 0 ? (
+          <View break>
+            <TeteSection
+              titre="Le matériel à prévoir"
+              chapeau="Tout ce que les corrections réclament, en une seule liste. Un même matériel n’est cité qu’une fois, avec les points qui le demandent."
+            />
+
+            {equilibrer(r.materielAPrevoir, 10).map((page, ip, pages) => {
+            const rang0 = pages.slice(0, ip).reduce((n, p) => n + p.length, 0);
+            return (
+              <View key={ip} style={[
+                  s.achatGrille,
+                  pages.length > 1 ? { height: ip === 0 ? 616 : 712 } : {},
+                ]} wrap={false}>
+                {page.map((m, im) => (
+                  <View key={m.intitule} style={s.achatCarte} wrap={false}>
+                    <View style={s.achatCase} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.achatNom}>{m.intitule}</Text>
+                      <Text style={s.achatPoints}>{m.points.join(' · ')}</Text>
+                    </View>
+                    <Text style={s.achatRang}>{String(rang0 + im + 1).padStart(2, '0')}</Text>
+                  </View>
+                ))}
+              </View>
+            );
+            })}
           </View>
         ) : null}
 
@@ -1493,9 +1821,9 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         <View style={{ marginTop: 4 }}>
           <Text style={s.h2}>Ce qu&apos;il contient</Text>
           <Text style={[s.gris, { marginTop: 5, maxWidth: 430 }]}>
-            L&apos;état constaté le {data.date} sur {r.totalPoints} points de la grille{' '}
-            {data.grilleVersion}, par {data.auditeur}. Les constats reposent sur ce qui était observable
-            ce jour-là, dans les zones ouvertes à l&apos;auditeur.
+            L&apos;état constaté le {data.date} sur {r.totalPoints} points de la grille d&apos;audit,
+            par {data.auditeur}. Les constats reposent sur ce qui était observable ce jour-là, dans les
+            zones ouvertes à l&apos;auditeur.
           </Text>
         </View>
 
@@ -1526,12 +1854,12 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         </View>
 
         <View style={s.cloture} wrap={false}>
-          <Text style={{ ...poids(600), fontSize: 8.4 }}>
+          <Text style={{ ...poids(600), fontSize: 9.2 }}>
             Fait à {data.ville ?? "l'établissement"}, le {data.date}
           </Text>
           <Text style={[s.gris, { marginTop: 3, maxWidth: 430 }]}>
-            Rapport établi par {data.auditeur}, auditeur, sur la grille {data.grilleVersion}, sous la
-            référence {data.reference}. {r.evalues} points examinés sur {r.totalPoints}, {r.nbPhotos}{' '}
+            Rapport établi par {data.auditeur}, auditeur, sous la référence {data.reference}.{' '}
+            {r.evalues} points examinés sur {r.totalPoints}, {r.nbPhotos}{' '}
             {r.nbPhotos > 1 ? 'photos versées' : 'photo versée'} au dossier.
           </Text>
           <View style={s.signatures}>
@@ -1552,7 +1880,6 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <Meta cle="Référence" valeur={data.reference} />
           <Meta cle="Auditeur" valeur={data.auditeur} />
           <Meta cle="Date de la visite" valeur={data.date} />
-          <Meta cle="Grille appliquée" valeur={data.grilleVersion} />
           <Meta cle="Points examinés" valeur={`${r.evalues} sur ${r.totalPoints}`} />
           <View style={s.filet} />
         </View>

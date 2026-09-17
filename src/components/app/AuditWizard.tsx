@@ -29,12 +29,17 @@ export interface WizardItem {
   photoConseillee?: boolean;
   conformite: Conformite;
   commentaire: string | null;
+  /** Matériel à acheter, noté par l'auditeur sur ce point. */
+  materiel: string | null;
+  /** Matériel courant pour ce point, proposé en un clic. */
+  materielPropose: string[];
   constats: WizardConstat[];
   motifs: string[];
   photos: WizardPhoto[];
 }
 
 export interface LibraryEntry {
+  materielPropose?: string[];
   code: string;
   theme: string;
   intitule: string;
@@ -116,6 +121,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const fileRef = useRef<HTMLInputElement>(null); // appareil photo (capture)
   const galerieRef = useRef<HTMLInputElement>(null); // import depuis la galerie / fichiers
   const [photoErreur, setPhotoErreur] = useState<string | null>(null);
+  const [materielOuvert, setMaterielOuvert] = useState(false);
   const syncing = useRef(false);
   const itemsRef = useRef<WizardItem[]>(initial); // dernier état connu (flush à la fermeture)
 
@@ -126,10 +132,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   // Écrit un instantané des réponses en local (synchrone, instantané) : survit à une fermeture brutale.
   const writeLocal = (next: WizardItem[]) => {
     try {
-      const snap: Record<string, { conformite: Conformite; commentaire: string | null }> = {};
+      const snap: Record<
+        string,
+        { conformite: Conformite; commentaire: string | null; materiel: string | null }
+      > = {};
       for (const i of next) {
-        if (i.conformite !== 'NON_EVALUE' || i.commentaire) {
-          snap[i.code] = { conformite: i.conformite, commentaire: i.commentaire };
+        if (i.conformite !== 'NON_EVALUE' || i.commentaire || i.materiel) {
+          snap[i.code] = { conformite: i.conformite, commentaire: i.commentaire, materiel: i.materiel };
         }
       }
       localStorage.setItem(ANSW_KEY, JSON.stringify(snap));
@@ -162,8 +171,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
           keepalive: true, // permet l'envoi même si la page se ferme
           body: JSON.stringify({
             items: next
-              .filter((i) => i.conformite !== 'NON_EVALUE' || i.commentaire)
-              .map((i) => ({ code: i.code, conformite: i.conformite, commentaire: i.commentaire })),
+              .filter((i) => i.conformite !== 'NON_EVALUE' || i.commentaire || i.materiel)
+              .map((i) => ({
+                code: i.code,
+                conformite: i.conformite,
+                commentaire: i.commentaire,
+                materiel: i.materiel,
+              })),
             finalize,
           }),
         });
@@ -527,6 +541,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         photoConseillee: entry.photoConseillee,
         conformite: 'NON_EVALUE',
         commentaire: null,
+        materiel: null,
+        materielPropose: entry.materielPropose ?? [],
         constats: entry.constats,
         motifs: entry.motifs,
         photos: [],
@@ -560,6 +576,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         photoConseillee: false,
         conformite: 'NON_EVALUE',
         commentaire: null,
+        materiel: null,
+        materielPropose: [],
         constats: CONSTATS_GENERIQUES,
         motifs: MOTIFS_GENERIQUES,
         photos: [],
@@ -886,6 +904,85 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       </div>
     ) : null;
 
+  // Matériel à acheter : propositions en un clic, plus la saisie libre.
+  const listeMateriel = (v: string | null) =>
+    (v ?? '')
+      .split(/[,;]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+
+  const basculerMateriel = (m: string) => {
+    if (!current) return;
+    const actuels = listeMateriel(current.materiel);
+    const suivants = actuels.some((x) => x.toLowerCase() === m.toLowerCase())
+      ? actuels.filter((x) => x.toLowerCase() !== m.toLowerCase())
+      : [...actuels, m];
+    patchItem(current.code, { materiel: suivants.join(', ') || null });
+  };
+
+  const materielBloc = () => {
+    if (!current) return null;
+    const choisis = listeMateriel(current.materiel);
+    return (
+      <div className="rounded-2xl border border-ink/10 bg-white p-3 shadow-card">
+        <button
+          type="button"
+          onClick={() => setMaterielOuvert((o) => !o)}
+          className="flex w-full items-center justify-between text-left"
+        >
+          <span className="text-sm font-bold text-ink">Matériel à acheter</span>
+          <span className="text-xs text-gris">
+            {choisis.length ? `${choisis.length} article${choisis.length > 1 ? 's' : ''}` : 'ajouter'}
+          </span>
+        </button>
+
+        {choisis.length > 0 && !materielOuvert && (
+          <div className="mt-1.5 text-[12.5px] leading-relaxed text-gris">{choisis.join(' · ')}</div>
+        )}
+
+        {materielOuvert && (
+          <div className="mt-2.5 space-y-2.5">
+            {current.materielPropose.length > 0 && (
+              <div>
+                <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gris">
+                  Courant sur ce point
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {current.materielPropose.map((m) => {
+                    const on = choisis.some((x) => x.toLowerCase() === m.toLowerCase());
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => basculerMateriel(m)}
+                        className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                          on
+                            ? 'border-vert bg-vert-50 text-vert-800'
+                            : 'border-ink/15 text-gris hover:border-vert/50 hover:text-vert-700'
+                        }`}
+                      >
+                        {on ? '✓ ' : '+ '}
+                        {m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <textarea
+              value={current.materiel ?? ''}
+              onChange={(e) => patchItem(current.code, { materiel: e.target.value || null })}
+              rows={2}
+              placeholder="Autre matériel, séparé par des virgules"
+              className="w-full rounded-xl border border-ink/15 px-3 py-2 text-[13px] focus:border-vert focus:outline-none focus:ring-2 focus:ring-vert/20"
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Composé : synthèse + motifs + note empilés (utilisé en mobile/portrait)
   const contexteNc = () =>
     current && isNc ? (
@@ -893,6 +990,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
         {syntheseNc()}
         {motifsChips()}
         {noteField()}
+        {materielBloc()}
       </div>
     ) : null;
 
@@ -1132,6 +1230,7 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
                         {noteField()}
                       </div>
                     )}
+                    {isNc && materielBloc()}
                     {messagePhoto()}
                     {photoThumbs() && (
                       <div className="rounded-2xl border border-ink/10 bg-white p-2.5 shadow-card">

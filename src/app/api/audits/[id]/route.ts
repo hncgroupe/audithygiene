@@ -17,6 +17,7 @@ interface ItemPatch {
   code: string;
   conformite: Conformite;
   commentaire?: string | null;
+  materiel?: string | null;
 }
 
 /**
@@ -68,6 +69,7 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
           data: {
             conformite: p.conformite,
             commentaire: p.commentaire?.trim() || null,
+            materiel: p.materiel?.trim() || null,
           },
         });
       })

@@ -11,6 +11,7 @@
 
 import { calculerNotation, type Conformite } from './notation';
 import { grilleByCode, CONSTATS_GENERIQUES } from './grille-audit';
+import { detailCorrectif } from './correctifs-detail';
 
 export interface RapportPhoto {
   url: string;
@@ -26,6 +27,8 @@ export interface RapportItemEntree {
   conformite: Conformite;
   ponderation: number;
   commentaire?: string | null;
+  /** Matériel à acheter, noté par l'auditeur pendant la visite. */
+  materiel?: string | null;
   photos: RapportPhoto[];
 }
 
@@ -41,6 +44,12 @@ export interface ActionCorrective {
   risque: string;
   /** Le moyen de correction concret, issu de la grille. */
   correctif: string;
+  /** Les gestes à faire, dans l'ordre. */
+  etapes: string[];
+  /** Ce qu'il faut acheter ou avoir sous la main. */
+  materiel: string[];
+  /** Ce qui prouvera que le point a été traité. */
+  preuve?: string;
   /** Ce que l'auditeur a observé sur place. */
   constat: string | null;
   referenceRegl?: string | null;
@@ -70,6 +79,12 @@ export interface NiveauMaitrise {
   phrase: string;
 }
 
+/** Une ligne du récapitulatif du matériel, avec les points qui le réclament. */
+export interface MaterielRecap {
+  intitule: string;
+  points: string[];
+}
+
 export interface RapportHygiene {
   scoreGlobal: number;
   niveau: NiveauMaitrise;
@@ -86,6 +101,8 @@ export interface RapportHygiene {
   actionsImmediates: ActionCorrective[];
   actionsTrente: ActionCorrective[];
   pointsForts: RapportItem[];
+  /** Tout le matériel des actions, sans doublon, avec les points concernés. */
+  materielAPrevoir: MaterielRecap[];
 }
 
 /** Ordre de gravité décroissante, pour trier le plan d'action. */
@@ -101,22 +118,25 @@ export function niveauDe(score: number, ncMajeures: number): NiveauMaitrise {
   if (ncMajeures > 0)
     return {
       cle: 'A_REDRESSER',
-      titre: 'À redresser',
+      titre: 'À corriger tout de suite',
       couleur: '#DC2626',
-      phrase: 'Un ou plusieurs points critiques ont été relevés. Ils passent avant le reste.',
+      phrase:
+        'Des points mettent les denrées en danger. À traiter avant le prochain service, le reste attendra.',
     };
   if (score >= 80)
     return {
       cle: 'MAITRISE',
-      titre: 'Maîtrisé',
+      titre: 'Cuisine tenue',
       couleur: '#10B981',
-      phrase: 'Les points audités sont tenus. Il reste à conserver les traces écrites.',
+      phrase:
+        'Les points vus sont tenus. Gardez vos relevés écrits, ce sont eux qui le prouveront plus tard.',
     };
   return {
     cle: 'A_CONSOLIDER',
-    titre: 'À consolider',
+    titre: 'Des écarts à régler',
     couleur: '#F59E0B',
-    phrase: 'Aucun point critique. Des écarts mineurs restent à corriger.',
+    phrase:
+      'Rien de dangereux dans l’immédiat. Des écarts restent à reprendre pour être au propre.',
   };
 }
 
@@ -177,6 +197,20 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
     delai: i.conformite === 'NC_MAJEURE' ? 'Sous 48 heures' : 'Sous 30 jours',
     risque: i.risque ?? 'Écart relevé sur ce point.',
     correctif: i.correctif ?? "Corriger l'écart, puis garder une trace écrite ou photo.",
+    etapes: detailCorrectif(i.code)?.etapes ?? [],
+    /* Ce que l'auditeur a noté sur place passe devant le matériel courant du point,
+       et on ne répète pas deux fois la même chose. */
+    materiel: (() => {
+      const notes = (i.materiel ?? '')
+        .split(/[,;]+/)
+        .map((x) => x.trim())
+        .filter(Boolean);
+      const courant = (detailCorrectif(i.code)?.materiel ?? []).filter(
+        (m) => !notes.some((n) => n.toLowerCase() === m.toLowerCase())
+      );
+      return [...notes, ...courant];
+    })(),
+    preuve: detailCorrectif(i.code)?.preuve,
     constat: i.commentaire?.trim() || null,
     referenceRegl: i.referenceRegl ?? null,
     photos: i.photos,
@@ -206,7 +240,29 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
     actionsImmediates,
     actionsTrente,
     pointsForts: items.filter((i) => i.conformite === 'CONFORME'),
+    materielAPrevoir: recapMateriel([...actionsImmediates, ...actionsTrente]),
   };
+}
+
+/**
+ * Rassemble le matériel de toutes les actions en une seule liste. Deux points qui
+ * réclament la même sonde ne la font pas acheter deux fois : on la cite une fois,
+ * avec les points qui la demandent.
+ */
+function recapMateriel(actions: ActionCorrective[]): MaterielRecap[] {
+  const parIntitule = new Map<string, MaterielRecap>();
+  for (const a of actions) {
+    for (const m of a.materiel) {
+      const cle = m.toLowerCase();
+      const deja = parIntitule.get(cle);
+      if (deja) {
+        if (!deja.points.includes(a.intitule)) deja.points.push(a.intitule);
+      } else {
+        parIntitule.set(cle, { intitule: m, points: [a.intitule] });
+      }
+    }
+  }
+  return [...parIntitule.values()].sort((x, y) => y.points.length - x.points.length);
 }
 
 export const LIBELLE_CONFORMITE: Record<Conformite, string> = {

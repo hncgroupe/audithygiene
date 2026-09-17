@@ -9,6 +9,7 @@ import {
   CONSTATS_GENERIQUES,
   MOTIFS_GENERIQUES,
 } from '@/lib/grille-audit';
+import { detailCorrectif } from '@/lib/correctifs-detail';
 import { getSignedUrl } from '@/lib/supabase';
 import type { Conformite } from '@/lib/notation';
 
@@ -91,6 +92,8 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         photoConseillee: g?.photoConseillee,
         conformite: it.conformite as Conformite,
         commentaire: it.commentaire,
+        materiel: it.materiel,
+        materielPropose: detailCorrectif(it.code)?.materiel ?? [],
         // Un point créé sur mesure n'a pas d'entrée dans la grille : il reçoit les
         // réponses de repli, pour ne pas laisser l'auditeur devant un écran vide.
         constats: g?.constats?.length ? g.constats : CONSTATS_GENERIQUES,
@@ -114,6 +117,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
     photoConseillee: i.photoConseillee ?? false,
     constats: i.constats,
     motifs: MOTIFS_PAR_CODE[i.code] ?? [],
+    materielPropose: detailCorrectif(i.code)?.materiel ?? [],
   }));
 
   return (
