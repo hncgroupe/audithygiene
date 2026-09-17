@@ -100,34 +100,35 @@ const MARGE = 52;
 
 const s = StyleSheet.create({
   page: {
-    paddingTop: 48,
+    paddingTop: 44,
     paddingBottom: 60,
     paddingHorizontal: MARGE,
-    fontSize: 9.5,
-    lineHeight: 1.55,
+    fontSize: 7,
+    lineHeight: 1.5,
     color: ENCRE,
     fontFamily: FAMILLE,
     ...poids(400),
   },
   pageCouverture: {
     paddingBottom: 60,
-    fontSize: 9.5,
-    lineHeight: 1.55,
+    fontSize: 7,
+    lineHeight: 1.5,
     color: ENCRE,
     fontFamily: FAMILLE,
     ...poids(400),
   },
 
   /* Couverture */
-  banniere: { paddingHorizontal: MARGE, paddingTop: 46, paddingBottom: 0 },
+  banniere: { paddingHorizontal: MARGE, paddingTop: 40, paddingBottom: 0 },
   banniereRang: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   logoMarque: { width: 132, height: 26, objectFit: 'contain' },
-  separateurCouverture: { marginTop: 26, borderTopWidth: 0.7, borderTopColor: FILET },
-  marqueBlanche: { fontSize: 11, color: ENCRE, ...poids(600) },
+  separateurCouverture: { marginTop: 20, borderTopWidth: 0.7, borderTopColor: FILET },
+  rangTitre: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
+  marqueBlanche: { fontSize: 8.8, color: ENCRE, ...poids(600) },
   marqueFine: { color: VERT },
-  banniereDate: { fontSize: 8.5, color: GRIS_CLAIR },
-  titreCouverture: { fontSize: 31, color: ENCRE, letterSpacing: -0.9, lineHeight: 1.12, marginTop: 20, ...poids(600) },
-  sousCouverture: { fontSize: 10.5, color: GRIS, marginTop: 8, maxWidth: 380 },
+  banniereDate: { fontSize: 6.8, color: GRIS_CLAIR },
+  titreCouverture: { fontSize: 23, color: ENCRE, letterSpacing: -0.8, lineHeight: 1.12, ...poids(600) },
+  sousCouverture: { fontSize: 7.6, color: GRIS, marginTop: 8, maxWidth: 380 },
   confidentiel: {
     marginTop: 18,
     alignSelf: 'flex-start',
@@ -136,15 +137,15 @@ const s = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 3.5,
     paddingHorizontal: 11,
-    fontSize: 7.5,
+    fontSize: 6,
     color: GRIS,
   },
 
-  corpsCouverture: { paddingHorizontal: MARGE, paddingTop: 26 },
+  corpsCouverture: { paddingHorizontal: MARGE, paddingTop: 20 },
   jaugeRang: { flexDirection: 'row', alignItems: 'flex-start' },
   logoClientCadre: {
-    width: 104,
-    height: 60,
+    width: 74,
+    height: 44,
     borderWidth: 0.7,
     borderColor: FILET,
     borderRadius: 6,
@@ -152,38 +153,38 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoClientImage: { maxWidth: 88, maxHeight: 44, objectFit: 'contain' },
+  logoClientImage: { maxWidth: 62, maxHeight: 32, objectFit: 'contain' },
   jaugeTexte: { flex: 1, paddingLeft: 26, paddingTop: 6 },
-  niveauTitre: { fontSize: 19, letterSpacing: -0.4, ...poids(600) },
+  niveauTitre: { fontSize: 13.6, letterSpacing: -0.4, ...poids(600) },
   niveauPhrase: { color: GRIS, marginTop: 8, maxWidth: 310, lineHeight: 1.5 },
 
-  compteurs: { flexDirection: 'row', marginTop: 22 },
+  compteurs: { flexDirection: 'row', marginTop: 16 },
   compteur: { marginRight: 26 },
-  compteurVal: { fontSize: 17, letterSpacing: -0.4, lineHeight: 1, ...poids(600) },
-  compteurNom: { fontSize: 8, color: GRIS, marginTop: 3 },
+  compteurVal: { fontSize: 13.6, letterSpacing: -0.4, lineHeight: 1, ...poids(600) },
+  compteurNom: { fontSize: 6.4, color: GRIS, marginTop: 3 },
 
-  premier: { marginTop: 24, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 15 },
-  premierLigne: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 9 },
-  premierDelai: { width: 74, fontSize: 8, color: GRIS, textAlign: 'right' },
+  premier: { marginTop: 18, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 12 },
+  premierLigne: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 7 },
+  premierDelai: { width: 74, fontSize: 6.4, color: GRIS, textAlign: 'right' },
 
-  ficheEtab: { marginTop: 24, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 15, flexDirection: 'row', flexWrap: 'wrap' },
-  champ: { width: '50%', marginBottom: 9 },
-  champNom: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1 },
-  champVal: { fontSize: 10, ...poids(500) },
+  ficheEtab: { marginTop: 18, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 12, flexDirection: 'row', flexWrap: 'wrap' },
+  champ: { width: '50%', marginBottom: 7 },
+  champNom: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1 },
+  champVal: { fontSize: 7.6, ...poids(500) },
 
   /* Plan du froid */
   frigo: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 8 },
-  etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
+  etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
   etageBande: { width: 4, height: 30, borderRadius: 2 },
-  etageNiveau: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1 },
+  etageNiveau: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1 },
   frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
   verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
   verdictPastille: { width: 8, height: 8, borderRadius: 4, marginTop: 3, marginRight: 10 },
 
   /* Panneau de l'étoile */
   panneau: { borderWidth: 0.7, borderColor: FILET, borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
-  panneauTitre: { fontSize: 10.5, color: ENCRE, alignSelf: 'flex-start', ...poids(600) },
-  panneauNote: { fontSize: 8, color: GRIS_CLAIR, alignSelf: 'flex-start', marginTop: 2 },
+  panneauTitre: { fontSize: 8.4, color: ENCRE, alignSelf: 'flex-start', ...poids(600) },
+  panneauNote: { fontSize: 6.4, color: GRIS_CLAIR, alignSelf: 'flex-start', marginTop: 2 },
   panneauLegende: { flexDirection: 'row', marginTop: 4, alignSelf: 'flex-start' },
   legendePuce: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
 
@@ -192,68 +193,68 @@ const s = StyleSheet.create({
   colonneGauche: { marginRight: 28 },
 
   faible: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
-  faibleVal: { width: 26, textAlign: 'right', fontSize: 11, ...poids(600) },
+  faibleVal: { width: 26, textAlign: 'right', fontSize: 8.8, ...poids(600) },
 
   /* Titres de section */
-  teteSection: { marginBottom: 20 },
+  chapitre: { marginTop: 30 },
+  teteSection: { marginBottom: 16 },
   regle: { width: 26, height: 2, backgroundColor: VERT, marginBottom: 12 },
-  h1: { fontSize: 22, letterSpacing: -0.6, lineHeight: 1.2, ...poids(600) },
-  h2: { fontSize: 13, letterSpacing: -0.2, ...poids(600) },
-  h3: { fontSize: 10.5, ...poids(600) },
+  h1: { fontSize: 15.2, letterSpacing: -0.6, lineHeight: 1.2, ...poids(600) },
+  h2: { fontSize: 9.2, letterSpacing: -0.2, ...poids(600) },
+  h3: { fontSize: 7.6, ...poids(600) },
   chapeau: { color: GRIS, marginTop: 7, maxWidth: 430 },
   gris: { color: GRIS },
-  petit: { fontSize: 8, color: GRIS, lineHeight: 1.5 },
+  petit: { fontSize: 6.4, color: GRIS, lineHeight: 1.5 },
   filet: { borderTopWidth: 0.7, borderTopColor: FILET },
-  bloc: { marginTop: 9 },
-  cle: { fontSize: 7.5, color: GRIS_CLAIR, marginBottom: 1.5 },
-  section: { marginTop: 26 },
+  bloc: { marginTop: 7 },
+  cle: { fontSize: 6, color: GRIS_CLAIR, marginBottom: 1.5 },
+  section: { marginTop: 22 },
 
   /* Sommaire */
   sommaireLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, borderTopWidth: 0.7, borderTopColor: FILET },
   sommaireRond: { width: 26, height: 26, borderRadius: 13, borderWidth: 0.7, borderColor: FILET, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  sommaireNum: { width: 20, fontSize: 9, color: GRIS_CLAIR, paddingTop: 3 },
+  sommaireNum: { width: 20, fontSize: 7.2, color: GRIS_CLAIR, paddingTop: 3 },
 
   /* Thèmes */
-  thLigne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
+  thLigne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5.5, borderTopWidth: 0.7, borderTopColor: FILET },
   thIcone: { width: 20 },
-  thNom: { flex: 1, fontSize: 9.5 },
-  thCompte: { width: 80, fontSize: 8, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
+  thNom: { flex: 1, fontSize: 7.2 },
+  thCompte: { width: 80, fontSize: 6.4, color: GRIS_CLAIR, textAlign: 'right', paddingRight: 10 },
   thBarreFond: { width: 76, height: 3, borderRadius: 1.5, backgroundColor: '#EDF2F0' },
   thBarre: { height: 3, borderRadius: 1.5 },
-  thVal: { width: 26, textAlign: 'right', fontSize: 9.5, ...poids(600) },
+  thVal: { width: 26, textAlign: 'right', fontSize: 7.2, ...poids(600) },
 
   /* Fiches d'action */
-  fiche: { marginTop: 14, borderWidth: 0.7, borderColor: FILET, borderRadius: 6, padding: 14 },
+  fiche: { marginTop: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6, padding: 12 },
   ficheTete: { flexDirection: 'row', alignItems: 'flex-start' },
-  ficheTitre: { fontSize: 11.5, letterSpacing: -0.2, lineHeight: 1.3, ...poids(600) },
-  ficheMeta: { fontSize: 8, color: GRIS, marginTop: 1.5 },
-  jeton: { borderRadius: 9, paddingVertical: 2.5, paddingHorizontal: 8, fontSize: 7.5, color: '#FFFFFF', ...poids(600) },
+  ficheTitre: { fontSize: 8.4, letterSpacing: -0.2, lineHeight: 1.3, ...poids(600) },
+  ficheMeta: { fontSize: 6.4, color: GRIS, marginTop: 1.5 },
+  jeton: { borderRadius: 9, paddingVertical: 2.5, paddingHorizontal: 8, fontSize: 6, color: '#FFFFFF', ...poids(600) },
   ficheCorps: { marginTop: 11 },
-  ficheCode: { fontSize: 8, color: GRIS_CLAIR, marginTop: 2 },
+  ficheCode: { fontSize: 6.4, color: GRIS_CLAIR, marginTop: 2 },
 
-  suivi: { flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTopWidth: 0.7, borderTopColor: FILET },
-  caseACocher: { width: 12, height: 12, borderWidth: 1, borderColor: GRIS, borderRadius: 2, marginRight: 8 },
-  suiviTexte: { fontSize: 8, color: GRIS, marginRight: 6 },
-  suiviLigne: { flex: 1, borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 10, marginRight: 10 },
+  correction: { marginTop: 9, borderWidth: 0.8, borderColor: ENCRE, borderRadius: 5, paddingVertical: 8, paddingHorizontal: 10 },
+  correctionCle: { fontSize: 6, color: GRIS, marginBottom: 2 },
+  correctionTexte: { fontSize: 7.6, lineHeight: 1.45, ...poids(700) },
 
   bandePhotos: { flexDirection: 'row', marginTop: 4 },
-  photo: { width: 132, height: 94, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
+  photo: { width: 124, height: 88, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
 
   /* Détail */
-  ptLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 5, borderTopWidth: 0.7, borderTopColor: FILET },
+  ptLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 3.5, borderTopWidth: 0.7, borderTopColor: FILET },
   ptTexte: { flex: 1, paddingRight: 10 },
-  ptEtat: { width: 116, textAlign: 'right', fontSize: 8, color: GRIS },
+  ptEtat: { width: 116, textAlign: 'right', fontSize: 6.4, color: GRIS },
 
   /* Suites de contrôle */
-  suite: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 9, borderTopWidth: 0.7, borderTopColor: FILET },
-  suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 8, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
-  suiteQuand: { fontSize: 8, color: GRIS_CLAIR, marginTop: 0.5 },
+  suite: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 7, borderTopWidth: 0.7, borderTopColor: FILET },
+  suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 6.4, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
+  suiteQuand: { fontSize: 6.4, color: GRIS_CLAIR, marginTop: 0.5 },
 
   encart: { marginTop: 14, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: FILET },
   alerte: { marginTop: 16, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: '#F1C7C7', borderLeftWidth: 2.5, borderLeftColor: ROUGE },
 
-  renvoi: { flexDirection: 'row', paddingVertical: 8, borderTopWidth: 0.7, borderTopColor: FILET },
-  renvoiCode: { width: 66, fontSize: 8, color: GRIS_CLAIR, paddingTop: 1 },
+  renvoi: { flexDirection: 'row', paddingVertical: 6, borderTopWidth: 0.7, borderTopColor: FILET },
+  renvoiCode: { width: 66, fontSize: 6.4, color: GRIS_CLAIR, paddingTop: 1 },
 
   cloture: { marginTop: 26, paddingTop: 16, borderTopWidth: 0.7, borderTopColor: FILET },
   signatures: { flexDirection: 'row', marginTop: 34 },
@@ -276,8 +277,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 22,
   },
   bandeauLogo: { width: 60, height: 12, objectFit: 'contain' },
-  bandeauMarque: { width: 60, fontSize: 8.5, color: '#FFFFFF', ...poids(600) },
-  bandeauNom: { flex: 1, textAlign: 'center', fontSize: 8, color: '#BFE7D7' },
+  bandeauMarque: { width: 60, fontSize: 6.8, color: '#FFFFFF', ...poids(600) },
+  bandeauNom: { flex: 1, textAlign: 'center', fontSize: 6.4, color: '#BFE7D7' },
   bandeauPage: { width: 60 },
   numPage: {
     position: 'absolute',
@@ -285,7 +286,7 @@ const s = StyleSheet.create({
     right: 22,
     width: 60,
     textAlign: 'right',
-    fontSize: 8,
+    fontSize: 6.4,
     color: '#BFE7D7',
   },
 });
@@ -406,7 +407,7 @@ function Glyphe({ nom, taille = 13, couleur = ENCRE }: { nom: string; taille?: n
  * celui que l'auditeur a sorti de sa poche toute la visite.
  */
 function Jauge({ score, couleur, evalues }: { score: number; couleur: string; evalues: number }) {
-  const h = 132; // hauteur de la colonne graduée
+  const h = 112; // hauteur de la colonne graduée
   const hautX = 26;
   const part = Math.max(0, Math.min(100, score)) / 100;
   const remplie = evalues === 0 ? 0 : Math.max(4, h * part);
@@ -443,10 +444,10 @@ function Jauge({ score, couleur, evalues }: { score: number; couleur: string; ev
         ))}
       </Svg>
       <View style={{ paddingTop: 2, paddingLeft: 2 }}>
-        <Text style={{ fontSize: 34, letterSpacing: -1.4, lineHeight: 1, ...poids(700) }}>
+        <Text style={{ fontSize: 27.2, letterSpacing: -1.4, lineHeight: 1, ...poids(700) }}>
           {evalues === 0 ? '·' : Math.round(score)}
         </Text>
-        <Text style={{ fontSize: 8, color: GRIS, marginTop: 2 }}>sur 100</Text>
+        <Text style={{ fontSize: 6.4, color: GRIS, marginTop: 2 }}>sur 100</Text>
       </View>
     </View>
   );
@@ -498,15 +499,14 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
     point && point.conformite !== 'NON_EVALUE' && point.conformite !== 'NON_APPLICABLE';
 
   return (
-    <View style={s.section} minPresenceAhead={160}>
+    <View style={s.section} minPresenceAhead={56}>
       <Text style={s.h2}>L&apos;ordre des étages, dans le froid</Text>
       <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
         Le propre en haut, le cru en bas : un jus qui goutte ne remonte jamais. C&apos;est le seul
         rangement qui protège les produits prêts à manger.
       </Text>
 
-      {/* Les quatre étages tiennent sur une seule page : coupés, ils perdent leur sens d'ordre. */}
-      <View style={s.frigo} wrap={false}>
+      <View style={s.frigo}>
         {ETAGES.map((e, i) => (
           <View
             key={e.titre}
@@ -518,7 +518,7 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
             <View style={[s.etageBande, { backgroundColor: e.couleur }]} />
             <View style={{ flex: 1, paddingLeft: 12 }}>
               <Text style={s.etageNiveau}>{e.niveau}</Text>
-              <Text style={{ ...poids(600), fontSize: 10 }}>{e.titre}</Text>
+              <Text style={{ ...poids(600), fontSize: 8 }}>{e.titre}</Text>
               <Text style={[s.petit, { marginTop: 1 }]}>{e.detail}</Text>
             </View>
           </View>
@@ -539,7 +539,7 @@ function PlanDuFroid({ r }: { r: RapportHygiene }) {
           ]}
         />
         <View style={{ flex: 1 }}>
-          <Text style={{ ...poids(600), fontSize: 10 }}>
+          <Text style={{ ...poids(600), fontSize: 8 }}>
             {point
               ? `Sur cet audit : ${LIBELLE_CONFORMITE[point.conformite].toLowerCase()}`
               : 'Séparation cru/cuit non examinée sur cet audit'}
@@ -665,12 +665,12 @@ function Etoile({ themes }: { themes: RapportTheme[] }) {
             key={t.theme}
             style={{ position: 'absolute', left: x - 33, top: y - 11, width: 66, alignItems: 'center' }}
           >
-            <Text style={{ fontSize: 8, color: GRIS, textAlign: 'center', lineHeight: 1.25 }}>
+            <Text style={{ fontSize: 6.4, color: GRIS, textAlign: 'center', lineHeight: 1.25 }}>
               {themeCourt(t.theme)}
             </Text>
             <Text
               style={{
-                fontSize: 10,
+                fontSize: 8,
                 color: couleurSommet(t.score ?? 0),
                 textAlign: 'center',
                 lineHeight: 1.25,
@@ -719,7 +719,7 @@ function Repartition({ r }: { r: RapportHygiene }) {
         {parts.map((x) => (
           <View key={x.nom} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16, marginBottom: 4 }}>
             <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: x.couleur, marginRight: 5 }} />
-            <Text style={{ fontSize: 8.5 }}>
+            <Text style={{ fontSize: 6.8 }}>
               <Text style={{ ...poids(600) }}>{x.n}</Text>
               <Text style={{ color: GRIS }}> {x.nom}</Text>
             </Text>
@@ -788,9 +788,16 @@ function Pied({ data }: { data: HygienePdfData }) {
   );
 }
 
+/**
+ * Signet de navigation du PDF. react-pdf sait le poser sur un bloc, mais ne le
+ * déclare pas dans ses types : on passe donc par cette petite fonction.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const signet = (titre: string): any => ({ bookmark: titre });
+
 function TeteSection({ titre, chapeau }: { titre: string; chapeau?: string }) {
   return (
-    <View style={s.teteSection}>
+    <View style={s.teteSection} minPresenceAhead={70}>
       <View style={s.regle} />
       <Text style={s.h1}>{titre}</Text>
       {chapeau ? <Text style={s.chapeau}>{chapeau}</Text> : null}
@@ -848,7 +855,7 @@ function LigneTheme({ t }: { t: RapportTheme }) {
 function Fiche({ a }: { a: ActionCorrective }) {
   const critique = a.priorite === 'IMMEDIAT';
   return (
-    <View style={s.fiche} minPresenceAhead={90}>
+    <View style={s.fiche} minPresenceAhead={46}>
       <View style={s.ficheTete}>
         <View style={{ width: 22, paddingTop: 1 }}>
           <Glyphe nom={iconeTheme(a.theme)} taille={14} couleur={critique ? ROUGE : AMBRE} />
@@ -875,9 +882,10 @@ function Fiche({ a }: { a: ActionCorrective }) {
           <Text style={s.cle}>Pourquoi ça compte</Text>
           <Text>{a.risque}</Text>
         </View>
-        <View style={s.bloc}>
-          <Text style={s.cle}>À faire</Text>
-          <Text>{a.correctif}</Text>
+        {/* La correction est ce que le client vient chercher : elle est encadrée. */}
+        <View style={s.correction}>
+          <Text style={s.correctionCle}>À faire</Text>
+          <Text style={s.correctionTexte}>{a.correctif}</Text>
         </View>
 
         {a.photos.length > 0 && (
@@ -905,15 +913,6 @@ function Fiche({ a }: { a: ActionCorrective }) {
             </Text>
           </View>
         ) : null}
-
-        {/* De quoi cocher le point une fois corrigé, sur le rapport imprimé. */}
-        <View style={s.suivi}>
-          <View style={s.caseACocher} />
-          <Text style={s.suiviTexte}>Corrigé le</Text>
-          <View style={s.suiviLigne} />
-          <Text style={s.suiviTexte}>par</Text>
-          <View style={s.suiviLigne} />
-        </View>
 
         {referenceValide(a.referenceRegl) ? (
           <View style={s.bloc}>
@@ -989,7 +988,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
     );
 
   /* Les trois premières choses à faire, reprises en couverture. */
-  const priorites = [...r.actionsImmediates, ...r.actionsTrente].slice(0, 3);
+  const priorites = [...r.actionsImmediates, ...r.actionsTrente].slice(0, 5);
 
   /* L'étoile a besoin d'au moins trois axes pour dessiner une surface. */
   const themesNotes = r.themes.filter((t) => t.score !== null);
@@ -1014,18 +1013,21 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
                 audit <Text style={s.marqueFine}>hygiène</Text>
               </Text>
             )}
-            {data.logoClient ? (
-              <View style={s.logoClientCadre}>
-                <Image src={data.logoClient} style={s.logoClientImage} />
-              </View>
-            ) : (
-              <Text style={s.banniereDate}>{data.reference}</Text>
-            )}
+            <Text style={s.banniereDate}>{data.reference}</Text>
           </View>
 
           {/* Le nom du client ne se colle pas sous la marque : un filet les sépare. */}
           <View style={s.separateurCouverture} />
-          <Text style={s.titreCouverture}>{data.etablissement}</Text>
+          <View style={s.rangTitre}>
+            {data.logoClient ? (
+              <View style={s.logoClientCadre}>
+                <Image src={data.logoClient} style={s.logoClientImage} />
+              </View>
+            ) : null}
+            <Text style={[s.titreCouverture, data.logoClient ? { marginLeft: 14 } : {}]}>
+              {data.etablissement}
+            </Text>
+          </View>
           <Text style={s.sousCouverture}>
             Rapport d&apos;audit hygiène du {data.date}
             {lieu ? `, ${lieu}` : ''}.
@@ -1103,15 +1105,21 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             <Champ nom="Auditeur" valeur={data.auditeur} />
             <Champ nom="Grille appliquée" valeur={data.grilleVersion} />
             <Champ nom="Points examinés" valeur={`${r.evalues} sur ${r.totalPoints}`} />
+            <Champ nom="Référence du rapport" valeur={data.reference} />
           </View>
+
+          <Text style={[s.petit, { marginTop: 14, maxWidth: 430 }]}>{MENTION_LABEL_PRIVE}</Text>
 
         </View>
 
         <Pied data={data} />
       </Page>
 
+      {/* Le corps du rapport coule d'une partie à l'autre : ouvrir une page
+          neuve à chaque partie laissait une demi-page blanche à chaque fin. */}
+      <Page size="A4" style={s.page}>
       {/* 02 · Vue d'ensemble */}
-      <Page size="A4" style={s.page} bookmark="Le résultat en un coup d'oeil">
+      <View {...signet("Le résultat en un coup d'oeil")} style={s.chapitre}>
         <TeteSection
           titre="Le résultat en un coup d'oeil"
           chapeau="L'étoile donne la forme de l'établissement : plus la surface est large, plus la maîtrise est homogène. Un creux marque un thème à reprendre."
@@ -1130,7 +1138,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
               ].map((x) => (
                 <View key={x.t} style={s.legendePuce}>
                   <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: x.c, marginRight: 5 }} />
-                  <Text style={{ fontSize: 7.5, color: GRIS }}>{x.t}</Text>
+                  <Text style={{ fontSize: 6, color: GRIS }}>{x.t}</Text>
                 </View>
               ))}
             </View>
@@ -1190,11 +1198,10 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         </View>
 
-        <Pied data={data} />
-      </Page>
+      </View>
 
       {/* 03 · Sommaire */}
-      <Page size="A4" style={s.page} bookmark="Sommaire">
+      <View {...signet("Sommaire")} style={s.chapitre}>
         <TeteSection
           titre="Ce que contient ce rapport"
           chapeau="Six parties, dans l'ordre de lecture conseillé. Si vous n'en lisez qu'une, lisez la première : elle suffit à savoir quoi faire cette semaine."
@@ -1259,12 +1266,11 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         </View>
 
-        <Pied data={data} />
-      </Page>
+      </View>
 
       {/* 03 · Points à corriger, seulement s'il y en a */}
       {r.actions.length > 0 ? (
-      <Page size="A4" style={s.page} bookmark="Points à corriger">
+      <View {...signet("Points à corriger")} style={s.chapitre}>
         <TeteSection
           titre={
             r.actions.length === 0
@@ -1282,7 +1288,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={{ marginTop: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[s.jeton, { backgroundColor: ROUGE }]}>Sous 48 heures</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 8.5 }]}>
+              <Text style={[s.gris, { marginLeft: 10, fontSize: 6.8 }]}>
                 impact sanitaire direct, à traiter avant le prochain service
               </Text>
             </View>
@@ -1296,7 +1302,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={{ marginTop: r.actionsImmediates.length > 0 ? 26 : 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[s.jeton, { backgroundColor: AMBRE }]}>Sous 30 jours</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 8.5 }]}>
+              <Text style={[s.gris, { marginLeft: 10, fontSize: 6.8 }]}>
                 écarts sans danger immédiat, à régulariser
               </Text>
             </View>
@@ -1306,12 +1312,11 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         ) : null}
 
-        <Pied data={data} />
-      </Page>
+      </View>
       ) : null}
 
       {/* 04 · Risques et suites */}
-      <Page size="A4" style={s.page} bookmark="Risques et suites">
+      <View {...signet("Risques et suites")} style={s.chapitre}>
         <TeteSection titre="Ce qu'un écart peut coûter" chapeau={lectureDuRisque(r)} />
 
         {r.ncMajeures > 0 ? (
@@ -1362,11 +1367,10 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           ))}
         </View>
 
-        <Pied data={data} />
-      </Page>
+      </View>
 
       {/* 05 · Résultats par thème */}
-      <Page size="A4" style={s.page} bookmark="Résultats par thème">
+      <View {...signet("Résultats par thème")} style={s.chapitre}>
         <TeteSection
           titre="Les résultats, thème par thème"
           chapeau="Chaque thème porte sa note sur 100 et le nombre d'écarts relevés. Un thème sans point évalué reste sans note."
@@ -1409,18 +1413,17 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         ) : null}
 
-        <Pied data={data} />
-      </Page>
+      </View>
 
       {/* 06 · Détail */}
-      <Page size="A4" style={s.page} bookmark="Détail des points">
+      <View {...signet("Détail des points")} style={s.chapitre}>
         <TeteSection
           titre="Le détail de tous les points"
           chapeau={`Les ${r.totalPoints} points de la grille, dans l'ordre de l'audit. Un point non applicable ou non évalué ne compte pas dans la note.`}
         />
 
         {r.themes.map((t) => (
-          <View key={t.theme} style={{ marginTop: 16 }} minPresenceAhead={44}>
+          <View key={t.theme} style={{ marginTop: 14 }} minPresenceAhead={28}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ width: 20 }}>
                 <Glyphe nom={iconeTheme(t.theme)} taille={13} couleur={ENCRE} />
@@ -1457,12 +1460,11 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         ))}
 
-        <Pied data={data} />
-      </Page>
+      </View>
 
       {/* 07 · Références, seulement s'il y a des textes à citer */}
       {references.length > 0 ? (
-      <Page size="A4" style={s.page} bookmark="Références réglementaires">
+      <View {...signet("Références réglementaires")} style={s.chapitre}>
         <TeteSection
           titre="Les références réglementaires"
           chapeau="Le texte sur lequel s'appuie chaque point audité, dans sa version en vigueur à la date de la visite. Les points sans référence rattachée relèvent des bonnes pratiques d'hygiène."
@@ -1481,12 +1483,11 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={s.filet} />
         </View>
 
-        <Pied data={data} />
-      </Page>
+      </View>
       ) : null}
 
       {/* 08 · Portée */}
-      <Page size="A4" style={s.page} bookmark="Portée du rapport">
+      <View {...signet("Portée du rapport")} style={s.chapitre}>
         <TeteSection titre="Ce que dit, et ne dit pas, ce document" />
 
         <View style={{ marginTop: 4 }}>
@@ -1525,7 +1526,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         </View>
 
         <View style={s.cloture} wrap={false}>
-          <Text style={{ ...poids(600), fontSize: 10.5 }}>
+          <Text style={{ ...poids(600), fontSize: 8.4 }}>
             Fait à {data.ville ?? "l'établissement"}, le {data.date}
           </Text>
           <Text style={[s.gris, { marginTop: 3, maxWidth: 430 }]}>
@@ -1556,6 +1557,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           <View style={s.filet} />
         </View>
 
+      </View>
         <Pied data={data} />
       </Page>
     </Document>
