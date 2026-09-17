@@ -2,6 +2,15 @@
 
 Journal chronologique des jalons. Entrée datée après chaque étape (voir rule `reports`).
 
+## 2026-09-17 — Rapport PDF client : téléchargement réparé, document refondu
+- Fait : la route `/app/audits/[id]/rapport/pdf` renvoyait une erreur sur les gros rapports. Cause : le numéro de page était un nœud `fixed` ancré par le bas ; recalculé page après page, sa position divergeait et pdfkit refusait le nombre (`unsupported number: -3.39e+22`). Ancré par le haut, tout passe.
+- Fait : refonte du document remis au client. Police de marque (Hanken Grotesk embarquée dans `public/fonts`, tracée via `outputFileTracingIncludes`), couverture avec jauge thermomètre + 3 priorités, sommaire, pictogramme par thème, fiches en cartes sécables, signets PDF, thèmes classés du plus faible au plus solide.
+- Fait : nouvelle partie « risques et suites » (échelle observation → mise en demeure → amende → fermeture administrative), contenu dans `src/lib/risques-sanctions.ts`, **marqué à valider** (rule `methodology-guard`).
+- Fait : les amorces de grille encore marquées `TODO` ne partent plus dans le rapport client, PDF et écran.
+- Fichiers : `src/lib/pdf/HygieneDocument.tsx`, `src/lib/risques-sanctions.ts`, `src/lib/rapport-hygiene.ts`, `src/components/app/RapportHygieneDocument.tsx`, `src/app/(app)/app/audits/[id]/rapport/pdf/route.ts`, `next.config.mjs`, `public/fonts/`.
+- Vérifié : les 5 audits hygiène de la base rendus sans échec, pages relues une à une (pdfium), numérotation complète, aucun `TODO` visible. `next build` OK. Commits `31e0737`, `2653c6e`, `82d825f`, `8137472`.
+- ⏸️ En attente : relecture client/expert du contenu « risques et suites » avant remise d'un vrai rapport ; confirmation que le push déclenche bien le déploiement Vercel.
+
 ## 2026-06-23 — Photo iOS fiable, SW neutralisé, sauvegarde Google Drive (dormante)
 - Photo iOS : le `.click()` programmatique est bloqué sur iPhone/iPad. Remplacé par deux `<label>` natifs (ouverture fiable) : « téléverser » (galerie/fichiers, placé avant la note) + « appareil photo ». Testé en navigateur sur le vrai wizard (caméra vs galerie OK).
 - Service worker neutralisé : il servait l'ancien code en cache (déploiements invisibles sur iOS, cause des « ça ne marche pas »). `public/sw.js` devient un kill-switch auto-désinstallant + `ServiceWorkerCleanup` côté client. Mode hors-ligne retiré pour l'instant.
