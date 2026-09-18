@@ -46,6 +46,8 @@ export interface ActionCorrective {
   risque: string;
   /** Ce à quoi ressemble le point quand il est tenu. */
   attendu?: string;
+  /** Les suites que ce type d'écart appelle, selon sa nature. */
+  suites?: string;
   /** Le moyen de correction concret, issu de la grille. */
   correctif: string;
   /** Les gestes à faire, dans l'ordre. */
@@ -76,7 +78,7 @@ export interface RapportTheme {
 }
 
 export interface NiveauMaitrise {
-  cle: 'MAITRISE' | 'A_CONSOLIDER' | 'A_REDRESSER';
+  cle: 'TRES_SATISFAISANT' | 'SATISFAISANT' | 'A_AMELIORER' | 'A_CORRIGER';
   titre: string;
   couleur: string;
   /** Phrase de lecture du score, sans promesse de résultat à un contrôle officiel. */
@@ -87,6 +89,8 @@ export interface NiveauMaitrise {
 export interface MaterielRecap {
   intitule: string;
   points: string[];
+  /** Rangs des points du plan qui reclament ce materiel, dans l'ordre du plan. */
+  rangs: number[];
 }
 
 export interface RapportHygiene {
@@ -118,29 +122,94 @@ const GRAVITE: Record<string, number> = {
   CONFORME: 4,
 };
 
-export function niveauDe(score: number, ncMajeures: number): NiveauMaitrise {
+/**
+ * Les quatre niveaux repris de la grille de lecture publique des controles
+ * officiels (Alim'confiance) : tres satisfaisant, satisfaisant, a ameliorer,
+ * a corriger de maniere urgente. On garde les memes mots pour que le client
+ * lise son audit dans le meme referentiel que celui qui lui sera applique.
+ *
+ * ATTENTION : le classement ci-dessous est notre lecture, a valider (rule
+ * methodology-guard). L'administration, elle, ne classe pas sur un score mais
+ * sur la nature des non-conformites et les suites qu'elles appellent. Et ce
+ * rapport reste un audit prive : il ne prejuge d'aucun resultat de controle.
+ */
+/**
+ * Nature d'un point : ce qui decide des suites qu'un ecart appelle. Un defaut de
+ * document ne se traite pas comme une denree en danger.
+ *
+ * À VALIDER (rule methodology-guard). Ces phrases decrivent ce que la
+ * reglementation permet a l'administration, jamais ce qu'un agent decidera : le
+ * rapport reste un audit prive et ne prejuge d'aucun controle.
+ */
+type Nature = 'DENREE' | 'DOCUMENT' | 'LOCAL' | 'PERSONNEL';
+
+function natureDuPoint(code: string): Nature {
+  const base = code.replace(/-[A-Z0-9]{4}$/, '');
+  if (base.startsWith('PMS') || base.startsWith('TRAC') || base === 'NETT-03') return 'DOCUMENT';
+  if (base.startsWith('LOC') || base === 'DECH-02') return 'LOCAL';
+  if (base.startsWith('PERS')) return 'PERSONNEL';
+  return 'DENREE';
+}
+
+const SUITES_CRITIQUE: Record<Nature, string> = {
+  DENREE:
+    'Correction exigée sous délai, retrait ou destruction des denrées en cause, et fermeture administrative, totale ou partielle, si le danger est jugé immédiat.',
+  DOCUMENT:
+    'Mise en demeure de produire les pièces sous délai, puis amende administrative ou procès-verbal si le manquement persiste. La fermeture n’est pas la suite ordinaire d’un défaut de document.',
+  LOCAL:
+    'Travaux exigés sous délai, avec contre-visite. La zone concernée peut être interdite d’usage tant qu’elle n’est pas remise en état.',
+  PERSONNEL:
+    'Mise en conformité sous délai et preuve de la formation ou de l’équipement manquant. L’amende administrative sanctionne la persistance.',
+};
+
+const SUITES_MINEURE: Record<Nature, string> = {
+  DENREE:
+    'Écart noté au rapport de visite, régularisation attendue et vérifiée à la visite suivante, sans acte particulier.',
+  DOCUMENT:
+    'Écart noté au rapport de visite, mise à jour attendue et contrôlée au prochain passage.',
+  LOCAL:
+    'Dégradation notée au rapport de visite, remise en état attendue dans un délai raisonnable.',
+  PERSONNEL:
+    'Écart de pratique noté au rapport de visite, correction attendue et vérifiée à la visite suivante.',
+};
+
+/** Les suites qu'un ecart de ce type appelle, selon sa gravite et sa nature. */
+export function suitesDuPoint(code: string, critique: boolean): string {
+  const nature = natureDuPoint(code);
+  return critique ? SUITES_CRITIQUE[nature] : SUITES_MINEURE[nature];
+}
+
+export function niveauDe(score: number, ncMajeures: number, ncMineures = 0): NiveauMaitrise {
   if (ncMajeures > 0)
     return {
-      cle: 'A_REDRESSER',
-      titre: 'À corriger tout de suite',
+      cle: 'A_CORRIGER',
+      titre: 'À corriger de manière urgente',
       couleur: '#DC2626',
       phrase:
         'Des points mettent les denrées en danger. À traiter avant le prochain service, le reste attendra.',
     };
-  if (score >= 80)
+  if (score < 80)
     return {
-      cle: 'MAITRISE',
-      titre: 'Cuisine tenue',
+      cle: 'A_AMELIORER',
+      titre: 'À améliorer',
+      couleur: '#F59E0B',
+      phrase:
+        'Aucun danger immédiat relevé, mais des écarts à reprendre et à vérifier lors de la prochaine visite.',
+    };
+  if (ncMineures > 0)
+    return {
+      cle: 'SATISFAISANT',
+      titre: 'Satisfaisant',
       couleur: '#10B981',
       phrase:
-        'Les points vus sont tenus. Gardez vos relevés écrits, ce sont eux qui le prouveront plus tard.',
+        'Les points vus sont tenus, à quelques écarts mineurs près. Gardez vos relevés écrits, ce sont eux qui le prouveront.',
     };
   return {
-    cle: 'A_CONSOLIDER',
-    titre: 'Des écarts à régler',
-    couleur: '#F59E0B',
+    cle: 'TRES_SATISFAISANT',
+    titre: 'Très satisfaisant',
+    couleur: '#10B981',
     phrase:
-      'Rien de dangereux dans l’immédiat. Des écarts restent à reprendre pour être au propre.',
+      'Aucun écart relevé sur les points audités. Gardez vos relevés écrits, ce sont eux qui le prouveront dans la durée.',
   };
 }
 
@@ -203,6 +272,7 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
        le client a besoin de comprendre le mécanisme, pas d'un mot-clé. */
     risque: detailCorrectif(i.code)?.consequence ?? i.risque ?? 'Écart relevé sur ce point.',
     attendu: detailCorrectif(i.code)?.attendu,
+    suites: suitesDuPoint(i.code, i.conformite === 'NC_MAJEURE'),
     correctif: i.correctif ?? "Corriger l'écart, puis garder une trace écrite ou photo.",
     etapes: detailCorrectif(i.code)?.etapes ?? [],
     /* Ce que l'auditeur a noté sur place passe devant le matériel courant du point,
@@ -228,10 +298,11 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
 
   const compteGlobal = (c: Conformite) => items.filter((i) => i.conformite === c).length;
   const ncMajeures = compteGlobal('NC_MAJEURE');
+  const ncMineuresTotal = compteGlobal('NC_MINEURE');
 
   return {
     scoreGlobal: notation.scoreGlobal,
-    niveau: niveauDe(notation.scoreGlobal, ncMajeures),
+    niveau: niveauDe(notation.scoreGlobal, ncMajeures, ncMineuresTotal),
     totalPoints: items.length,
     evalues: items.filter(
       (i) => i.conformite !== 'NON_EVALUE' && i.conformite !== 'NON_APPLICABLE'
@@ -258,18 +329,21 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
  */
 function recapMateriel(actions: ActionCorrective[]): MaterielRecap[] {
   const parIntitule = new Map<string, MaterielRecap>();
-  for (const a of actions) {
+  actions.forEach((a, i) => {
     for (const m of a.materiel) {
       const cle = m.toLowerCase();
       const deja = parIntitule.get(cle);
       if (deja) {
         if (!deja.points.includes(a.intitule)) deja.points.push(a.intitule);
+        if (!deja.rangs.includes(i + 1)) deja.rangs.push(i + 1);
       } else {
-        parIntitule.set(cle, { intitule: m, points: [a.intitule] });
+        parIntitule.set(cle, { intitule: m, points: [a.intitule], rangs: [i + 1] });
       }
     }
-  }
-  return [...parIntitule.values()].sort((x, y) => y.points.length - x.points.length);
+  });
+  /* On suit l'ordre du plan : le client remonte du materiel a la fiche du point
+     sans avoir a chercher. */
+  return [...parIntitule.values()].sort((x, y) => x.rangs[0] - y.rangs[0]);
 }
 
 export const LIBELLE_CONFORMITE: Record<Conformite, string> = {

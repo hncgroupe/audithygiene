@@ -125,7 +125,22 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
     rapport: assemblerRapportHygiene(entrees),
   };
 
-  const element = createElement(HygieneDocument, { data });
+  /* Premier rendu, sans les photos : il sert uniquement a savoir sur quelle page
+     d'annexe chaque texte reglementaire tombe. Les photos ne changent rien a la
+     pagination, chaque fiche occupant de toute facon une page entiere. */
+  const pagesAnnexe: Record<string, number> = {};
+  const sansPhotos = {
+    ...data,
+    rapport: assemblerRapportHygiene(entrees.map((e) => ({ ...e, photos: [] }))),
+    noterPageAnnexe: (code: string, page: number) => {
+      pagesAnnexe[code] = page;
+    },
+  };
+  await renderToBuffer(
+    createElement(HygieneDocument, { data: sansPhotos }) as Parameters<typeof renderToBuffer>[0]
+  );
+
+  const element = createElement(HygieneDocument, { data: { ...data, pagesAnnexe } });
   const pdf = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
   const nom = `rapport-audit-hygiene-${slug(audit.establishment.nom)}.pdf`;
 
