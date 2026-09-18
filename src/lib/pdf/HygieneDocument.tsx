@@ -34,6 +34,7 @@ import {
 import { MENTION_LABEL_PRIVE } from '@/lib/constants';
 import type { RapportHygiene, ActionCorrective, RapportTheme } from '@/lib/rapport-hygiene';
 import { LIBELLE_CONFORMITE, COULEUR_CONFORMITE } from '@/lib/rapport-hygiene';
+import { PHOTOS_MAX } from '@/lib/photos';
 import {
   SUITES_CONTROLE,
   RISQUES_SANITAIRES,
@@ -87,6 +88,7 @@ const poids = (g: 400 | 500 | 600 | 700) =>
 const ENCRE = '#0C1B17';
 const GRIS = '#6B7D77';
 const GRIS_CLAIR = '#9AA8A3';
+const ENCRE_DOUX = '#33443E';
 const FILET = '#E2E9E6';
 const FILET_FORT = '#CBD5D1';
 const VERT = '#10B981';
@@ -101,8 +103,14 @@ const CADRAN_CX = CADRAN_L / 2;
 const CADRAN_CY = 116;
 const CADRAN_R = 88;
 
+const TEINTE_ROUGE = '#FDF3F3';
+const TEINTE_AMBRE = '#FEF8EC';
 const A4_HAUTEUR = 841.89;
-const PIED_HAUTEUR = 32;
+/** Hauteur imprimable d'une page, marges hautes et basses deduites. */
+const HAUTEUR_UTILE = 736;
+/** Marge haute de la page courante, celle que la bande doit remonter. */
+const PAGE_HAUT = 44;
+const PIED_HAUTEUR = 27;
 const MARGE = 52;
 
 /* ------------------------------------------------------------------- Styles */
@@ -215,27 +223,34 @@ const s = StyleSheet.create({
   releveVal: { fontSize: 10.5, lineHeight: 1.25, textAlign: 'center', ...poids(700) },
   releveSous: { fontSize: 8.1, color: GRIS, marginTop: 1.5, textAlign: 'center', ...poids(400) },
 
-  photo: { width: 124, height: 88, objectFit: 'cover', marginRight: 7, borderRadius: 4 },
+  cadrePhoto: { marginHorizontal: '1%', marginBottom: 5, borderRadius: 4, overflow: 'hidden' },
+  photo: { width: '100%', height: '100%', objectFit: 'cover' },
+  horodate: { position: 'absolute', right: 4, bottom: 4, fontSize: 5.4, lineHeight: 1,
+    color: '#FFFFFF', backgroundColor: 'rgba(12,27,23,0.62)', borderRadius: 2,
+    paddingVertical: 2.2, paddingHorizontal: 3.6, ...poids(500) },
   panneauNote: { fontSize: 8.6, color: GRIS_CLAIR, alignSelf: 'center', marginTop: 3, marginBottom: 6 },
   ptTexte: { flex: 1, paddingRight: 10 },
   etage: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
   renvoiCode: { width: 66, fontSize: 7, color: GRIS_CLAIR, paddingTop: 1 },
-  ficheMeta: { fontSize: 7, color: GRIS, marginTop: 1.5 },
+  ficheMeta: { fontSize: 8, lineHeight: 1, letterSpacing: 0.9, textTransform: 'uppercase', marginLeft: 7, ...poids(700) },
   petit: { fontSize: 7, color: GRIS, lineHeight: 1.5 },
   jeton: { borderRadius: 9, paddingVertical: 2.5, paddingHorizontal: 8, fontSize: 6.6, color: '#FFFFFF', ...poids(600) },
   thBarre: { height: 3, borderRadius: 1.5 },
   frigoPied: { paddingVertical: 9, paddingHorizontal: 12, borderTopWidth: 0.7, borderTopColor: FILET },
-  correctionCle: { fontSize: 6.6, color: GRIS, marginBottom: 2 },
+  correctionCle: { fontSize: 6.8, letterSpacing: 1.1, textTransform: 'uppercase', color: VERT_PROFOND,
+    lineHeight: 1, marginBottom: 8, ...poids(700) },
   cle: { fontSize: 6.6, color: GRIS_CLAIR, marginBottom: 1.5 },
   sommaireNum: { width: 20, fontSize: 7.9, color: GRIS_CLAIR, paddingTop: 3 },
   thBarreFond: { width: 76, height: 3, borderRadius: 1.5, backgroundColor: '#EDF2F0' },
-  ficheTete: { flexDirection: 'row', alignItems: 'flex-start' },
+  ficheTete: { paddingLeft: 74, paddingRight: 6, paddingTop: 0 },
+  ficheEntete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    marginTop: -(PAGE_HAUT - 16), marginBottom: 26 },
   regle: { width: 26, height: 2, backgroundColor: VERT, marginBottom: 12 },
-  correctionTexte: { fontSize: 8.4, lineHeight: 1.45, ...poids(500) },
-  ficheTitre: { fontSize: 9.2, letterSpacing: -0.2, lineHeight: 1.3, ...poids(600) },
+  correctionTexte: { fontSize: 9.6, lineHeight: 1.45, letterSpacing: -0.1, ...poids(600) },
+  ficheTitre: { fontSize: 18.5, letterSpacing: -0.5, lineHeight: 1.18, textAlign: 'center', ...poids(700) },
   frigo: { marginTop: 12, borderWidth: 0.7, borderColor: FILET, borderRadius: 8 },
   cloture: { marginTop: 26, paddingTop: 16, borderTopWidth: 0.7, borderTopColor: FILET },
-  ficheCorps: { marginTop: 11 },
+  ficheCorps: { paddingLeft: 74, paddingRight: 6, paddingTop: 6, paddingBottom: 24 },
   panneauLegende: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTopWidth: 0.7, borderTopColor: FILET, alignSelf: 'stretch' },
   legendeTexte: { fontSize: 9.5 },
   h3: { fontSize: 8.4, ...poids(600) },
@@ -257,10 +272,10 @@ const s = StyleSheet.create({
   signatures: { flexDirection: 'row', marginTop: 34 },
   ptLigne: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 3.5, borderTopWidth: 0.7, borderTopColor: FILET },
   colonne: { flex: 1 },
-  etapes: { marginTop: 9, paddingTop: 8, borderTopWidth: 0.7, borderTopColor: FILET },
-  etape: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
-  etapeNum: { width: 13, fontSize: 7.4, lineHeight: 1.45, color: GRIS_CLAIR, ...poids(700) },
-  etapeTexte: { flex: 1, fontSize: 8.8, lineHeight: 1.45, ...poids(400) },
+  etapes: { marginTop: 13, paddingTop: 13, borderTopWidth: 0.7, borderTopColor: '#CFEADD' },
+  etape: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 },
+  etapeNum: { width: 12, height: 12, borderRadius: 6, backgroundColor: VERT, color: '#FFFFFF', fontSize: 6.6, lineHeight: 1, paddingTop: 3.2, textAlign: 'center', marginRight: 8, ...poids(700) },
+  etapeTexte: { flex: 1, fontSize: 8.8, lineHeight: 1.5, ...poids(400) },
   achatGrille: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 4 },
   achatCarte: { width: '49%', minHeight: 52, flexDirection: 'row', alignItems: 'center', marginBottom: 9, borderWidth: 0.8, borderColor: FILET, borderRadius: 9, paddingVertical: 10, paddingHorizontal: 12 },
   achatCase: { width: 11, height: 11, borderWidth: 1, borderColor: GRIS, borderRadius: 2.5, marginRight: 11 },
@@ -268,18 +283,63 @@ const s = StyleSheet.create({
   achatPoints: { fontSize: 7.2, lineHeight: 1.35, color: GRIS_CLAIR, marginTop: 2.5 },
   achatRang: { width: 16, fontSize: 7.6, lineHeight: 1, color: GRIS_CLAIR, textAlign: 'right', marginLeft: 8 },
 
-  materiel: { marginTop: 9, borderWidth: 0.8, borderColor: FILET_FORT, borderRadius: 6, borderStyle: 'dashed', paddingVertical: 8, paddingHorizontal: 11 },
-  materielCle: { fontSize: 7, letterSpacing: 0.9, textTransform: 'uppercase', color: GRIS, lineHeight: 1, ...poids(700) },
-  materielListe: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 5 },
-  materielItem: { fontSize: 8.4, lineHeight: 1.3, marginRight: 8, marginBottom: 2, ...poids(500) },
+  materiel: { marginTop: 21 },
+  materielCle: { fontSize: 6.8, letterSpacing: 0.9, textTransform: 'uppercase', color: VERT_PROFOND, lineHeight: 1, marginBottom: 2, ...poids(700) },
+  materielListe: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 1 },
+  materielItem: { fontSize: 8.8, lineHeight: 1.3, ...poids(400) },
 
-  correction: { marginTop: 9, borderWidth: 0.8, borderColor: ENCRE, borderRadius: 5, paddingVertical: 8, paddingHorizontal: 10 },
+  correction: { marginTop: 21, backgroundColor: '#F1FBF6', borderRadius: 9, paddingVertical: 15,
+    paddingHorizontal: 16 },
   gris: { color: GRIS },
   thIcone: { width: 20 },
   panneau: { borderWidth: 0.7, borderColor: FILET, borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' },
   verdictRang: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12, padding: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6 },
   bloc: { marginTop: 7 },
-  fiche: { marginTop: 11, borderWidth: 0.7, borderColor: FILET, borderRadius: 6, padding: 12 },
+  rubrique: { marginTop: 21 },
+  cleLigne: { flexDirection: 'row', alignItems: 'center', marginBottom: 7 },
+  rubriqueCle: { fontSize: 6.8, letterSpacing: 1.1, textTransform: 'uppercase', lineHeight: 1,
+    color: GRIS, marginBottom: 7, ...poids(700) },
+  texteLoi: { marginTop: 24, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 12 },
+  texteLoiCorps: { fontSize: 8, lineHeight: 1.6, color: ENCRE_DOUX, fontFamily: 'Helvetica-Oblique' },
+  texteLoiNote: { fontSize: 6.8, lineHeight: 1.4, color: GRIS_CLAIR, marginTop: 5 },
+  blocRisque: { marginTop: 12 },
+  blocPreuve: { marginTop: 12 },
+  blocPhotos: { marginTop: 24, marginBottom: 14 },
+  blocControle: { marginTop: 21, backgroundColor: TEINTE_ROUGE, borderWidth: 0.8, borderColor: '#F3C9C9',
+    borderRadius: 9, paddingVertical: 13, paddingHorizontal: 15 },
+  ligneAlerte: { flexDirection: 'row', alignItems: 'center', marginBottom: 9 },
+  /* Un vrai emoji ne s'imprime pas : les polices PDF standard n'ont pas ces
+     glyphes. Le signe est donc dessine, meme lecture, mais qui sort partout. */
+  pictoAlerte: { marginRight: 9 },
+  blocTexte: { marginTop: 13, borderTopWidth: 0.7, borderTopColor: FILET, paddingTop: 8 },
+  ficheTexte: { fontSize: 9.4, lineHeight: 1.5, letterSpacing: -0.05 },
+  ficheAttendu: { fontSize: 8.6, lineHeight: 1.5, color: GRIS, marginTop: 5 },
+  cleSombre: { fontSize: 6.8, letterSpacing: 0.9, textTransform: 'uppercase', color: GRIS, lineHeight: 1, marginBottom: 5, ...poids(700) },
+  cleCouleur: { fontSize: 6.8, letterSpacing: 0.9, textTransform: 'uppercase', lineHeight: 1, marginBottom: 5, ...poids(700) },
+  clePreuve: { fontSize: 6.8, letterSpacing: 0.9, textTransform: 'uppercase', color: VERT_PROFOND, lineHeight: 1, marginBottom: 4, ...poids(700) },
+  materielPuce: { flexDirection: 'row', alignItems: 'center', marginRight: 18, marginBottom: 5 },
+  materielCase: { width: 7, height: 7, borderRadius: 1.5, borderWidth: 0.9, borderColor: VERT, marginRight: 6 },
+  /* Le rail sort de la marge de page : la bande de couleur touche le bord du
+     papier, c'est elle qui se voit sur la tranche du rapport. */
+  fiche: { height: HAUTEUR_UTILE, flexDirection: 'row', marginLeft: -MARGE },
+  ficheInterieur: { flex: 1 },
+  /* La bande court du haut de la feuille jusqu'au bandeau de pied : elle sort
+     des marges de page, en haut comme a gauche. */
+  /* La bande court du haut de la feuille jusqu'au bas : sur ces pages le
+     bandeau vert est retire, la couleur va donc bord a bord. Le logo se cale a
+     la hauteur ou il se trouvait dans le bandeau. */
+  rail: { width: MARGE + 20, height: A4_HAUTEUR, marginTop: -PAGE_HAUT,
+    alignItems: 'center', justifyContent: 'space-between', paddingTop: 26,
+    paddingBottom: (PIED_HAUTEUR - 11) / 2 },
+  railNumero: { fontSize: 22, lineHeight: 1, color: '#FFFFFF', ...poids(700) },
+  railPivot: { width: MARGE + 20, height: 230, alignItems: 'center', justifyContent: 'center' },
+  railMot: { width: 230, textAlign: 'center', fontSize: 11, lineHeight: 1, letterSpacing: 3.4,
+    color: '#FFFFFF', transform: 'rotate(-90deg)', ...poids(700) },
+  railBas: { width: MARGE + 20, alignItems: 'center' },
+  railCode: { width: MARGE + 20, textAlign: 'center', fontSize: 6, lineHeight: 1, letterSpacing: 0.6,
+    color: 'rgba(255,255,255,0.72)', ...poids(500) },
+  railLogo: { width: 54, height: 11, marginTop: 16, objectFit: 'contain' },
+  bandeauLarge: { paddingVertical: 9, paddingHorizontal: 16 },
   signatureLigne: { borderBottomWidth: 0.7, borderBottomColor: FILET_FORT, height: 30, marginBottom: 4 },
   colonneGauche: { marginRight: 28 },
   filet: { borderTopWidth: 0.7, borderTopColor: FILET },
@@ -287,11 +347,11 @@ const s = StyleSheet.create({
   colonnes: { flexDirection: 'row', marginTop: 24 },
   sommaireRond: { width: 26, height: 26, borderRadius: 13, borderWidth: 0.7, borderColor: FILET, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
   thNom: { flex: 1, fontSize: 7.9 },
-  encart: { marginTop: 14, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: FILET },
+  encart: { marginTop: 16, paddingTop: 10, borderTopWidth: 0.7, borderTopColor: FILET },
   alerte: { marginTop: 16, padding: 12, borderRadius: 6, borderWidth: 0.7, borderColor: '#F1C7C7', borderLeftWidth: 2.5, borderLeftColor: ROUGE },
   suiteRang: { width: 18, height: 18, borderRadius: 9, marginRight: 12, textAlign: 'center', paddingTop: 4.6, fontSize: 7, lineHeight: 1, color: '#FFFFFF', ...poids(600) },
   thVal: { width: 26, textAlign: 'right', fontSize: 7.9, ...poids(600) },
-  bandePhotos: { flexDirection: 'row', marginTop: 4 },
+  bandePhotos: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 },
   suiteQuand: { fontSize: 7, color: GRIS_CLAIR, marginTop: 0.5 },
   chapitre: { marginTop: 30 },
   section: { marginTop: 22 },
@@ -315,7 +375,7 @@ const s = StyleSheet.create({
   recapVal: { fontSize: 11, textAlign: 'center' },
   recapNote: { fontSize: 13, width: 26, textAlign: 'right', ...poids(700) },
   fiche3Grille: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  fiche3: { width: '49%', marginTop: 5, borderWidth: 0.8, borderColor: FILET, borderRadius: 7 },
+  fiche3: { width: '49%', height: 108, marginBottom: 7, borderWidth: 0.8, borderColor: FILET, borderRadius: 7, overflow: 'hidden' },
   fiche3Bandeau: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5, paddingHorizontal: 9, borderBottomWidth: 0.8, borderBottomColor: FILET },
   /* lineHeight à 1 : sans lui, le chiffre hérite de l'interligne de la page et
      se décale vers le bas dans sa pastille. */
@@ -323,12 +383,12 @@ const s = StyleSheet.create({
     textAlign: 'center', color: '#FFFFFF', marginRight: 8, ...poids(700) },
   fiche3Etat: { flex: 1, fontSize: 7, lineHeight: 1, letterSpacing: 0.5, textTransform: 'uppercase', ...poids(700) },
   fiche3Code: { fontSize: 6.6, lineHeight: 1, letterSpacing: 0.4, color: GRIS_CLAIR, ...poids(500) },
-  fiche3Titre: { fontSize: 8.8, lineHeight: 1.25, ...poids(600) },
-  fiche3Zone: { paddingVertical: 5, paddingHorizontal: 9 },
-  fiche3Bas: { paddingVertical: 6, paddingHorizontal: 9, borderTopWidth: 0.8, borderTopColor: FILET, backgroundColor: '#F5F8F7', borderBottomLeftRadius: 7, borderBottomRightRadius: 7 },
-  fiche3Probleme: { fontSize: 8, lineHeight: 1.3, color: GRIS, marginTop: 1.5 },
+  fiche3Titre: { fontSize: 8.4, lineHeight: 1.25, ...poids(600) },
+  fiche3Zone: { flex: 1, paddingVertical: 5, paddingHorizontal: 9 },
+  fiche3Bas: { paddingVertical: 7, paddingHorizontal: 9, borderTopWidth: 0.8, borderTopColor: '#C9E9DA', backgroundColor: '#F1FBF6', borderBottomLeftRadius: 7, borderBottomRightRadius: 7 },
+  fiche3Probleme: { fontSize: 7.6, lineHeight: 1.3, color: GRIS, marginTop: 2 },
   fiche3Cle: { fontSize: 6.4, lineHeight: 1, letterSpacing: 0.8, textTransform: 'uppercase', color: GRIS_CLAIR, ...poids(600) },
-  fiche3Correction: { fontSize: 8.4, lineHeight: 1.3, marginTop: 1.5, ...poids(500) },
+  fiche3Correction: { fontSize: 7.9, lineHeight: 1.3, marginTop: 2, ...poids(500) },
 
   plan: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 9, borderTopWidth: 0.7, borderTopColor: FILET },
   planNumero: { width: 24, fontSize: 9, color: GRIS_CLAIR, paddingTop: 2.5, ...poids(600) },
@@ -355,11 +415,24 @@ const s = StyleSheet.create({
   metaCle: { width: 130, color: GRIS },
 
   /* Pied de page */
-  bandeau: {
+  /* Le pied est ancre par le haut : un noeud fixe a rendu dynamique cale par le
+     bas fait diverger pdfkit. */
+  pied: {
     position: 'absolute',
-    bottom: 0,
+    top: A4_HAUTEUR - PIED_HAUTEUR,
     left: 0,
     right: 0,
+    height: PIED_HAUTEUR,
+  },
+  piedSobre: {
+    height: PIED_HAUTEUR,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 22,
+  },
+  piedSobreNom: { flex: 1, textAlign: 'center', fontSize: 7, lineHeight: 1, color: ENCRE },
+  piedSobrePage: { width: 60, textAlign: 'right', fontSize: 7, lineHeight: 1, color: ENCRE },
+  bandeau: {
     height: PIED_HAUTEUR,
     backgroundColor: VERT,
     flexDirection: 'row',
@@ -369,7 +442,7 @@ const s = StyleSheet.create({
   bandeauLogo: { width: 60, height: 12, objectFit: 'contain' },
   bandeauMarque: { width: 60, fontSize: 7.5, color: '#FFFFFF', ...poids(600) },
   bandeauNom: { flex: 1, textAlign: 'center', fontSize: 7, lineHeight: 1, color: '#EAFBF3' },
-  bandeauPage: { width: 60 },
+  bandeauPage: { width: 60, textAlign: 'right', fontSize: 7, lineHeight: 1, color: '#EAFBF3' },
   numPage: {
     position: 'absolute',
     top: A4_HAUTEUR - PIED_HAUTEUR + 10.5,
@@ -402,12 +475,22 @@ function referenceValide(texte?: string | null): texte is string {
 }
 
 /** Première phrase de la référence réglementaire. Le texte entier part en annexe. */
-function abrege(texte: string, max = 180): string {
+function abrege(texte: string, max = 250): string {
   const t = texte.trim();
   if (t.length <= max) return t;
   const coupe = t.slice(0, max);
-  const point = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf(' ; '));
-  return `${(point > 60 ? coupe.slice(0, point) : coupe).trim()}.`;
+  /* On coupe a une fin de proposition, jamais au milieu d'un mot : une citation
+     reglementaire tronquee sur une syllabe ne veut plus rien dire. */
+  const fin = Math.max(
+    coupe.lastIndexOf('. '),
+    coupe.lastIndexOf(' ; '),
+    coupe.lastIndexOf(' : '),
+    coupe.lastIndexOf(', ')
+  );
+  const mot = coupe.lastIndexOf(' ');
+  const rupture = fin > 90 ? fin : mot;
+  const garde = coupe.slice(0, rupture).replace(/[\s,;:.]+$/, '');
+  return `${garde} […]`;
 }
 
 /* ------------------------------------------------------------------ Icônes */
@@ -434,6 +517,9 @@ const TRACES: Record<string, string> = {
   bouclier: 'M10.5 3.2 16.8 5.6v4.8c0 3.6-2.5 6-6.3 7.4-3.8-1.4-6.3-3.8-6.3-7.4V5.6Z M7.9 10.4l1.9 1.9 3.3-3.4',
   cadenas: 'M6.4 9.2h8.2a1.4 1.4 0 0 1 1.4 1.4v5.2a1.4 1.4 0 0 1-1.4 1.4H6.4A1.4 1.4 0 0 1 5 15.8v-5.2a1.4 1.4 0 0 1 1.4-1.4Z M7.6 9.2V7a2.9 2.9 0 0 1 5.8 0v2.2 M10.5 12.2v2.2',
   liste: 'M7.4 5.6h9.2 M7.4 10.5h9.2 M7.4 15.4h9.2 M4.4 5.6h.02 M4.4 10.5h.02 M4.4 15.4h.02',
+  alerte: 'M10.5 2.9 19.4 17.6H1.6Z M10.5 8.2v4.1 M10.5 14.7h.02',
+  listeCochee: 'M9.4 5.6h7.2 M9.4 10.5h7.2 M9.4 15.4h7.2 M3.4 5.2l1.2 1.2 2-2.2 M3.4 10.1l1.2 1.2 2-2.2 M3.4 15l1.2 1.2 2-2.2',
+  panier: 'M3.2 7.2h14.6l-1.5 9.4a1.6 1.6 0 0 1-1.6 1.3H6.3a1.6 1.6 0 0 1-1.6-1.3Z M7.4 7.2V5.6a3.1 3.1 0 0 1 6.2 0v1.6',
 };
 
 /** Nom court du thème, pour les axes de l'étoile. */
@@ -470,6 +556,17 @@ function iconeTheme(theme: string): string {
   if (t.includes('allerg')) return 'allergene';
   if (t.includes('eau') || t.includes('glace')) return 'robinet';
   return 'liste';
+}
+
+/** Triangle d'alerte plein : le seul signe de la fiche qui doit sauter aux yeux. */
+function PictoAlerte({ taille = 18 }: { taille?: number }) {
+  return (
+    <Svg width={taille} height={taille} viewBox="0 0 24 24">
+      <Path d="M12 2.2 23 21.4H1Z" fill={ROUGE} />
+      <Path d="M12 8.6v6" stroke="#FFFFFF" strokeWidth={2.2} strokeLinecap="round" />
+      <Path d="M12 18.1h.02" stroke="#FFFFFF" strokeWidth={2.2} strokeLinecap="round" />
+    </Svg>
+  );
 }
 
 function Glyphe({ nom, taille = 13, couleur = ENCRE }: { nom: string; taille?: number; couleur?: string }) {
@@ -913,41 +1010,52 @@ function Pastilles({ t }: { t: RapportTheme }) {
   );
 }
 
-function Bandeau({ data }: { data: HygienePdfData }) {
+/**
+ * Pied de page. Sur les pages de fiche, la bande de couleur du point tient deja
+ * tout le bord gauche : un second aplat vert en bas ferait masse, on le remplace
+ * par une ligne sobre en noir.
+ */
+function Bandeau({ data, fiches }: { data: HygienePdfData; fiches: [number, number] | null }) {
+  const sobre = (page: number) => fiches !== null && page >= fiches[0] && page <= fiches[1];
   return (
-    <View style={s.bandeau} fixed>
-      {data.logoBlanc ? (
-        <Image src={data.logoBlanc} style={s.bandeauLogo} />
-      ) : (
-        <Text style={s.bandeauMarque}>audit hygiène</Text>
-      )}
-      <Text style={s.bandeauNom}>
-        {data.etablissement}, rapport du {data.date}
-      </Text>
-      {/* Réserve la place du numéro, posé par NumeroPage. */}
-      <View style={s.bandeauPage} />
-    </View>
-  );
-}
-
-/** Numéro de page, rejoué sur chaque page. Ancré par le haut, voir l'entête. */
-function NumeroPage() {
-  return (
-    <Text
-      style={s.numPage}
+    <View
+      style={s.pied}
       fixed
-      render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+      render={(props) => {
+        /* react-pdf transmet bien le total, ses types ne le declarent pas. */
+        const { pageNumber, totalPages } = props as unknown as { pageNumber: number; totalPages: number };
+        return sobre(pageNumber) ? (
+          <View style={s.piedSobre}>
+            <View style={{ width: 60 }} />
+            <Text style={s.piedSobreNom}>
+              {data.etablissement}, rapport du {data.date}
+            </Text>
+            <Text style={s.piedSobrePage}>
+              {pageNumber} / {totalPages}
+            </Text>
+          </View>
+        ) : (
+          <View style={s.bandeau}>
+            {data.logoBlanc ? (
+              <Image src={data.logoBlanc} style={s.bandeauLogo} />
+            ) : (
+              <Text style={s.bandeauMarque}>audit hygiène</Text>
+            )}
+            <Text style={s.bandeauNom}>
+              {data.etablissement}, rapport du {data.date}
+            </Text>
+            <Text style={s.bandeauPage}>
+              {pageNumber} / {totalPages}
+            </Text>
+          </View>
+        );
+      }}
     />
   );
 }
 
-function Pied({ data }: { data: HygienePdfData }) {
-  return (
-    <>
-      <Bandeau data={data} />
-      <NumeroPage />
-    </>
-  );
+function Pied({ data, fiches }: { data: HygienePdfData; fiches: [number, number] | null }) {
+  return <Bandeau data={data} fiches={fiches} />;
 }
 
 /**
@@ -1015,39 +1123,109 @@ function LigneTheme({ t }: { t: RapportTheme }) {
   );
 }
 
-function Fiche({ a }: { a: ActionCorrective }) {
+/**
+ * Une photo seule occupe plus de place que quatre : la bande reste centree et
+ * lisible quel que soit le nombre de cliches, sans jamais depasser quatre par
+ * ligne.
+ */
+function taillePhoto(nombre: number) {
+  if (nombre === 1) return { width: '46%' as const, height: 150 };
+  if (nombre === 2) return { width: '34%' as const, height: 118 };
+  if (nombre === 3) return { width: '28%' as const, height: 98 };
+  return { width: '22%' as const, height: 80 };
+}
+
+/**
+ * Le bandeau d'un point : le numero du plan, l'etat, le code de la grille.
+ * Une seule definition pour la carte du plan et pour la fiche detaillee, sinon
+ * les deux finissent par diverger.
+ */
+function BandeauEtat({
+  numero,
+  critique,
+  code,
+  large = false,
+}: {
+  numero: number;
+  critique: boolean;
+  code: string;
+  large?: boolean;
+}) {
+  const couleur = critique ? ROUGE : AMBRE;
+  return (
+    <View style={[s.fiche3Bandeau, large ? s.bandeauLarge : {}]}>
+      <Text style={[s.fiche3Numero, { backgroundColor: couleur }]}>
+        {String(numero).padStart(2, '0')}
+      </Text>
+      <Text style={[s.fiche3Etat, { color: couleur }]}>{critique ? 'Critique' : 'Non conforme'}</Text>
+      <Text style={s.fiche3Code}>{code.replace(/-[A-Z0-9]{4}$/, '')}</Text>
+    </View>
+  );
+}
+
+/** Libelle d'une rubrique : son pictogramme, puis le mot, sur la meme ligne. */
+function CleRubrique({ icone, couleur, children }: { icone: string; couleur: string; children: string }) {
+  return (
+    <View style={s.cleLigne}>
+      <Glyphe nom={icone} taille={12} couleur={couleur} />
+      <Text style={[s.rubriqueCle, { color: couleur, marginBottom: 0, marginLeft: 7 }]}>{children}</Text>
+    </View>
+  );
+}
+
+function Fiche({ a, numero, logo }: { a: ActionCorrective; numero: number; logo?: string | null }) {
   const critique = a.priorite === 'IMMEDIAT';
   return (
-    <View style={s.fiche} minPresenceAhead={46}>
+    /* Un point par page : on exige presque une page libre devant la fiche, donc
+       la suivante part toujours sur une page neuve. `break` repete n'est pas
+       fiable ici, le moteur cesse de l'honorer au bout de quelques appels. */
+    <View style={{ height: HAUTEUR_UTILE }} wrap={false}>
+    <View style={s.fiche}>
+      {/* Le rail porte le rang et la gravite sur toute la hauteur : le point se
+          repere des que le client feuillette, rapport ferme sur la tranche. */}
+      <View style={[s.rail, { backgroundColor: critique ? ROUGE : AMBRE }]}>
+        <Text style={s.railNumero}>{String(numero).padStart(2, '0')}</Text>
+        <View style={s.railPivot}>
+          <Text style={s.railMot}>{critique ? 'CRITIQUE' : 'NON CONFORME'}</Text>
+        </View>
+        <View style={s.railBas}>
+          <Text style={s.railCode}>{a.code.replace(/-[A-Z0-9]{4}$/, '')}</Text>
+          {logo ? <Image src={logo} style={s.railLogo} /> : null}
+        </View>
+      </View>
+
+      <View style={s.ficheInterieur}>
       <View style={s.ficheTete}>
-        <View style={{ width: 22, paddingTop: 1 }}>
-          <Glyphe nom={iconeTheme(a.theme)} taille={14} couleur={critique ? ROUGE : AMBRE} />
+        {/* Entete courant de la page : le theme du point, en haut a droite, sur
+            le meme filet d'une page a l'autre. */}
+        <View style={s.ficheEntete}>
+          <Glyphe nom={iconeTheme(a.theme)} taille={11} couleur={critique ? ROUGE : AMBRE} />
+          <Text style={[s.ficheMeta, { color: critique ? ROUGE : AMBRE }]}>{a.theme}</Text>
         </View>
-        <View style={{ flex: 1, paddingRight: 10 }}>
-          <Text style={s.ficheTitre}>{a.intitule}</Text>
-          <Text style={s.ficheMeta}>
-            {a.theme}, point {a.code}
-          </Text>
-        </View>
-        <Text style={[s.jeton, { backgroundColor: critique ? ROUGE : AMBRE }]}>
-          {critique ? 'Critique' : 'Non conforme'}
-        </Text>
+        <Text style={s.ficheTitre}>{a.intitule}</Text>
       </View>
 
       <View style={s.ficheCorps}>
         {a.constat ? (
-          <View style={s.bloc}>
-            <Text style={s.cle}>Constaté sur place</Text>
-            <Text>{a.constat}</Text>
+          <View style={s.rubrique}>
+            <CleRubrique icone="loupe" couleur={GRIS}>Constaté lors de la visite</CleRubrique>
+            <Text style={s.ficheTexte}>{a.constat}</Text>
+            {a.attendu ? (
+              <Text style={s.ficheAttendu}>Ce que demande le point : {a.attendu}</Text>
+            ) : null}
           </View>
         ) : null}
-        <View style={s.bloc}>
-          <Text style={s.cle}>Pourquoi ça compte</Text>
-          <Text>{a.risque}</Text>
+
+        <View style={s.rubrique}>
+          <Text style={[s.rubriqueCle, { color: critique ? ROUGE : AMBRE }]}>
+            La conséquence du manquement
+          </Text>
+          <Text style={s.ficheTexte}>{a.risque}</Text>
         </View>
-        {/* La correction est ce que le client vient chercher : elle est encadrée. */}
+
+        {/* La correction est ce que le client vient chercher : seul aplat de la page. */}
         <View style={s.correction}>
-          <Text style={s.correctionCle}>À faire</Text>
+          <CleRubrique icone="listeCochee" couleur={VERT_PROFOND}>La correction à faire</CleRubrique>
           <Text style={s.correctionTexte}>{a.correctif}</Text>
 
           {a.etapes.length > 0 ? (
@@ -1063,45 +1241,48 @@ function Fiche({ a }: { a: ActionCorrective }) {
         </View>
 
         {a.materiel.length > 0 ? (
-          <View style={s.materiel} wrap={false}>
-            <Text style={s.materielCle}>Matériel à prévoir</Text>
+          <View style={s.rubrique} wrap={false}>
+            <CleRubrique icone="panier" couleur={VERT_PROFOND}>Matériel à prévoir</CleRubrique>
             <View style={s.materielListe}>
               {a.materiel.map((m) => (
-                <Text key={m} style={s.materielItem}>
-                  {m}
-                </Text>
+                <View key={m} style={s.materielPuce}>
+                  <View style={s.materielCase} />
+                  <Text style={s.materielItem}>{m}</Text>
+                </View>
               ))}
             </View>
-          </View>
-        ) : null}
-
-        {a.preuve ? (
-          <View style={s.bloc}>
-            <Text style={s.cle}>Ce qui servira de preuve</Text>
-            <Text style={s.petit}>{a.preuve}</Text>
           </View>
         ) : null}
 
         {a.photos.length > 0 && (
           /* Le libellé et la bande de photos tiennent ensemble : séparés, le
              libellé restait seul en bas de page. */
-          <View style={s.bloc} wrap={false}>
-            <Text style={s.cle}>Sur place</Text>
+          <View style={s.blocPhotos} wrap={false}>
             <View style={s.bandePhotos}>
-              {a.photos.slice(0, 3).map((p, i) => (
+              {a.photos.slice(0, PHOTOS_MAX).map((p, i) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <Image key={i} src={p.url} style={s.photo} />
+                <View key={i} style={[s.cadrePhoto, taillePhoto(a.photos.length)]}>
+                  <Image src={p.url} style={s.photo} />
+                  {p.prise ? <Text style={s.horodate}>{p.prise}</Text> : null}
+                </View>
               ))}
             </View>
           </View>
         )}
 
         {critique ? (
-          <View style={s.bloc}>
-            <Text style={s.cle}>Si ce point est retrouvé en contrôle</Text>
-            <Text style={s.petit}>
+          <View style={s.blocControle}>
+            <View style={s.ligneAlerte}>
+              <View style={s.pictoAlerte}>
+                <PictoAlerte taille={19} />
+              </View>
+              <Text style={[s.rubriqueCle, { color: ROUGE, marginBottom: 0 }]}>
+                Les suites possibles en cas de contrôle
+              </Text>
+            </View>
+            <Text style={s.ficheTexte}>
               {suitesProbables(a.priorite)
-                .map((x) => x.titre.charAt(0).toLowerCase() + x.titre.slice(1))
+                .map((x, i) => (i === 0 ? x.titre : x.titre.charAt(0).toLowerCase() + x.titre.slice(1)))
                 .join(', ')}
               .
             </Text>
@@ -1109,12 +1290,15 @@ function Fiche({ a }: { a: ActionCorrective }) {
         ) : null}
 
         {referenceValide(a.referenceRegl) ? (
-          <View style={s.bloc}>
-            <Text style={s.cle}>Texte applicable</Text>
-            <Text style={s.petit}>{abrege(a.referenceRegl)} Version complète en annexe.</Text>
+          <View style={s.texteLoi}>
+            <CleRubrique icone="classeur" couleur={GRIS}>Le texte qui s’applique</CleRubrique>
+            <Text style={s.texteLoiCorps}>{abrege(a.referenceRegl)}</Text>
+            <Text style={s.texteLoiNote}>Version complète en annexe du rapport.</Text>
           </View>
         ) : null}
       </View>
+      </View>
+    </View>
     </View>
   );
 }
@@ -1161,6 +1345,13 @@ function LigneSommaire({
 
 /* ------------------------------------------------------------------ Document */
 
+/** Decoupe stricte : chaque page porte le plafond, sauf la derniere. */
+function decouper<T>(liste: T[], taille: number): T[][] {
+  const pages: T[][] = [];
+  for (let i = 0; i < liste.length; i += taille) pages.push(liste.slice(i, i + taille));
+  return pages;
+}
+
 function equilibrer<T>(liste: T[], plafond: number): T[][] {
   const nb = Math.max(1, Math.ceil(liste.length / plafond));
   const parPage = Math.ceil(liste.length / nb);
@@ -1195,6 +1386,62 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
   const themesNotes = r.themes.filter((t) => t.score !== null);
   const themesSansNote = r.themes.filter((t) => t.score === null);
   const plusFaibles = themesClasses.filter((t) => t.score !== null).slice(0, 4);
+
+  /* Les fiches occupent une page chacune, a la suite du plan : couverture,
+     toile, notation, sommaire, puis dix cartes de plan par page. On en deduit
+     la plage de pages qui portent la bande de couleur. */
+  const pagesFiches: [number, number] | null =
+    r.actions.length > 0
+      ? [
+          5 + Math.ceil(r.actions.length / 10),
+          5 + Math.ceil(r.actions.length / 10) + r.actions.length - 1,
+        ]
+      : null;
+
+  /* Le sommaire ne liste que les parties reellement presentes dans ce rapport. */
+  const parties = [
+    r.actions.length > 0
+      ? {
+          icone: 'liste',
+          titre: 'Le plan de mise en conformité',
+          texte: `${r.actions.length} ${r.actions.length > 1 ? 'points' : 'point'} : le constat de l'auditeur, la correction attendue, puis la fiche détaillée de chacun.`,
+        }
+      : null,
+    r.materielAPrevoir.length > 0
+      ? {
+          icone: 'cartons',
+          titre: 'Le matériel à prévoir',
+          texte: `${r.materielAPrevoir.length} ${r.materielAPrevoir.length > 1 ? 'éléments à réunir' : 'élément à réunir'} pour appliquer les corrections, en une seule liste.`,
+        }
+      : null,
+    {
+      icone: 'balance',
+      titre: 'Les risques et les suites',
+      texte: "Ce qu'un écart fait peser sur le consommateur, sur l'établissement, et l'échelle des suites d'un contrôle officiel.",
+    },
+    {
+      icone: 'bouclier',
+      titre: 'Ce qui est déjà tenu',
+      texte: "Les points conformes le jour de la visite, et l'ordre des étages à garder dans le froid.",
+    },
+    {
+      icone: 'loupe',
+      titre: 'Le détail de tous les points',
+      texte: `Les ${r.totalPoints} points examinés, leur état et les notes prises sur place.`,
+    },
+    references.length > 0
+      ? {
+          icone: 'classeur',
+          titre: 'Les références réglementaires',
+          texte: "Le texte sur lequel s'appuie chaque point, dans sa version en vigueur à la date de la visite.",
+        }
+      : null,
+    {
+      icone: 'etiquette',
+      titre: 'La portée du document',
+      texte: "Ce que ce rapport dit, ce qu'il ne dit pas, et comment le conserver.",
+    },
+  ].filter((x): x is { icone: string; titre: string; texte: string } => x !== null);
 
   return (
     <Document
@@ -1278,7 +1525,8 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           neuve à chaque partie laissait une demi-page blanche à chaque fin. */}
       <Page size="A4" style={s.page}>
       {/* 02 · Vue d'ensemble */}
-      <View {...signet("Le résultat en un coup d'oeil")} style={s.chapitre}>
+      <View {...signet("Le résultat en un coup d'oeil")} style={[s.chapitre, { marginTop: 0 }]}>
+        <View style={{ height: HAUTEUR_UTILE }} wrap={false}>
         <TeteSection
           titre="Le résultat en un coup d'oeil"
           chapeau="L'étoile donne la forme de l'établissement : plus la surface est large, plus la maîtrise est homogène. Un creux marque un thème à reprendre."
@@ -1335,7 +1583,9 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </Text>
         ) : null}
 
-        <View style={s.section} break>
+        </View>
+
+        <View style={[s.section, { height: HAUTEUR_UTILE, marginTop: 0 }]} wrap={false}>
           <Text style={s.h1}>La notation par thème</Text>
 
           <View style={s.definitions}>
@@ -1452,190 +1702,130 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         </View>
 
+        {/* Une section qui occupe toute la hauteur utile pousse la suivante sur
+            une page neuve. `break` n'est pas fiable ici : le moteur cesse de
+            l'honorer au bout de quelques appels et deux sections finissent
+            imprimees l'une par-dessus l'autre. */}
+        <View {...signet('Sommaire')} style={{ height: HAUTEUR_UTILE }} wrap={false}>
+          <TeteSection
+            titre="Ce que contient ce rapport"
+            chapeau="Les parties, dans l'ordre de lecture conseillé. Si vous n'en lisez qu'une, lisez la première : elle suffit à savoir quoi faire cette semaine."
+          />
+
+          <View style={{ marginTop: 6 }}>
+            {parties.map((partie, i) => (
+              <LigneSommaire
+                key={partie.titre}
+                num={i + 1}
+                icone={partie.icone}
+                titre={partie.titre}
+                texte={partie.texte}
+              />
+            ))}
+            <View style={s.filet} />
+          </View>
+
+          <View style={s.section}>
+            <Text style={s.h2}>Comment se lit la note</Text>
+            <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
+              Chaque point vaut un poids de 1 à 3 selon son impact sanitaire. Un point conforme rapporte
+              la totalité de son poids, un écart mineur la moitié, un point critique rien. Les points non
+              applicables et non évalués sortent du calcul.
+            </Text>
+            <View style={s.encart}>
+              <Text style={s.petit}>
+                Un point critique ne se compense pas. Tant qu&apos;il en reste un, le rapport place
+                l&apos;établissement à redresser, quelle que soit la note obtenue ailleurs.
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {r.actions.length > 0 ? (
-          <View break>
-            <TeteSection
-              titre="Plan de mise en conformité"
-              chapeau="Point par point : le constat de l'auditeur et la correction attendue. Les non-conformités majeures d'abord."
-            />
-
-            <View style={s.fiche3Grille}>
-            {r.actions.map((a, i) => {
-              const critique = a.priorite === 'IMMEDIAT';
-              const couleur = critique ? ROUGE : AMBRE;
+          <View>
+            {decouper(r.actions, 10).map((lot, ip, lots) => {
+              const rang0 = lots.slice(0, ip).reduce((n, l) => n + l.length, 0);
               return (
-                <View key={a.code} style={s.fiche3} wrap={false}>
-                  <View style={s.fiche3Bandeau}>
-                    <Text style={[s.fiche3Numero, { backgroundColor: couleur }]}>
-                      {String(i + 1).padStart(2, '0')}
-                    </Text>
-                    <Text style={[s.fiche3Etat, { color: couleur }]}>
-                      {critique ? 'Critique' : 'Non conforme'}
-                    </Text>
-                    <Text style={s.fiche3Code}>{a.code.replace(/-[A-Z0-9]{4}$/, '')}</Text>
-                  </View>
+                <View key={ip} style={{ height: HAUTEUR_UTILE }} wrap={false}>
+                  {ip === 0 ? (
+                    <TeteSection
+                      titre="Plan de mise en conformité"
+                      chapeau="Point par point : le constat de l'auditeur et la correction attendue. Les non-conformités majeures d'abord."
+                    />
+                  ) : null}
 
-                  <View style={{ paddingHorizontal: 9, paddingTop: 5 }}>
-                    <Text style={s.fiche3Titre}>{a.intitule}</Text>
-                  </View>
+                  <View style={s.fiche3Grille}>
+                    {lot.map((a, i) => {
+                      const critique = a.priorite === 'IMMEDIAT';
+                      return (
+                        <View key={a.code} style={s.fiche3}>
+                          <BandeauEtat numero={rang0 + i + 1} critique={critique} code={a.code} />
 
-                  <View style={s.fiche3Zone}>
-                    <Text style={s.fiche3Cle}>Constaté</Text>
-                    <Text style={s.fiche3Probleme}>{a.constat?.trim() || a.risque}</Text>
-                  </View>
+                          <View style={{ paddingHorizontal: 9, paddingTop: 5 }}>
+                            <Text style={[s.fiche3Titre, { maxLines: 2, textOverflow: 'ellipsis' }]}>
+                              {a.intitule}
+                            </Text>
+                          </View>
 
-                  <View style={s.fiche3Bas}>
-                    <Text style={s.fiche3Cle}>Correction</Text>
-                    <Text style={s.fiche3Correction}>{a.correctif}</Text>
+                          <View style={s.fiche3Zone}>
+                            <Text style={s.fiche3Cle}>Constaté</Text>
+                            <Text style={[s.fiche3Probleme, { maxLines: 2, textOverflow: 'ellipsis' }]}>
+                              {a.constat?.trim() || a.risque}
+                            </Text>
+                          </View>
+
+                          <View style={s.fiche3Bas}>
+                            <Text style={[s.fiche3Cle, { color: VERT_PROFOND }]}>Correction</Text>
+                            <Text style={[s.fiche3Correction, { maxLines: 2, textOverflow: 'ellipsis' }]}>
+                              {a.correctif}
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    })}
                   </View>
                 </View>
               );
             })}
-            </View>
           </View>
         ) : null}
-
-
-      </View>
-
-      {/* 03 · Sommaire */}
-      <View {...signet("Sommaire")} style={s.chapitre}>
-        <TeteSection
-          titre="Ce que contient ce rapport"
-          chapeau="Six parties, dans l'ordre de lecture conseillé. Si vous n'en lisez qu'une, lisez la première : elle suffit à savoir quoi faire cette semaine."
-        />
-
-        <View style={{ marginTop: 6 }}>
-          <LigneSommaire
-            num={1}
-            icone="liste"
-            titre="Les points à corriger"
-            texte={
-              r.actions.length === 0
-                ? "Aucun écart relevé sur les points audités."
-                : `${r.actions.length} ${r.actions.length > 1 ? 'fiches' : 'fiche'} : ce qui a été vu, pourquoi ça compte, ce qu'il faut faire, sous quel délai.`
-            }
-          />
-          <LigneSommaire
-            num={2}
-            icone="balance"
-            titre="Les risques et les suites"
-            texte="Ce qu'un écart fait peser sur le consommateur, sur l'établissement, et l'échelle des suites d'un contrôle officiel."
-          />
-          <LigneSommaire
-            num={3}
-            icone="thermometre"
-            titre="Les résultats par thème"
-            texte="La note de chaque thème de la grille, du froid aux allergènes, avec le nombre d'écarts."
-          />
-          <LigneSommaire
-            num={4}
-            icone="loupe"
-            titre="Le détail de tous les points"
-            texte={`Les ${r.totalPoints} points examinés, leur état et les notes prises sur place.`}
-          />
-          <LigneSommaire
-            num={5}
-            icone="classeur"
-            titre="Les références réglementaires"
-            texte="Le texte sur lequel s'appuie chaque point, dans sa version en vigueur à la date de la visite."
-          />
-          <LigneSommaire
-            num={6}
-            icone="bouclier"
-            titre="La portée du document"
-            texte="Ce que ce rapport dit, ce qu'il ne dit pas, et comment le conserver."
-          />
-          <View style={s.filet} />
-        </View>
-
-        <View style={s.section}>
-          <Text style={s.h2}>Comment se lit la note</Text>
-          <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
-            Chaque point vaut un poids de 1 à 3 selon son impact sanitaire. Un point conforme rapporte la
-            totalité de son poids, un écart mineur la moitié, un point critique rien. Les points non
-            applicables et non évalués sortent du calcul.
-          </Text>
-          <View style={s.encart}>
-            <Text style={s.petit}>
-              Un point critique ne se compense pas. Tant qu&apos;il en reste un, le rapport place
-              l&apos;établissement à redresser, quelle que soit la note obtenue ailleurs.
-            </Text>
-          </View>
-        </View>
 
       </View>
 
       {/* 03 · Points à corriger, seulement s'il y en a */}
       {r.actions.length > 0 ? (
-      <View {...signet("Points à corriger")} style={s.chapitre}>
-        <TeteSection
-          titre={
-            r.actions.length === 0
-              ? 'Aucun point à corriger'
-              : `${r.actions.length} ${r.actions.length > 1 ? 'points à corriger' : 'point à corriger'}`
-          }
-          chapeau={
-            r.actions.length === 0
-              ? "Aucun écart n'a été relevé sur les points audités. Continuez à tenir vos relevés et vos enregistrements : ce sont eux qui font la preuve dans la durée."
-              : "Classés par urgence. Prenez une photo après correction, c'est la preuve la plus simple à présenter."
-          }
-        />
-
-        {r.actionsImmediates.length > 0 ? (
-          <View style={{ marginTop: 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[s.jeton, { backgroundColor: ROUGE }]}>Sous 48 heures</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 7.5 }]}>
-                impact sanitaire direct, à traiter avant le prochain service
-              </Text>
-            </View>
-            {r.actionsImmediates.map((a) => (
-              <Fiche key={a.code} a={a} />
-            ))}
-          </View>
-        ) : null}
-
-        {r.actionsTrente.length > 0 ? (
-          <View style={{ marginTop: r.actionsImmediates.length > 0 ? 26 : 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[s.jeton, { backgroundColor: AMBRE }]}>Sous 30 jours</Text>
-              <Text style={[s.gris, { marginLeft: 10, fontSize: 7.5 }]}>
-                écarts sans danger immédiat, à régulariser
-              </Text>
-            </View>
-            {r.actionsTrente.map((a) => (
-              <Fiche key={a.code} a={a} />
-            ))}
-          </View>
-        ) : null}
+      <View {...signet("Points à corriger")} style={[s.chapitre, { marginTop: 0 }]}>
+        {r.actions.map((a, i) => (
+          <Fiche key={a.code} a={a} numero={i + 1} logo={data.logoBlanc} />
+        ))}
 
         {r.materielAPrevoir.length > 0 ? (
-          <View break>
-            <TeteSection
-              titre="Le matériel à prévoir"
-              chapeau="Tout ce que les corrections réclament, en une seule liste. Un même matériel n’est cité qu’une fois, avec les points qui le demandent."
-            />
-
+          <View>
             {equilibrer(r.materielAPrevoir, 10).map((page, ip, pages) => {
-            const rang0 = pages.slice(0, ip).reduce((n, p) => n + p.length, 0);
-            return (
-              <View key={ip} style={[
-                  s.achatGrille,
-                  pages.length > 1 ? { height: ip === 0 ? 616 : 712 } : {},
-                ]} wrap={false}>
-                {page.map((m, im) => (
-                  <View key={m.intitule} style={s.achatCarte} wrap={false}>
-                    <View style={s.achatCase} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.achatNom}>{m.intitule}</Text>
-                      <Text style={s.achatPoints}>{m.points.join(' · ')}</Text>
-                    </View>
-                    <Text style={s.achatRang}>{String(rang0 + im + 1).padStart(2, '0')}</Text>
+              const rang0 = pages.slice(0, ip).reduce((n, p) => n + p.length, 0);
+              return (
+                <View key={ip} style={{ height: HAUTEUR_UTILE }} wrap={false}>
+                  {ip === 0 ? (
+                    <TeteSection
+                      titre="Le matériel à prévoir"
+                      chapeau="Tout ce que les corrections réclament, en une seule liste. Un même matériel n’est cité qu’une fois, avec les points qui le demandent."
+                    />
+                  ) : null}
+
+                  <View style={s.achatGrille}>
+                    {page.map((m, im) => (
+                      <View key={m.intitule} style={s.achatCarte} wrap={false}>
+                        <View style={s.achatCase} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.achatNom}>{m.intitule}</Text>
+                          <Text style={s.achatPoints}>{m.points.join(' · ')}</Text>
+                        </View>
+                        <Text style={s.achatRang}>{String(rang0 + im + 1).padStart(2, '0')}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            );
+                </View>
+              );
             })}
           </View>
         ) : null}
@@ -1644,16 +1834,21 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
       ) : null}
 
       {/* 04 · Risques et suites */}
-      <View {...signet("Risques et suites")} style={s.chapitre}>
+      <View {...signet("Risques et suites")} style={[s.chapitre, { marginTop: 0 }]} break>
         <TeteSection titre="Ce qu'un écart peut coûter" chapeau={lectureDuRisque(r)} />
 
         {r.ncMajeures > 0 ? (
-          <View style={s.alerte}>
-            <Text style={[s.h3, { color: ROUGE }]}>
-              {r.ncMajeures} {r.ncMajeures > 1 ? 'points critiques' : 'point critique'} à traiter sous 48
-              heures
-            </Text>
-            <Text style={[s.gris, { marginTop: 2 }]}>
+          <View style={s.blocControle}>
+            <View style={s.ligneAlerte}>
+              <View style={s.pictoAlerte}>
+                <PictoAlerte taille={19} />
+              </View>
+              <Text style={[s.rubriqueCle, { color: ROUGE, marginBottom: 0 }]}>
+                {r.ncMajeures} {r.ncMajeures > 1 ? 'points critiques' : 'point critique'} à traiter en
+                priorité
+              </Text>
+            </View>
+            <Text style={s.ficheTexte}>
               Le détail et le moyen de correction figurent aux fiches de la partie précédente.
             </Text>
           </View>
@@ -1697,25 +1892,16 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
 
       </View>
 
-      {/* 05 · Résultats par thème */}
-      <View {...signet("Résultats par thème")} style={s.chapitre}>
+      {/* 05 · Ce qui est tenu */}
+      <View {...signet("Ce qui est déjà tenu")} style={s.chapitre} break>
         <TeteSection
-          titre="Les résultats, thème par thème"
-          chapeau="Chaque thème porte sa note sur 100 et le nombre d'écarts relevés. Un thème sans point évalué reste sans note."
+          titre="Ce qui est déjà tenu"
+          chapeau="Les points en règle le jour de la visite, et l'ordre des étages à garder dans le froid."
         />
-
-        <View style={{ marginTop: 4 }}>
-          {themesClasses.map((t) => (
-            <LigneTheme key={t.theme} t={t} />
-          ))}
-          <View style={s.filet} />
-        </View>
-
-        <PlanDuFroid r={r} />
 
         {r.pointsForts.length > 0 ? (
           <View style={s.section}>
-            <Text style={s.h2}>Ce qui est déjà tenu</Text>
+            <Text style={s.h2}>Les points en règle</Text>
             <Text style={[s.gris, { marginTop: 6, maxWidth: 430 }]}>
               {r.conformes} {r.conformes > 1 ? 'points conformes' : 'point conforme'} le jour de la visite.
               Ces acquis se perdent vite : ce sont les mêmes gestes, tenus tous les jours, qui les
@@ -1740,6 +1926,8 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
             </View>
           </View>
         ) : null}
+
+        <PlanDuFroid r={r} />
 
       </View>
 
@@ -1874,7 +2062,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
           </View>
         </View>
 
-        <View style={{ marginTop: 26 }}>
+        <View style={{ marginTop: 26 }} wrap={false}>
           <Meta cle="Établissement" valeur={[data.etablissement, data.ville].filter(Boolean).join(', ')} />
           {data.adresse ? <Meta cle="Adresse" valeur={data.adresse} /> : null}
           <Meta cle="Référence" valeur={data.reference} />
@@ -1885,7 +2073,7 @@ export function HygieneDocument({ data }: { data: HygienePdfData }) {
         </View>
 
       </View>
-        <Pied data={data} />
+        <Pied data={data} fiches={pagesFiches} />
       </Page>
     </Document>
   );

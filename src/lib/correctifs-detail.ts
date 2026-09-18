@@ -14,6 +14,10 @@
 export interface CorrectifDetail {
   /** Les gestes à faire, dans l'ordre. */
   etapes: string[];
+  /** Ce que l'écart produit concrètement, en deux ou trois phrases. */
+  consequence?: string;
+  /** À quoi ressemble ce point quand il est tenu. */
+  attendu?: string;
   /** Ce qu'il faut acheter ou avoir sous la main. Vide si rien à acheter. */
   materiel?: string[];
   /** Ce qui prouvera, plus tard, que le point a été traité. */
@@ -23,6 +27,9 @@ export interface CorrectifDetail {
 export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
   /* ------------------------------------------------------- Chaîne du froid */
   'FROID-01': {
+    consequence:
+      'Au-dessus des températures de conservation, les germes présents sur les denrées se multiplient d’heure en heure, sans que rien ne se voie ni ne se sente. Le produit garde son apparence normale alors que sa charge microbienne a déjà augmenté, et la durée de vie annoncée sur l’étiquette ne vaut plus.',
+    attendu: 'Chaque enceinte positive tient sa température de consigne, porte fermée, en plein service.',
     etapes: [
       'Relever la température de chaque enceinte positive, afficheur et sonde indépendante.',
       'Baisser le thermostat, dégager les grilles de ventilation, ne pas surcharger.',
@@ -33,6 +40,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Deux relevés datés, avant et après correction.',
   },
   'FROID-02': {
+    consequence:
+      'Un congélateur qui remonte fait décongeler la surface des produits, puis les regèle dès que la température redescend. Ce cycle abîme la denrée et permet aux germes de repartir à chaque passage. Le produit ne revient jamais à son état initial.',
+    attendu: 'Les enceintes négatives tiennent leur consigne et rien n’y montre de trace de décongélation.',
     etapes: [
       'Vérifier la température à cœur d’un produit témoin, pas seulement l’afficheur.',
       'Dégivrer si la couche de givre dépasse quelques millimètres.',
@@ -43,6 +53,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Relevé de température après dégivrage, bon de destruction s’il y a eu perte.',
   },
   'FROID-03': {
+    consequence:
+      'Sans relevé écrit, rien ne prouve que le froid a été tenu entre deux visites. En cas de doute sur un produit ou de plainte d’un client, l’établissement n’a aucun élément à opposer, et la charge de la preuve se retourne contre lui.',
+    attendu: 'Un relevé daté par enceinte, tenu chaque jour de service et conservé dans le classeur.',
     etapes: [
       'Imprimer une feuille de relevé par enceinte, ou activer l’enregistrement automatique.',
       'Fixer la fréquence dans le plan de maîtrise sanitaire, puis s’y tenir.',
@@ -53,6 +66,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Le classeur avec les relevés signés depuis la date de l’audit.',
   },
   'FROID-04': {
+    consequence:
+      'Une décongélation à l’air libre ou dans l’évier laisse la surface du produit remonter en température pendant des heures, alors que le cœur est encore pris. C’est sur cette surface tiède et humide que les germes se développent le plus vite.',
+    attendu: 'La décongélation se fait en enceinte froide, sur bac, produit couvert et daté.',
     etapes: [
       'Décongeler uniquement en enceinte froide, jamais à l’air libre ni sous l’eau.',
       'Étiqueter chaque produit sorti du congélateur avec la date et l’heure de sortie.',
@@ -65,6 +81,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* -------------------------------------------------- Températures & cuisson */
   'TEMP-01': {
+    consequence:
+      'Une cuisson menée sans contrôle de la température à cœur laisse passer des produits insuffisamment cuits. Le danger porte surtout sur les viandes hachées, les volailles et les préparations à base d’œuf, où le germe se trouve dans toute la masse et pas seulement en surface.',
+    attendu: 'Chaque cuisson sensible est contrôlée à cœur à la sonde, et la valeur est notée.',
     etapes: [
       'Sonder à cœur les pièces les plus épaisses, en fin de cuisson.',
       'Écrire les couples temps et température retenus par plat dans le plan de maîtrise sanitaire.',
@@ -74,6 +93,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Fiche de cuisson remplie sur une semaine.',
   },
   'TEMP-02': {
+    consequence:
+      'Un refroidissement lent fait stagner la préparation dans la plage de température où les germes se multiplient le plus vite. Une marmite laissée à l’air libre y reste plusieurs heures : le produit sort de cette phase déjà chargé, quelle que soit la suite de la conservation.',
+    attendu: 'Toute préparation chaude destinée au froid descend rapidement, couverte et datée.',
     etapes: [
       'Arrêter tout refroidissement à l’air libre en cuisine.',
       'Refroidir en cellule, ou par une méthode écrite et validée dans le plan de maîtrise sanitaire.',
@@ -84,6 +106,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Fiches de refroidissement avec heures et températures.',
   },
   'TEMP-03': {
+    consequence:
+      'Une remise en température trop lente, ou répétée sur le même produit, ramène la préparation dans la zone à risque à chaque service. Le danger augmente à chaque passage, et plus rien ne permet de savoir combien de fois le produit a été réchauffé.',
+    attendu: 'La remise en température se fait en une fois, contrôlée à cœur avant l’envoi.',
     etapes: [
       'Remettre en température en une fois, sans passage prolongé en zone tiède.',
       'Vérifier la température à cœur avant d’envoyer en salle.',
@@ -93,6 +118,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Consigne affichée et relevés de remise en température.',
   },
   'TEMP-04': {
+    consequence:
+      'Un bain de friture usé ne se repère pas seulement à sa couleur : il transmet aux aliments des composés issus de la dégradation de l’huile. Sans contrôle ni suivi de vidange, personne ne sait depuis combien de services le bain tourne.',
+    attendu: 'L’état du bain est contrôlé avant le service, la vidange tracée sur une fiche de suivi.',
     etapes: [
       'Contrôler l’état du bain avant le service, à froid puis à chaud.',
       'Filtrer chaque jour, vidanger dès que le bain fonce, fume ou mousse.',
@@ -105,6 +133,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ------------------------------------------------------- Traçabilité & DLC */
   'TRAC-01': {
+    consequence:
+      'Sans date d’ouverture ni étiquetage lisible, la durée de vie d’un produit entamé n’est plus connue de personne. L’équipe travaille alors à l’estime, et un produit dépassé peut partir en service sans que rien ne l’arrête.',
+    attendu: 'Chaque produit entamé porte sa date d’ouverture et sa durée de vie, de façon lisible.',
     etapes: [
       'Retirer immédiatement les produits dont la date est dépassée et tracer la destruction.',
       'Étiqueter tout produit entamé avec la date d’ouverture et la durée de vie retenue.',
@@ -114,6 +145,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photos de produits étiquetés, registre des destructions.',
   },
   'TRAC-02': {
+    consequence:
+      'Sans étiquettes ni numéros de lot conservés, l’établissement ne peut pas dire d’où vient un produit. En cas de rappel ou de suspicion sur une denrée, impossible de savoir ce qui a été servi : le retrait porte alors sur tout le stock.',
+    attendu: 'Les étiquettes des produits sensibles sont conservées et classées par date de réception.',
     etapes: [
       'Conserver les étiquettes des produits d’origine animale au moins le temps de leur consommation.',
       'Agrafer les étiquettes sur une feuille datée, ou les photographier et les classer.',
@@ -125,6 +159,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* --------------------------------------------------- Hygiène du personnel */
   'PERS-01': {
+    consequence:
+      'Une tenue de ville ou un vêtement de travail sale transporte en cuisine ce qui vient de l’extérieur et des zones souillées. Le contact avec les denrées se fait par le vêtement, les manches et les cheveux, sans que personne ne le remarque.',
+    attendu: 'Tenue propre et dédiée, changée chaque jour, coiffe portée en zone de production.',
     etapes: [
       'Fournir des tenues propres en nombre suffisant, changées chaque jour.',
       'Interdire les tenues de ville en zone de production, prévoir un vestiaire séparé.',
@@ -134,6 +171,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photo des vestiaires et de la dotation de tenues.',
   },
   'PERS-02': {
+    consequence:
+      'Le lavage des mains est la barrière la plus efficace contre les contaminations croisées, et la première à tomber quand le poste n’est pas équipé. Un lave-mains sans savon ni essuie-mains n’est pas utilisé, quelle que soit la bonne volonté de l’équipe.',
+    attendu: 'Chaque lave-mains est approvisionné en savon et en essuie-mains à usage unique.',
     etapes: [
       'Remettre en service le lave-mains, avec eau chaude, savon et essuie-mains à usage unique.',
       'Le réserver au lavage des mains, jamais à la plonge ni au rinçage des légumes.',
@@ -149,6 +189,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photo du poste de lavage complet et en service.',
   },
   'PERS-03': {
+    consequence:
+      'Un personnel qui n’a pas été formé applique des règles qu’il n’a pas comprises, donc il les abandonne dès que le service s’accélère. Les écarts reviennent au même endroit après chaque correction tant que la formation n’est pas faite.',
+    attendu: 'Le personnel qui manipule des denrées est formé, et les attestations sont conservées.',
     etapes: [
       'Faire suivre une formation hygiène à au moins une personne de l’équipe.',
       'Organiser un rappel interne pour les autres, sur les gestes du poste.',
@@ -160,6 +203,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ------------------------------------------------- Nettoyage & désinfection */
   'NETT-01': {
+    consequence:
+      'Sans plan de nettoyage écrit, chacun nettoie ce qu’il voit, avec ce qu’il trouve. Les zones difficiles, siphons, dessous d’équipements, joints, passent à la trappe pendant des semaines et deviennent le réservoir permanent de la cuisine.',
+    attendu: 'Un plan affiché dit quoi nettoyer, à quelle fréquence, avec quel produit et par qui.',
     etapes: [
       'Écrire le plan de nettoyage : quoi, qui, quand, avec quel produit et à quelle dilution.',
       'L’afficher en cuisine, à hauteur des yeux.',
@@ -170,6 +216,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Le plan affiché et signé sur deux semaines.',
   },
   'NETT-02': {
+    consequence:
+      'Un produit d’entretien stocké près des denrées ou transvasé dans un contenant alimentaire finit par se retrouver là où il ne faut pas. Le risque n’est plus microbien mais chimique, et il touche directement l’assiette.',
+    attendu: 'Produits d’entretien rangés à part, dans leur contenant d’origine, dosage affiché.',
     etapes: [
       'Stocker les produits d’entretien dans un local ou une armoire séparée des denrées.',
       'Garder les produits dans leur emballage d’origine, jamais dans une bouteille alimentaire.',
@@ -180,6 +229,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photo du rangement et fiches de données de sécurité classées.',
   },
   'NETT-03': {
+    consequence:
+      'Un nettoyage non enregistré est un nettoyage qui ne peut pas être prouvé. Devant un contrôle ou après une plainte, l’établissement n’a rien à montrer, même quand le travail a bien été fait tous les jours.',
+    attendu: 'Les fiches de nettoyage sont remplies, datées et signées par ceux qui ont fait le travail.',
     etapes: [
       'Mettre en place une fiche de suivi datée et signée par zone.',
       'Vérifier le remplissage une fois par semaine.',
@@ -191,6 +243,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ----------------------------------------------- Lutte contre les nuisibles */
   'NUIS-01': {
+    consequence:
+      'Sans plan de lutte ni contrat, la présence de nuisibles ne se découvre qu’une fois l’installation faite. Les postes d’appâts et les passages ne sont pas suivis, et rien ne permet de dire si la situation s’améliore ou s’aggrave.',
+    attendu: 'Un plan de lutte à jour, avec rapports de passage classés et postes repérés.',
     etapes: [
       'Faire établir un plan de lutte par une société spécialisée, avec plan des appâts.',
       'Conserver les rapports de passage dans le classeur sanitaire.',
@@ -200,6 +255,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Contrat et derniers rapports de passage.',
   },
   'NUIS-02': {
+    consequence:
+      'Insectes et rongeurs circulent entre les déchets, les sols et les denrées, et transportent sur leurs pattes ce qu’ils ont touché avant. Les traces vues en cuisine signalent une population déjà installée, pas un passage isolé.',
+    attendu: 'Aucune trace, aucun passage, denrées et surfaces protégées.',
     etapes: [
       'Faire intervenir en urgence une société spécialisée.',
       'Écarter et détruire les denrées exposées, tracer la destruction.',
@@ -212,6 +270,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ---------------------------------------------- Stockage & marche en avant */
   'STOCK-01': {
+    consequence:
+      'Quand le cru et le prêt à consommer se croisent, le germe passe du produit qui sera cuit vers celui qui ne le sera pas. Le jus d’une viande crue qui goutte sur une préparation finie suffit, et plus rien ensuite ne détruira ce qui a été transmis.',
+    attendu: 'Cru et prêt à consommer séparés, en enceintes ou en étages distincts, matériel dédié.',
     etapes: [
       'Séparer physiquement le cru du prêt à manger, par enceinte ou par étage.',
       'Ranger le prêt à manger en haut, les crus bruts en bas.',
@@ -222,6 +283,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photo des enceintes rangées dans le bon ordre.',
   },
   'STOCK-02': {
+    consequence:
+      'Des denrées posées au sol ou stockées sans rotation prennent l’humidité, la poussière et les passages de nuisibles. Sans premier entré premier sorti, les plus anciennes restent au fond et se perdent, ou partent en service après leur date.',
+    attendu: 'Tout est rangé hors sol, protégé, avec une rotation par date visible.',
     etapes: [
       'Sortir tout ce qui est posé à même le sol, poser sur étagères ou palettes.',
       'Appliquer le premier entré, premier sorti à chaque réception.',
@@ -233,6 +297,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* -------------------------------------------------- Locaux & équipements */
   'LOC-01': {
+    consequence:
+      'Un carrelage fissuré, un joint noirci ou une peinture écaillée ne se nettoient plus : la salissure s’installe dans le support lui-même. La zone redevient sale quelques heures après chaque nettoyage, quel que soit le produit utilisé.',
+    attendu: 'Sols, murs et plafonds en bon état, lisses et lavables, sans zone impossible à nettoyer.',
     etapes: [
       'Reprendre les surfaces abîmées : carrelage fissuré, joints noircis, peinture écaillée.',
       'Remettre en état ce qui empêche un nettoyage correct, en priorité.',
@@ -242,6 +309,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photos avant et après travaux, facture de l’artisan.',
   },
   'LOC-02': {
+    consequence:
+      'Un équipement abîmé ou un matériau inadapté relargue dans l’aliment, ou retient la salissure dans ses fissures. Le plan de travail et les contenants touchent directement les denrées : ce sont eux qui transmettent le plus vite.',
+    attendu: 'Matériels et surfaces aptes au contact alimentaire, entretenus, sans partie dégradée.',
     etapes: [
       'Remplacer les matériaux poreux ou fissurés en contact avec les denrées.',
       'Vérifier que les plans de travail et les bacs sont lisses et nettoyables.',
@@ -253,6 +323,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ---------------------------------------------------- Gestion des déchets */
   'DECH-01': {
+    consequence:
+      'Des déchets accumulés en zone de production attirent les nuisibles et mélangent le propre et le sale sur les mêmes trajets. L’odeur et les jus signalent une charge microbienne élevée à quelques mètres des denrées.',
+    attendu: 'Les déchets sortent régulièrement, en contenants fermés, sur un circuit séparé.',
     etapes: [
       'Équiper la cuisine de poubelles à couvercle et à commande non manuelle.',
       'Sortir les déchets à chaque service, sans traverser une zone propre.',
@@ -262,6 +335,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Photo des poubelles en place et fiche de nettoyage.',
   },
   'DECH-02': {
+    consequence:
+      'Un local à déchets mal tenu devient le foyer permanent de la cuisine : c’est de là que repartent les nuisibles et les odeurs. Le problème revient au même endroit tant que le local n’est pas nettoyable.',
+    attendu: 'Local à déchets fermé, lavable, nettoyé, avec un point d’eau à proximité.',
     etapes: [
       'Nettoyer le local poubelles et le désinfecter.',
       'Le tenir fermé, ventilé et éloigné des zones de production.',
@@ -273,6 +349,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ------------------------------------------- Plan de Maîtrise Sanitaire */
   'PMS-01': {
+    consequence:
+      'Sans plan de maîtrise sanitaire, les règles de la maison n’existent que dans la tête de ceux qui sont là ce jour-là. Un départ, un remplaçant, un coup de feu, et la pratique se perd sans que personne ne s’en aperçoive.',
+    attendu: 'Un plan de maîtrise sanitaire écrit, adapté à l’activité réelle, connu de l’équipe.',
     etapes: [
       'Rédiger le plan de maîtrise sanitaire adapté à l’activité : bonnes pratiques, analyse des dangers, traçabilité.',
       'Le faire connaître à l’équipe et le tenir accessible en cuisine.',
@@ -282,6 +361,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Le plan de maîtrise sanitaire daté, consultable sur place.',
   },
   'PMS-02': {
+    consequence:
+      'Sans autocontrôles, un écart n’est repéré qu’une fois ses effets produits. La surveillance sert précisément à corriger avant le service, pas à constater après coup.',
+    attendu: 'Les points sensibles sont surveillés, les valeurs notées, les écarts corrigés et tracés.',
     etapes: [
       'Définir quels autocontrôles sont faits, par qui et à quelle fréquence.',
       'Les réaliser et les noter, même quand tout est conforme.',
@@ -293,6 +375,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ------------------------------------------------------------ Allergènes */
   'ALL-01': {
+    consequence:
+      'Un client allergique décide à partir de ce qu’on lui dit. Une information absente ou approximative sur un plat peut déclencher une réaction grave chez une personne qui a fait confiance à la carte ou au personnel.',
+    attendu: 'L’information sur les allergènes est disponible, exacte et accessible au consommateur.',
     etapes: [
       'Établir la liste des allergènes plat par plat, à partir des recettes et des étiquettes fournisseurs.',
       'Informer le consommateur, par la carte ou par un document consultable sur place.',
@@ -302,6 +387,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
     preuve: 'Le document allergènes à jour, montrable en salle.',
   },
   'ALL-02': {
+    consequence:
+      'Un allergène se transmet par une trace : une planche, un ustensile, une huile de friture partagée. Le plat annoncé sans l’ingrédient en contient alors réellement, et la personne allergique n’a aucun moyen de le savoir.',
+    attendu: 'Matériel et plans de travail dédiés, production organisée pour éviter tout contact croisé.',
     etapes: [
       'Dédier du matériel et un plan de travail aux préparations sans allergène.',
       'Organiser la production : les préparations à risque en dernier, sur plan nettoyé.',
@@ -313,6 +401,9 @@ export const CORRECTIFS_DETAIL: Record<string, CorrectifDetail> = {
 
   /* ---------------------------------------------------------- Eau & glace */
   'EAU-01': {
+    consequence:
+      'L’eau et la glace touchent directement les denrées et les mains. Une machine à glaçons mal entretenue diffuse dans toute la cuisine ce qu’elle contient, sans que rien ne se voie dans le verre.',
+    attendu: 'Eau potable au poste, machine à glaçons entretenue et entretien tracé.',
     etapes: [
       'Entretenir et détartrer la machine à glaçons selon la notice.',
       'Nettoyer le bac et la pelle à glaçons, ranger la pelle hors du bac.',

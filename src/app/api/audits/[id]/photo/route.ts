@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { getCurrentDbUser, assertAuditAccess } from '@/lib/auth';
 import { getSupabaseAdmin, getSignedUrl } from '@/lib/supabase';
 import { env } from '@/lib/env';
+import { PHOTOS_MAX } from '@/lib/photos';
 import {
   isDriveEnabled,
   auditFolderLabel,
@@ -85,6 +86,12 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   }
   const item = await prisma.auditItem.findFirst({ where: { auditId: id, code } });
   if (!item) return NextResponse.json({ error: 'Item introuvable.' }, { status: 404 });
+  if (item.photoUrls.length >= PHOTOS_MAX) {
+    return NextResponse.json(
+      { error: `${PHOTOS_MAX} photos au maximum par point.` },
+      { status: 400 }
+    );
+  }
 
   const ext = (file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
   const rand = Math.random().toString(36).slice(2, 8);

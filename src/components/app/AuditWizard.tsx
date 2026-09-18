@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { calculerNotation, type Conformite } from '@/lib/notation';
 import { Logo } from '@/components/site/Logo';
 import { enqueuePhoto, removePhoto, pendingForAudit, compressImage } from '@/lib/photo-queue';
+import { PHOTOS_MAX } from '@/lib/photos';
 import { CONSTATS_GENERIQUES, MOTIFS_GENERIQUES } from '@/lib/grille-audit';
 
 export interface WizardConstat {
@@ -426,13 +427,25 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   const onUpload = async (files: FileList | null) => {
     if (!files || !current) return;
     setPhotoErreur(null);
-    setUploading(true);
     const code = current.code;
+    let restant = PHOTOS_MAX - current.photos.length;
+    if (restant <= 0) {
+      setPhotoErreur(`${PHOTOS_MAX} photos au maximum par point. Supprimez-en une pour en ajouter.`);
+      if (fileRef.current) fileRef.current.value = '';
+      if (galerieRef.current) galerieRef.current.value = '';
+      return;
+    }
+    setUploading(true);
     for (const file of Array.from(files)) {
+      if (restant <= 0) {
+        setPhotoErreur(`${PHOTOS_MAX} photos au maximum par point : les suivantes ont été ignorées.`);
+        break;
+      }
       if (!file.type.startsWith('image/')) {
         setPhotoErreur(`« ${file.name} » n'est pas une image. Photo, capture d'écran ou scan.`);
         continue;
       }
+      restant -= 1;
       const localId =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
@@ -727,6 +740,8 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
   // Suivant cliquable dès qu'un constat est posé. Photo, note et motif restent optionnels.
   const hasConstat = !!current && current.conformite !== 'NON_EVALUE';
   const hasPhoto = !!current && current.photos.length > 0;
+  /* Deux lignes de quatre dans le rapport : au-dela on n'accepte plus. */
+  const photosPleines = !!current && current.photos.length >= PHOTOS_MAX;
   const isNc = !!current && (current.conformite === 'NC_MINEURE' || current.conformite === 'NC_MAJEURE');
   const canAdvance = !current || hasConstat;
 
@@ -1047,9 +1062,16 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
     current && (
       <label
         htmlFor="champ-photo-capture"
-        aria-label={hasPhoto ? 'Ajouter une photo' : 'Prendre une photo'}
+        aria-label={
+          photosPleines
+            ? `${PHOTOS_MAX} photos au maximum`
+            : hasPhoto
+              ? 'Ajouter une photo'
+              : 'Prendre une photo'
+        }
+        title={photosPleines ? `${PHOTOS_MAX} photos au maximum par point` : undefined}
         className={`grid h-20 w-20 shrink-0 cursor-pointer place-items-center rounded-full shadow-lg transition-all active:scale-95 ${
-          uploading ? 'pointer-events-none opacity-60' : ''
+          uploading || photosPleines ? 'pointer-events-none opacity-60' : ''
         } ${
           hasPhoto
             ? 'border-2 border-vert/50 bg-white text-vert-700'
@@ -1082,9 +1104,13 @@ export function AuditWizard({ auditId, etablissement, statutInitial, items: init
       <label
         htmlFor="champ-photo-galerie"
         aria-label="Importer une photo"
-        title="Importer une photo depuis la tablette"
+        title={
+          photosPleines
+            ? `${PHOTOS_MAX} photos au maximum par point`
+            : 'Importer une photo depuis la tablette'
+        }
         className={`grid h-12 w-12 shrink-0 cursor-pointer place-items-center rounded-full border-2 border-ink/15 bg-white text-gris shadow transition-all active:scale-95 hover:border-vert/50 hover:text-vert-700 ${
-          uploading ? 'pointer-events-none opacity-60' : ''
+          uploading || photosPleines ? 'pointer-events-none opacity-60' : ''
         }`}
       >
         <svg

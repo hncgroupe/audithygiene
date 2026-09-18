@@ -16,6 +16,8 @@ import { detailCorrectif } from './correctifs-detail';
 export interface RapportPhoto {
   url: string;
   legende?: string;
+  /** Date et heure du cliche, au format court, lues sur le nom du fichier. */
+  prise?: string;
 }
 
 /** Item d'audit tel qu'il sort de la base. */
@@ -42,6 +44,8 @@ export interface ActionCorrective {
   delai: string;
   /** Pourquoi c'est un problème (risque sanitaire), issu de la grille. */
   risque: string;
+  /** Ce à quoi ressemble le point quand il est tenu. */
+  attendu?: string;
   /** Le moyen de correction concret, issu de la grille. */
   correctif: string;
   /** Les gestes à faire, dans l'ordre. */
@@ -195,7 +199,10 @@ export function assemblerRapportHygiene(entrees: RapportItemEntree[]): RapportHy
     intitule: i.intitule,
     priorite: i.conformite === 'NC_MAJEURE' ? 'IMMEDIAT' : 'SOUS_30_JOURS',
     delai: i.conformite === 'NC_MAJEURE' ? 'Sous 48 heures' : 'Sous 30 jours',
-    risque: i.risque ?? 'Écart relevé sur ce point.',
+    /* La conséquence détaillée du point prime sur la phrase courte de la grille :
+       le client a besoin de comprendre le mécanisme, pas d'un mot-clé. */
+    risque: detailCorrectif(i.code)?.consequence ?? i.risque ?? 'Écart relevé sur ce point.',
+    attendu: detailCorrectif(i.code)?.attendu,
     correctif: i.correctif ?? "Corriger l'écart, puis garder une trace écrite ou photo.",
     etapes: detailCorrectif(i.code)?.etapes ?? [],
     /* Ce que l'auditeur a noté sur place passe devant le matériel courant du point,
@@ -267,8 +274,8 @@ function recapMateriel(actions: ActionCorrective[]): MaterielRecap[] {
 
 export const LIBELLE_CONFORMITE: Record<Conformite, string> = {
   CONFORME: 'Conforme',
-  NC_MINEURE: 'Non-conformité mineure',
-  NC_MAJEURE: 'Non-conformité majeure',
+  NC_MINEURE: 'Non conforme',
+  NC_MAJEURE: 'Critique',
   NON_APPLICABLE: 'Non applicable',
   NON_EVALUE: 'Non évalué',
 };

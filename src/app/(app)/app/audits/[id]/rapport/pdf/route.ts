@@ -9,6 +9,7 @@ import {
   assemblerRapportHygiene,
   LIBELLE_TYPE_ETABLISSEMENT,
   type RapportItemEntree,
+  type RapportPhoto,
 } from '@/lib/rapport-hygiene';
 import { HygieneDocument, type HygienePdfData } from '@/lib/pdf/HygieneDocument';
 import type { Conformite } from '@/lib/notation';
@@ -49,6 +50,21 @@ function slug(s: string): string {
  * Les photos sont intégrées en base64 : le fichier reste lisible hors ligne,
  * même après expiration des URL signées.
  */
+/**
+ * Les photos sont stockees sous `audits/<id>/<code>/<epoch>-<alea>.jpg` : le
+ * moment du cliche se lit donc sur le nom du fichier, sans requete de plus.
+ */
+function horodatage(chemin: string): string | undefined {
+  const nom = chemin.split('/').pop() ?? '';
+  const epoch = Number(nom.split('-')[0]);
+  if (!Number.isFinite(epoch) || epoch < 1_000_000_000_000) return undefined;
+  const d = new Date(epoch);
+  return `${d.toLocaleDateString('fr-FR')} a ${d.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })}`.replace(' a ', '\u2009·\u2009');
+}
+
 export async function GET(_request: Request, ctx: { params: Promise<{ id: string }> }) {
   const user = await getCurrentDbUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
@@ -76,9 +92,14 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
       ponderation: it.ponderation,
       commentaire: it.commentaire,
       materiel: it.materiel,
-      photos: (await Promise.all(it.photoUrls.map((p) => getDataUri(p))))
-        .filter((u): u is string => Boolean(u))
-        .map((url) => ({ url })),
+      photos: (
+        await Promise.all(
+          it.photoUrls.map(async (p): Promise<RapportPhoto | null> => {
+            const url = await getDataUri(p);
+            return url ? { url, prise: horodatage(p) } : null;
+          })
+        )
+      ).filter((x): x is RapportPhoto => x !== null),
     }))
   );
 
